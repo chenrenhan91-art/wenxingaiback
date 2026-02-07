@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>问星AI 后台管理</title>
+  <!-- v2026.02.07b -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#050510] text-slate-100">
+  <main class="mx-auto max-w-5xl px-5 py-10">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <h1 class="text-2xl font-black tracking-tight">问星AI · 后台管理</h1>
+        <p class="mt-1 text-sm text-slate-300">查看注册用户与手动标注专业版</p>
+      </div>
+      <a href="./index.html" class="text-sm text-slate-300 hover:text-white">返回前台 →</a>
+    </div>
+
+    <section class="mt-6 rounded-2xl border border-slate-700/50 bg-slate-900/30 p-5 pb-8">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div class="w-full sm:max-w-md">
+          <label class="text-xs text-slate-400">后台密码</label>
+          <input id="adminPassword" type="password" placeholder="在 .env 里配置的 ADMIN_PASSWORD" class="mt-1 w-full rounded-lg border border-slate-700/60 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-cyan-400" />
+          <div class="mt-2 text-xs text-slate-400">本页会把后台 token 暂存在 sessionStorage（关闭标签页即失效）。</div>
+        </div>
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
+          <button id="loginBtn" class="w-full whitespace-nowrap rounded-lg border border-cyan-400/40 bg-cyan-500/10 px-4 py-2 text-sm font-extrabold text-cyan-200 hover:bg-cyan-500/15 sm:w-auto">登录后台</button>
+          <button id="logoutBtn" class="w-full whitespace-nowrap rounded-lg border border-rose-400/40 bg-rose-500/10 px-4 py-2 text-sm font-extrabold text-rose-200 hover:bg-rose-500/15 sm:w-auto">退出</button>
+          <button id="refreshBtn" class="w-full whitespace-nowrap rounded-lg border border-slate-600/60 bg-slate-950/30 px-4 py-2 text-sm font-extrabold text-slate-200 hover:bg-slate-950/45 sm:w-auto">刷新列表</button>
+        </div>
+      </div>
+
+      <div id="stats" class="mt-5 grid gap-3 sm:grid-cols-2">
+        <div class="rounded-xl border border-slate-700/60 bg-slate-950/25 p-4">
+          <div class="text-xs text-slate-400">注册用户</div>
+          <div id="totalUsers" class="mt-1 text-2xl font-black">--</div>
+        </div>
+        <div class="rounded-xl border border-slate-700/60 bg-slate-950/25 p-4">
+          <div class="text-xs text-slate-400">专业版用户</div>
+          <div id="proUsers" class="mt-1 text-2xl font-black">--</div>
+        </div>
+      </div>
+
+      <div class="mt-6 rounded-2xl border border-slate-700/60 overflow-x-auto">
+        <table class="min-w-[760px] w-full text-left text-sm">
+          <thead class="bg-slate-950/40 text-xs text-slate-300">
+            <tr>
+              <th class="px-4 py-3">ID</th>
+              <th class="px-4 py-3">用户名</th>
+              <th class="px-4 py-3">类型</th>
+              <th class="px-4 py-3">额度</th>
+              <th class="px-4 py-3">注册时间</th>
+              <th class="px-4 py-3">操作</th>
+            </tr>
+          </thead>
+          <tbody id="userTbody" class="divide-y divide-slate-800/70 bg-slate-900/20"></tbody>
+        </table>
+      </div>
+
+      <div id="msg" class="mt-4 text-sm text-slate-300"></div>
+    </section>
+  </main>
+
+  <script>
+    var TOKEN_KEY = 'wx_admin_token';
+
+    function getToken() {
+      return sessionStorage.getItem(TOKEN_KEY) || '';
+    }
+    function setToken(val) {
+      if (!val) sessionStorage.removeItem(TOKEN_KEY);
+      else sessionStorage.setItem(TOKEN_KEY, val);
+    }
+    function qs(id) { return document.getElementById(id); }
+
+    function setMsg(text, isError) {
+      var el = qs('msg');
+      el.textContent = text || '';
+      el.className = 'mt-4 text-sm ' + (isError ? 'text-rose-300' : 'text-emerald-300');
+    }
+
+    function escapeHtml(str) {
+      var d = document.createElement('div');
+      d.textContent = String(str);
+      return d.innerHTML;
+    }
+
+    /* =========  渲染用户表格  ========= */
+    function renderTable(users) {
+      var tbody = qs('userTbody');
+      tbody.innerHTML = '';
+
+      for (var i = 0; i < users.length; i++) {
+        (function(u) {
+          var pro = (u.isPro === true || u.isPro === 1 || u.isPro === '1');
+
+          var tr = document.createElement('tr');
+          if (pro) tr.className = 'bg-purple-500/5';
+
+          var quotaText = pro
+            ? '无限制'
+            : (Math.max(0, (u.quotaTotal || 3) - (u.quotaUsed || 0))) + '/' + (u.quotaTotal || 3) + '（已用 ' + (u.quotaUsed || 0) + '）';
+
+          var btnClass = pro
+            ? 'border-rose-400/50 bg-rose-500/10 text-rose-200'
+            : 'border-emerald-400/50 bg-emerald-500/10 text-emerald-200';
+          var btnText = pro ? '取消专业版' : '设为专业版';
+          var typeLabel = pro
+            ? '<span class="text-purple-200 font-extrabold">专业版</span>'
+            : '<span class="text-slate-300">免费版</span>';
+
+          tr.innerHTML =
+            '<td class="px-4 py-3 font-mono text-xs text-slate-200">' + u.id + '</td>' +
+            '<td class="px-4 py-3 text-slate-100 font-semibold">' + escapeHtml(u.username || '') + '</td>' +
+            '<td class="px-4 py-3">' + typeLabel + '</td>' +
+            '<td class="px-4 py-3 text-slate-200">' + quotaText + '</td>' +
+            '<td class="px-4 py-3 text-slate-300">' + escapeHtml(u.createdAt || '') + '</td>' +
+            '<td class="px-4 py-3">' +
+              '<button class="toggle-pro rounded-lg border px-3 py-1.5 text-xs font-extrabold ' + btnClass + '">' +
+              btnText +
+              '</button>' +
+            '</td>';
+
+          var btn = tr.querySelector('button.toggle-pro');
+          btn.onclick = function() { togglePro(u.id, !pro, btn); };
+
+          tbody.appendChild(tr);
+        })(users[i]);
+      }
+    }
+
+    /* =========  切换专业版  ========= */
+    function togglePro(userId, setPro, btn) {
+      btn.disabled = true;
+      btn.textContent = '处理中...';
+      setMsg('正在更新用户 ' + userId + ' ...');
+
+      fetch('/api/admin/set-pro', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({ userId: userId, isPro: setPro })
+      })
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) {
+        if (data.ok) {
+          var newPro = (data.user && (data.user.isPro === true || data.user.isPro === 1));
+          setMsg('✅ 用户 ' + ((data.user && data.user.username) || userId) + ' 已' + (newPro ? '设为专业版' : '取消专业版') + '，正在刷新...');
+          setTimeout(function() { loadUsers(); }, 300);
+        } else {
+          setMsg('❌ 更新失败: ' + (data.message || '未知错误'), true);
+          btn.disabled = false;
+          btn.textContent = setPro ? '设为专业版' : '取消专业版';
+        }
+      })
+      .catch(function(err) {
+        setMsg('❌ 请求失败: ' + (err.message || '网络错误'), true);
+        btn.disabled = false;
+        btn.textContent = setPro ? '设为专业版' : '取消专业版';
+      });
+    }
+
+    /* =========  加载用户列表  ========= */
+    function loadUsers() {
+      var token = getToken();
+      if (!token) { setMsg('请先登录后台', true); return; }
+
+      setMsg('加载中...');
+      fetch('/api/admin/users', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(function(resp) {
+        if (resp.status === 401 || resp.status === 403) {
+          setToken('');
+          throw new Error('登录已过期，请重新登录');
+        }
+        if (!resp.ok) throw new Error('请求失败: ' + resp.status);
+        return resp.json();
+      })
+      .then(function(data) {
+        qs('totalUsers').textContent = String(data.total || 0);
+        qs('proUsers').textContent = String(data.proCount || 0);
+        renderTable(data.users || []);
+        setMsg('✅ 已加载 ' + (data.total || 0) + ' 个用户（专业版：' + (data.proCount || 0) + '）');
+      })
+      .catch(function(err) {
+        setMsg('❌ ' + (err.message || '加载失败'), true);
+      });
+    }
+
+    /* =========  登录  ========= */
+    qs('loginBtn').onclick = function() {
+      var password = (qs('adminPassword').value || '').trim();
+      if (!password) { setMsg('请输入后台密码', true); return; }
+
+      setMsg('登录中...');
+      fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password })
+      })
+      .then(function(resp) { return resp.json(); })
+      .then(function(data) {
+        if (data.token) {
+          setToken(data.token);
+          setMsg('✅ 登录成功');
+          loadUsers();
+        } else {
+          setMsg('❌ ' + (data.message || '登录失败'), true);
+        }
+      })
+      .catch(function(err) {
+        setMsg('❌ 登录失败: ' + (err.message || ''), true);
+      });
+    };
+
+    /* =========  退出  ========= */
+    qs('logoutBtn').onclick = function() {
+      setToken('');
+      qs('userTbody').innerHTML = '';
+      qs('totalUsers').textContent = '--';
+      qs('proUsers').textContent = '--';
+      setMsg('已退出');
+    };
+
+    /* =========  刷新  ========= */
+    qs('refreshBtn').onclick = function() { loadUsers(); };
+
+    /* =========  页面加载时自动刷新  ========= */
+    if (getToken()) { loadUsers(); }
+  </script>
+</body>
+</html>

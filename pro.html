@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>解锁专业版 - AI 深度解析</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body{background:#050510;}
+    .glass{background:rgba(10,15,30,.75);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(100,200,255,.15);box-shadow:0 20px 60px rgba(0,0,0,.6)}
+    .gradient-text{background:linear-gradient(90deg,#a78bfa,#22d3ee,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .btn{
+      width: fit-content;
+      display: inline-flex;
+      padding: 1.05em 1.2rem;
+      cursor: pointer;
+      gap: 0.5rem;
+      font-weight: 800;
+      border-radius: 30px;
+      text-shadow: 2px 2px 3px rgb(136 0 136 / 50%);
+      background: linear-gradient(15deg, #880088, #aa2068, #cc3f47, #de6f3d, #f09f33, #de6f3d, #cc3f47, #aa2068, #880088) no-repeat;
+      background-size: 300%;
+      color: #fff;
+      border: none;
+      background-position: left center;
+      box-shadow: 0 30px 10px -20px rgba(0,0,0,.2);
+      transition: background .3s ease, transform .12s ease;
+      align-items: center;
+    }
+    .btn:hover{background-size:320%;background-position:right center;transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+    .qr-slot{border:1px dashed rgba(148,163,184,.6);background:rgba(0,0,0,.25)}
+  </style>
+</head>
+<body class="min-h-screen text-slate-100">
+  <div class="relative overflow-hidden">
+    <!-- Background glow -->
+    <div class="pointer-events-none absolute inset-0">
+      <div class="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-purple-600/30 blur-3xl"></div>
+      <div class="absolute top-56 -left-24 h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl"></div>
+      <div class="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-pink-500/20 blur-3xl"></div>
+    </div>
+
+    <main class="relative mx-auto max-w-5xl px-5 py-10 sm:py-14">
+      <!-- Top bar -->
+      <div class="flex items-center justify-between">
+        <a href="./index.html" class="text-sm text-slate-300 hover:text-white">← 返回星盘</a>
+        <span class="text-xs rounded-full border border-slate-600/60 bg-slate-900/30 px-3 py-1 text-slate-200">内测专享 · 永久解锁</span>
+      </div>
+
+      <!-- Hero -->
+      <section class="mt-8 sm:mt-10">
+        <div class="glass rounded-2xl p-6 sm:p-10">
+          <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            <div class="max-w-2xl">
+              <h1 class="text-2xl sm:text-4xl font-black tracking-tight">
+                解锁 <span class="gradient-text">AI 深度解析</span>
+              </h1>
+              <p class="mt-3 text-slate-200/90 leading-relaxed">
+                把命盘信息从“能看懂”升级到“能落地”。专业版 AI 会结合盘面结构、星曜组合与常见断语逻辑，给出更完整的分析框架与可执行建议。
+              </p>
+
+              <div class="mt-6 grid gap-3 sm:grid-cols-3">
+                <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-4">
+                  <div class="text-sm font-bold text-cyan-300">更系统</div>
+                  <div class="mt-1 text-xs text-slate-300">结构化输出：重点—依据—建议</div>
+                </div>
+                <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-4">
+                  <div class="text-sm font-bold text-purple-300">更深入</div>
+                  <div class="mt-1 text-xs text-slate-300">星曜组合、宫位联动、用神思路</div>
+                </div>
+                <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-4">
+                  <div class="text-sm font-bold text-pink-300">更省时</div>
+                  <div class="mt-1 text-xs text-slate-300">一键生成长文解析与要点总结</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Price card -->
+            <div class="w-full sm:w-[320px]">
+              <div class="rounded-2xl border border-purple-500/30 bg-gradient-to-b from-purple-500/15 to-slate-900/30 p-5">
+                <div class="flex items-center justify-between">
+                  <div class="text-sm font-bold text-purple-200">专业版</div>
+                  <div class="text-xs rounded-full border border-purple-400/40 bg-purple-500/10 px-2 py-1 text-purple-200">内测价格</div>
+                </div>
+
+                <div class="mt-4 flex items-end gap-2">
+                  <div class="text-4xl font-black">¥68</div>
+                  <div class="pb-1 text-sm text-slate-300">永久解锁</div>
+                </div>
+
+                <ul class="mt-4 space-y-2 text-sm text-slate-200">
+                  <li class="flex gap-2"><span class="text-cyan-300">✓</span>宫位/星曜 AI 深度解析</li>
+                  <li class="flex gap-2"><span class="text-cyan-300">✓</span>六爻解卦 AI 断语与建议</li>
+                  <li class="flex gap-2"><span class="text-cyan-300">✓</span>提问式命理咨询（对话）</li>
+                  <li class="flex gap-2"><span class="text-cyan-300">✓</span>持续优化（内测期间免费更新）</li>
+                </ul>
+
+                <div class="mt-5">
+                  <button class="btn w-full justify-center" onclick="scrollToPay()">
+                    立即解锁
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 12h12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                      <path d="M13 6l6 6-6 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Value -->
+      <section class="mt-8">
+        <div class="glass rounded-2xl p-6 sm:p-10">
+          <h2 class="text-xl sm:text-2xl font-extrabold">AI 为什么更“懂”易学？</h2>
+          <p class="mt-2 text-sm text-slate-200/90 leading-relaxed">
+            专业版 AI 并非通用闲聊，它已投喂并吸收了关于 <span class="font-bold text-amber-300">《紫微斗数》</span>、
+            <span class="font-bold text-amber-300">《四柱八字》</span>、
+            <span class="font-bold text-amber-300">《六爻》</span> 等易学学说的深度研究内容，
+            在输出时会尽量遵循常见的断盘逻辑：先定格局，再抓主矛盾，最后给出可验证的结论与建议。
+          </p>
+
+          <div class="mt-6 grid gap-4 sm:grid-cols-2">
+            <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-5">
+              <div class="text-sm font-bold text-slate-100">结构化解析</div>
+              <div class="mt-2 text-sm text-slate-300 leading-relaxed">
+                输出会包含：<span class="text-slate-200">关键星曜/宫位</span>、
+                <span class="text-slate-200">组合关系</span>、
+                <span class="text-slate-200">推导依据</span>、
+                <span class="text-slate-200">建议方向</span>，避免只有“情绪化形容”。
+              </div>
+            </div>
+            <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-5">
+              <div class="text-sm font-bold text-slate-100">命盘定制化提问</div>
+              <div class="mt-2 text-sm text-slate-300 leading-relaxed">
+                你可以指定侧重点：事业/感情/财运/健康，或限定时间段与目标。
+                AI 会按你的关注点重排信息与结论，让输出更贴合当下需求。
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Model & Token -->
+      <section class="mt-8">
+        <div class="glass rounded-2xl p-6 sm:p-10">
+          <h2 class="text-xl sm:text-2xl font-extrabold">为什么要收费？（模型与 Token 成本）</h2>
+          <div class="mt-3 grid gap-4 sm:grid-cols-3">
+            <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-5">
+              <div class="text-xs text-slate-400">调用模型</div>
+              <div class="mt-1 text-base font-extrabold">Gemini 2.5 Flash</div>
+              <div class="mt-2 text-sm text-slate-300 leading-relaxed">
+                专业版使用 <span class="text-slate-200 font-bold">gemini2.5flash</span> 文本生成模型，用于长文分析、要点归纳与多轮追问。
+              </div>
+            </div>
+            <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-5">
+              <div class="text-xs text-slate-400">Token 消耗</div>
+              <div class="mt-1 text-base font-extrabold">输入 + 输出</div>
+              <div class="mt-2 text-sm text-slate-300 leading-relaxed">
+                每次解析都要把盘面信息与上下文传入模型，并生成较长文本，因此会持续消耗 Token，产生实际成本。
+              </div>
+            </div>
+            <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-5">
+              <div class="text-xs text-slate-400">内测定价</div>
+              <div class="mt-1 text-base font-extrabold">¥68 永久</div>
+              <div class="mt-2 text-sm text-slate-300 leading-relaxed">
+                目前属于内测价格，用于覆盖模型调用与维护成本；后续可能会调整。
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 rounded-xl border border-amber-400/30 bg-amber-500/10 p-4 text-sm text-amber-100/90">
+            <span class="font-bold text-amber-200">提示：</span>
+            AI 输出为参考与辅助，不构成任何确定性承诺；建议结合自身情况理性判断。
+          </div>
+        </div>
+      </section>
+
+      <!-- Pay / QR -->
+      <section class="mt-8" id="pay">
+        <div class="glass rounded-2xl p-6 sm:p-10">
+          <h2 class="text-xl sm:text-2xl font-extrabold">扫码解锁（微信）</h2>
+          <p class="mt-2 text-sm text-slate-200/90 leading-relaxed">
+            你可以通过微信扫码完成支持或联系作者。专业版解锁与商务合作请通过下方对应二维码进行。
+          </p>
+
+          <div class="mt-6 grid gap-6 sm:grid-cols-2">
+            <!-- QR 1: 打赏创作者 -->
+            <div class="rounded-2xl border border-slate-700/60 bg-slate-900/30 p-4">
+              <div class="text-center text-sm font-semibold tracking-wide text-cyan-200 mb-3">微信扫码 · 打赏创作者</div>
+              <div class="aspect-square w-full rounded-xl bg-slate-900/40 flex items-center justify-center overflow-hidden">
+                <img src="./qr_donate_800.png" alt="微信打赏创作者二维码" class="h-full w-full object-contain" />
+              </div>
+              <div class="mt-4 text-center text-sm font-semibold tracking-wide text-cyan-200">用于支持项目持续维护与迭代</div>
+            </div>
+
+            <!-- QR 2: 作者本人 -->
+            <div class="rounded-2xl border border-slate-700/60 bg-slate-900/30 p-4">
+              <div class="text-center text-sm font-semibold tracking-wide text-purple-200 mb-3">微信扫码 · 作者本人</div>
+              <div class="aspect-square w-full rounded-xl bg-slate-900/40 flex items-center justify-center overflow-hidden">
+                <img src="./qr_author_800.png" alt="微信作者本人二维码" class="h-full w-full object-contain" />
+              </div>
+              <div class="mt-4 text-center text-base font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">付款解锁专业版 / 商务合作</div>
+            </div>
+          </div>
+
+          <div class="mt-8 flex items-center justify-between gap-3">
+            <a class="text-sm text-slate-300 hover:text-white" href="./index.html">← 返回继续体验</a>
+            <div class="text-xs text-slate-500">© 问星AI · 专业版内测</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    function scrollToPay(){
+      const el = document.getElementById('pay');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function scrollToTop(){
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function copyPrice(){
+      const text = '问星AI 专业版：¥68 永久解锁（内测价）。包含：AI 深度解析 / 六爻解卦 / 对话咨询。';
+      try {
+        await navigator.clipboard.writeText(text);
+        toast('已复制：价格信息');
+      } catch(e){
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        toast('已复制：价格信息');
+      }
+    }
+
+    function toast(msg){
+      const div = document.createElement('div');
+      div.textContent = msg;
+      div.className = 'fixed left-1/2 top-6 -translate-x-1/2 rounded-full border border-slate-700/60 bg-slate-900/80 px-4 py-2 text-xs text-slate-100 shadow-xl';
+      document.body.appendChild(div);
+      setTimeout(()=>{ div.style.opacity = '0'; div.style.transition = 'opacity .25s ease'; }, 1200);
+      setTimeout(()=>{ div.remove(); }, 1600);
+    }
+  </script>
+</body>
+</html>
