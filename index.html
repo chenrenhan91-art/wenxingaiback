@@ -475,6 +475,30 @@
         .markdown-body p { line-height: 1.7; margin-bottom: 0.8em; color: #e2e8f0; }
         .markdown-body strong { color: #fbbf24; }
 
+        /* Pro Unlock Button */
+        .pro-unlock-btn {
+            display: inline-flex;
+            padding: 1.05em 1.2rem;
+            cursor: pointer;
+            gap: 0.5rem;
+            font-weight: 800;
+            border-radius: 30px;
+            text-shadow: 2px 2px 3px rgb(136 0 136 / 50%);
+            background: linear-gradient(15deg, #880088, #aa2068, #cc3f47, #de6f3d, #f09f33, #de6f3d, #cc3f47, #aa2068, #880088) no-repeat;
+            background-size: 300%;
+            color: #fff;
+            border: none;
+            background-position: left center;
+            box-shadow: 0 30px 10px -20px rgba(0,0,0,.2);
+            transition: background .3s ease, transform .12s ease;
+            align-items: center;
+            text-decoration: none;
+            font-size: 0.95rem;
+            margin-top: 0.5em;
+        }
+        .pro-unlock-btn:hover { background-size: 320%; background-position: right center; transform: translateY(-1px); }
+        .pro-unlock-btn:active { transform: translateY(0); }
+
         /* AI Loading Spinner (xXJollyHAKERXx) */
         .spinner {
             background-image: linear-gradient(rgb(186, 66, 255) 35%,rgb(0, 225, 255));
@@ -1470,7 +1494,7 @@
                         return '⚠️ **登录已失效**\n\n请重新登录后再试。';
                     }
                     if (resp.status === 402 && data?.error === 'NO_QUOTA') {
-                        return `⚠️ **免费额度已用完**\n\n请点击左侧「升级专业版」跳转开通。\n\n（用户ID：${currentUser?.id ?? '--'}）`;
+                        return `⚠️ **免费额度已用完**\n\n<a class="pro-unlock-btn" href="./pro.html">解锁专业版<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h12" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M13 6l6 6-6 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>\n\n（用户ID：${currentUser?.id ?? '--'}）`;
                     }
                     return `⚠️ **AI 调用失败**\n\n${data?.message || '请稍后再试。'}`;
                 }
