@@ -40,15 +40,15 @@
     }
     </script>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com" defer></script>
+    <!-- Tailwind CSS (must load synchronously to process utility classes before paint) -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <!-- Lunar Calendar Library -->
-    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.12/lunar.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.12/lunar.min.js"></script>
     <!-- Marked for Markdown Parsing -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
         /* Base Reset & Fonts */
@@ -334,7 +334,7 @@
 
         /* Ensure the last section isn't covered by FABs */
         .info-panel .info-scroll {
-            padding-bottom: 160px;
+            padding-bottom: 80px;
         }
 
         /* Touch devices: disable hover-layer glitch and ensure readable text */
@@ -721,9 +721,32 @@
         .reset-btn:hover { border-color: #ef4444; color: #ef4444; }
 
         .fab-container { position: absolute; bottom: 30px; right: 30px; display: flex; gap: 15px; z-index: 40; pointer-events: auto; transition: all 0.3s ease; }
-        .fab { width: 64px; height: 64px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; cursor: pointer; transition: transform 0.2s; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 5px 25px rgba(0,0,0,0.4); backdrop-filter: blur(5px); }
+        .fab { width: 64px; height: 64px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; cursor: pointer; transition: transform 0.2s; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 5px 25px rgba(0,0,0,0.4); backdrop-filter: blur(5px); position: relative; }
+        .fab .fab-label { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; color: #cbd5e1; white-space: nowrap; pointer-events: none; opacity: 0.85; text-shadow: 0 1px 4px rgba(0,0,0,0.8); letter-spacing: 0.5px; }
         .fab:active { transform: scale(0.95); }
         .fab:hover { transform: scale(1.1); }
+
+        /* Toast notification */
+        .wx-toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-20px); z-index: 9999; padding: 10px 22px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; color: #fff; opacity: 0; pointer-events: none; transition: opacity 0.3s ease, transform 0.3s ease; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); max-width: 90vw; text-align: center; }
+        .wx-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .wx-toast.success { background: linear-gradient(135deg, rgba(16,185,129,0.9), rgba(5,150,105,0.9)); border: 1px solid rgba(52,211,153,0.4); }
+        .wx-toast.error { background: linear-gradient(135deg, rgba(239,68,68,0.9), rgba(185,28,28,0.9)); border: 1px solid rgba(248,113,113,0.4); }
+        .wx-toast.info { background: linear-gradient(135deg, rgba(56,189,248,0.9), rgba(14,165,233,0.9)); border: 1px solid rgba(56,189,248,0.4); }
+        .wx-toast.warn { background: linear-gradient(135deg, rgba(245,158,11,0.9), rgba(217,119,6,0.9)); border: 1px solid rgba(251,191,36,0.4); }
+
+        /* Onboarding overlay */
+        .onboarding-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); display: flex; justify-content: center; align-items: center; pointer-events: auto; }
+        .onboarding-card { background: linear-gradient(145deg, #10141d, #1a1f2e); border: 1px solid rgba(56,189,248,0.3); border-radius: 20px; padding: 32px 28px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+        .onboarding-card h2 { font-size: 1.5rem; font-weight: 900; margin-bottom: 8px; background: linear-gradient(90deg, #a78bfa, #22d3ee); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .onboarding-card .ob-subtitle { color: #94a3b8; font-size: 0.85rem; margin-bottom: 24px; }
+        .onboarding-steps { text-align: left; margin-bottom: 24px; }
+        .onboarding-steps .ob-step { display: flex; gap: 12px; margin-bottom: 16px; align-items: flex-start; }
+        .ob-step-num { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #4361ee, #7c3aed); color: #fff; font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .ob-step-text { color: #e2e8f0; font-size: 0.85rem; line-height: 1.5; }
+        .ob-step-text strong { color: #38bdf8; }
+        .onboarding-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; background: linear-gradient(135deg, #4361ee, #7c3aed); color: #fff; font-size: 1rem; font-weight: 800; cursor: pointer; transition: transform 0.15s; letter-spacing: 1px; }
+        .onboarding-btn:hover { transform: scale(1.02); }
+        .onboarding-btn:active { transform: scale(0.98); }
         .chat-fab { background: linear-gradient(135deg, #f72585, #4361ee); box-shadow: 0 5px 25px rgba(247, 37, 133, 0.4); }
         .calendar-fab { background: linear-gradient(135deg, #ffd700, #ff8c00); box-shadow: 0 5px 25px rgba(255, 140, 0, 0.4); }
         .kline-fab { background: linear-gradient(135deg, #ef4444, #b91c1c); box-shadow: 0 5px 25px rgba(220, 38, 38, 0.4); }
@@ -866,7 +889,9 @@
                 z-index: 18; 
                 background: linear-gradient(to top, rgba(5,5,16,0.9), transparent); /* Gradual background */
             }
-            .fab { width: 50px; height: 50px; font-size: 22px; margin: 0 5px; border-width: 1px; }
+            .fab { width: 50px; height: 50px; font-size: 22px; margin: 0 2px; border-width: 1px; }
+            .fab .fab-label { bottom: -18px; font-size: 0.55rem; }
+            .fab-container { padding-bottom: calc(env(safe-area-inset-bottom) + 18px) !important; }
             
             /* Fixed Close Button on Mobile */
             .close-modal {
@@ -1005,7 +1030,7 @@
         <div class="input-content">
             
             <label>出生日期 (阳历)</label>
-            <input type="date" id="birthDate" value="1990-06-15">
+            <input type="date" id="birthDate" value="">
             
             <label>出生时辰</label>
             <select id="birthHour">
@@ -1070,6 +1095,7 @@
                         <button id="loginBtn" onclick="loginUser()" style="flex:1; background: linear-gradient(135deg, #0ea5e9, #2563eb); border: 1px solid rgba(56,189,248,.6); color: #fff; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 800;">登录</button>
                         <button id="registerBtn" onclick="registerUser()" style="flex:1; background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(148, 163, 184, 0.35); color: #e2e8f0; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 800;">注册</button>
                     </div>
+                    <div style="margin-top: 8px; font-size: 0.7rem; color: #64748b; text-align: center; line-height: 1.4;">新用户点「注册」创建账号 · 老用户直接「登录」</div>
                 </div>
 
                 <div id="authActions" style="margin-top: 10px; display:none;">
@@ -1138,11 +1164,11 @@
 
 <!-- Floating Action Buttons -->
 <div class="fab-container">
-    <div class="fab synastry-fab" onclick="toggleSynastryPanel()" title="两人合盘">🤝</div>
-    <div class="fab liuyao-fab" onclick="toggleLiuYaoPanel()" title="六爻起卦">🐢</div>
-    <div class="fab calendar-fab" onclick="toggleDailyPanel()" title="今日星历">📅</div>
-    <div class="fab kline-fab" onclick="toggleLifePanel()" title="人生大运K线">📈</div>
-    <div class="fab chat-fab" onclick="toggleChat()" title="命理咨询">✨</div>
+    <div class="fab synastry-fab" onclick="toggleSynastryPanel()" title="两人合盘">🤝<span class="fab-label">合盘</span></div>
+    <div class="fab liuyao-fab" onclick="toggleLiuYaoPanel()" title="六爻起卦">🐢<span class="fab-label">六爻</span></div>
+    <div class="fab calendar-fab" onclick="toggleDailyPanel()" title="今日星历">📅<span class="fab-label">星历</span></div>
+    <div class="fab kline-fab" onclick="toggleLifePanel()" title="人生大运K线">📈<span class="fab-label">大运</span></div>
+    <div class="fab chat-fab" onclick="toggleChat()" title="命理咨询">✨<span class="fab-label">咨询</span></div>
 </div>
 
 <!-- Daily Calendar Panel -->
@@ -1364,10 +1390,82 @@
         <div id="ai-result-text" class="markdown-body text-sm">
             正在通过星际网络连接 AI 大师...
         </div>
+        <div id="ai-modal-actions" style="margin-top:20px; padding-top:15px; border-top:1px solid rgba(255,255,255,0.1); display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <button onclick="copyAiResult()" style="display:inline-flex; align-items:center; gap:6px; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.4); color:#bae6fd; padding:10px 20px; border-radius:10px; cursor:pointer; font-size:0.85rem; font-weight:700; transition:all 0.2s;">📋 复制内容</button>
+            <button onclick="closeAiModal()" style="display:inline-flex; align-items:center; gap:6px; background:rgba(148,163,184,0.1); border:1px solid rgba(148,163,184,0.3); color:#94a3b8; padding:10px 20px; border-radius:10px; cursor:pointer; font-size:0.85rem; font-weight:700; transition:all 0.2s;">✕ 关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="wx-toast" class="wx-toast"></div>
+
+<!-- Onboarding Overlay -->
+<div id="onboarding-overlay" class="onboarding-overlay" style="display:none;">
+    <div class="onboarding-card">
+        <h2>🌌 欢迎来到问星AI</h2>
+        <div class="ob-subtitle">AI 驱动的紫微斗数命盘解析工具</div>
+        <div class="onboarding-steps">
+            <div class="ob-step">
+                <div class="ob-step-num">1</div>
+                <div class="ob-step-text">在左上角 <strong>星盘设置</strong> 中输入你的出生日期、时辰和性别</div>
+            </div>
+            <div class="ob-step">
+                <div class="ob-step-num">2</div>
+                <div class="ob-step-text">点击 <strong>🚀 开启星盘</strong>，系统将自动生成你的紫微命盘</div>
+            </div>
+            <div class="ob-step">
+                <div class="ob-step-num">3</div>
+                <div class="ob-step-text">点击星盘中的任意 <strong>宫位</strong>，查看星曜详情并使用 AI 深度解析</div>
+            </div>
+        </div>
+        <button class="onboarding-btn" onclick="dismissOnboarding()">✨ 我知道了，开始探索</button>
     </div>
 </div>
 
 <script>
+    // === Toast Notification System ===
+    function showToast(msg, type = 'info', duration = 2500) {
+        const el = document.getElementById('wx-toast');
+        if (!el) return;
+        el.textContent = msg;
+        el.className = 'wx-toast ' + type;
+        // Force reflow
+        void el.offsetWidth;
+        el.classList.add('show');
+        clearTimeout(el._timer);
+        el._timer = setTimeout(() => { el.classList.remove('show'); }, duration);
+    }
+
+    // === Copy AI Result ===
+    function copyAiResult() {
+        const el = document.getElementById('ai-result-text');
+        if (!el) return;
+        const text = el.innerText || el.textContent;
+        if (!text || text.includes('星辰连结中')) { showToast('暂无内容可复制', 'warn'); return; }
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('✅ 已复制到剪贴板', 'success');
+        }).catch(() => {
+            // Fallback
+            const ta = document.createElement('textarea');
+            ta.value = text; document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            showToast('✅ 已复制到剪贴板', 'success');
+        });
+    }
+
+    // === Onboarding ===
+    function showOnboarding() {
+        if (localStorage.getItem('wx_onboarding_done')) return;
+        const overlay = document.getElementById('onboarding-overlay');
+        if (overlay) overlay.style.display = 'flex';
+    }
+    function dismissOnboarding() {
+        localStorage.setItem('wx_onboarding_done', '1');
+        const overlay = document.getElementById('onboarding-overlay');
+        if (overlay) overlay.style.display = 'none';
+    }
+
     // === Backend API (本地后端接管：登录/额度/AI 调用) ===
     const API_BASE = '';
     const AUTH_TOKEN_KEY = 'wx_auth_token';
@@ -1450,7 +1548,7 @@
     async function loginUser() {
         const u = document.getElementById('authUsername')?.value?.trim();
         const p = document.getElementById('authPassword')?.value || '';
-        if (!u || !p) { alert('请输入用户名和密码'); return; }
+        if (!u || !p) { showToast('请输入用户名和密码', 'warn'); return; }
         try {
             const resp = await fetch(`${API_BASE}/api/auth/login`, {
                 method: 'POST',
@@ -1462,15 +1560,16 @@
             setAuthToken(data.token);
             currentUser = data.user;
             renderAuthUI();
+            showToast(`✅ 欢迎回来，${data.user?.username || ''}`, 'success');
         } catch (e) {
-            alert(e?.message || '登录失败');
+            showToast(e?.message || '登录失败', 'error');
         }
     }
 
     async function registerUser() {
         const u = document.getElementById('authUsername')?.value?.trim();
         const p = document.getElementById('authPassword')?.value || '';
-        if (!u || !p) { alert('请输入用户名和密码'); return; }
+        if (!u || !p) { showToast('请输入用户名和密码', 'warn'); return; }
         try {
             const resp = await fetch(`${API_BASE}/api/auth/register`, {
                 method: 'POST',
@@ -1482,9 +1581,10 @@
             setAuthToken(data.token);
             currentUser = data.user;
             renderAuthUI();
+            showToast(`✅ 注册成功，欢迎 ${data.user?.username || ''}`, 'success');
             if (data.warning) console.warn(data.warning);
         } catch (e) {
-            alert(e?.message || '注册失败');
+            showToast(e?.message || '注册失败', 'error');
         }
     }
 
@@ -2021,7 +2121,7 @@
         const monthZhi = info.monthBranch; const dayGan = info.dayStem;
         const nowYear = new Date().getFullYear();
         const bd = parseLocalYmd(dateStr);
-        if (!bd) { alert("请先选择出生日期"); return; }
+        if (!bd) { showToast('请先选择出生日期', 'warn'); return; }
         const birthYear = bd.getFullYear();
         const currentAge = nowYear - birthYear;
         const currentData = data.find(d => d.age === currentAge) || data[data.length-1];
@@ -2207,7 +2307,7 @@
         const relationType = document.getElementById('relationType').value;
         
         if (!dateA || !dateB) {
-            alert('请完善双方的出生日期');
+            showToast('请完善双方的出生日期', 'warn');
             return;
         }
         
@@ -2218,7 +2318,7 @@
             renderSynastryResult(scores);
         } catch (err) {
             console.error('Synastry calculation failed:', err);
-            alert('合盘计算失败，请检查输入格式');
+            showToast('合盘计算失败，请检查输入格式', 'error');
         }
     }
 
@@ -2236,7 +2336,7 @@
         const modalContent = document.getElementById('ai-result-text');
 
         if (!dateA || !dateB) {
-            alert('请完善双方的出生日期');
+            showToast('请完善双方的出生日期', 'warn');
             return;
         }
 
@@ -3117,7 +3217,7 @@
                 document.getElementById('chatMessages').innerHTML = '<div class="msg msg-ai">你好！我是你的 AI 命理助手。我已经读取了你的全盘数据，你可以问我任何关于事业、感情或流年的问题。</div>';
                 
                 renderChart3D(currentChart);
-            } catch (e) { console.error(e); alert("生成失败，请检查输入或控制台日志。"); }
+            } catch (e) { console.error(e); showToast('生成失败，请检查输入', 'error'); }
             document.getElementById('loading').style.opacity = 0; setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 500);
         }, 2500); 
     }
@@ -3330,7 +3430,7 @@
     }
     function handleChatKey(e) { if (e.key === 'Enter') askMaster(); }
     async function askMaster() {
-        if (!currentChart) { alert("请先生成星盘！"); return; }
+        if (!currentChart) { showToast('请先生成星盘', 'warn'); return; }
         const input = document.getElementById('userQuery'); const query = input.value.trim(); if (!query) return;
         const chatBox = document.getElementById('chatMessages');
         const userDiv = document.createElement('div'); userDiv.className = 'msg msg-user'; userDiv.innerText = query; chatBox.appendChild(userDiv); chatBox.scrollTop = chatBox.scrollHeight; input.value = '';
@@ -3382,8 +3482,13 @@
     renderAuthUI();
     void fetchMe();
 
-    // Default chart to show something
-    generateChart(false); 
+    // Show onboarding for first-time visitors
+    showOnboarding();
+
+    // Default chart: only if birthDate has a value
+    if (document.getElementById('birthDate').value) {
+        generateChart(false);
+    } 
 
     // ===== MING LI RECORDS LOGIC =====
     const RECORDS_STORAGE_KEY = 'zwds_mingLi_records';
@@ -3411,7 +3516,7 @@
     function saveCurrentRecord() {
         const recordName = document.getElementById('recordName').value.trim();
         if (!recordName) {
-            alert("请输入命例名称");
+            showToast('请输入命例名称', 'warn');
             return;
         }
         
@@ -3421,7 +3526,7 @@
         const hourText = document.getElementById('birthHour').options[document.getElementById('birthHour').selectedIndex].text;
         
         if (!dateStr) {
-            alert("请先选择出生日期");
+            showToast('请先选择出生日期', 'warn');
             return;
         }
 
@@ -3440,11 +3545,11 @@
         records.push(record);
         
         if (saveRecordsToStorage(records)) {
-            alert(`✨ 命例 "${recordName}" 已保存成功！`);
+            showToast(`✨ 命例 "${recordName}" 已保存成功`, 'success');
             document.getElementById('recordName').value = '';
             refreshRecordsList();
         } else {
-            alert("保存失败，请检查浏览器存储空间");
+            showToast('保存失败，请检查浏览器存储空间', 'error');
         }
     }
 
@@ -3506,7 +3611,7 @@
         const record = records.find(r => r.id === recordId);
         
         if (!record) {
-            alert("记录不存在");
+            showToast('记录不存在', 'error');
             return;
         }
 
@@ -3519,7 +3624,7 @@
         // Generate chart
         generateChart();
         
-        alert(`✨ 已加载命例"${record.name}"`);
+        showToast(`✨ 已加载命例"${record.name}"`, 'success');
     }
 
     function deleteRecord(recordId) {
@@ -3545,13 +3650,13 @@
             records.splice(recordIndex, 1);
             
             if (saveRecordsToStorage(records)) {
-                alert(`✓ 已删除命例"${removedRecord.name}"`);
+                showToast(`✓ 已删除命例"${removedRecord.name}"`, 'success');
                 refreshRecordsList();
             } else {
-                alert("删除失败，请重试");
+                showToast('删除失败，请重试', 'error');
             }
         } else {
-            alert("找不到该记录");
+            showToast('找不到该记录', 'error');
         }
     }
 
