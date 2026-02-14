@@ -1,0 +1,9 @@
+# 问星AI - robots.txt
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /pro.html
+Disallow: /admin.html
+Disallow: /api/
+
+Sitemap: https://wenxingapp.top/sitemap.xml

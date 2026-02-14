@@ -29,6 +29,23 @@ initDb();
 
 app.use(express.json({ limit: '1mb' }));
 
+// SEO & Security headers
+app.use((req, res, next) => {
+  // 安全头
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // HTML 页面不缓存（确保 meta 更新及时生效）
+  if (req.path.endsWith('.html') || req.path === '/') {
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  }
+  // 静态资源可缓存
+  if (/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?)$/i.test(req.path)) {
+    res.setHeader('Cache-Control', 'public, max-age=604800'); // 7 days
+  }
+  next();
+});
+
 // Static site
 app.use(express.static(projectRoot));
 
