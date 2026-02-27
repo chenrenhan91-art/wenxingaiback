@@ -1603,11 +1603,61 @@
         return new Date(y, m - 1, d);
     }
 
+    const AI_STYLE_INSTRUCTION = [
+        '请使用普通用户容易理解的中文。',
+        '涉及命理术语时，首次出现请使用“术语（白话解释）”格式。',
+        '回答按“结论 -> 原因 -> 建议”组织，优先短句和列表。',
+        '避免空洞玄学堆砌，不要使用宿命化表达。'
+    ].join('\n');
+
+    const AI_TERM_GLOSSARY = [
+        ['命宫', '核心性格与人生主轴'],
+        ['身宫', '现实中的行动模式'],
+        ['四化', '禄权科忌四种变化'],
+        ['化禄', '资源与机会增加'],
+        ['化权', '掌控力和责任上升'],
+        ['化科', '名誉口碑与助力提升'],
+        ['化忌', '阻力和压力点'],
+        ['吉星', '偏正向的影响因素'],
+        ['煞星', '偏压力的影响因素'],
+        ['大运', '十年阶段运势'],
+        ['流年', '当年运势变化'],
+        ['日元', '八字中的自己'],
+        ['月令', '当月主气和环境'],
+        ['刑冲合害', '关系互动的作用方式'],
+        ['岁运并临', '大运与流年同向叠加'],
+        ['本卦', '当前局面'],
+        ['变卦', '后续走势'],
+        ['动爻', '触发变化的关键位'],
+        ['世应', '自己与对方的位置关系']
+    ];
+
+    function annotateTermOnce(text, term, explanation) {
+        const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const reg = new RegExp(`${escaped}(?!\\s*[（(])`);
+        return text.replace(reg, `${term}（${explanation}）`);
+    }
+
+    function simplifyAstrologyTerms(text) {
+        if (typeof text !== 'string' || !text.trim()) return text;
+        let result = text;
+        AI_TERM_GLOSSARY.forEach(([term, explanation]) => {
+            result = annotateTermOnce(result, term, explanation);
+        });
+        return result;
+    }
+
+    function buildSystemInstruction(systemInstruction = "") {
+        const customInstruction = (typeof systemInstruction === 'string' ? systemInstruction : '').trim();
+        return customInstruction ? `${AI_STYLE_INSTRUCTION}\n${customInstruction}` : AI_STYLE_INSTRUCTION;
+    }
+
     async function callAI(prompt, systemInstruction = "") {
         // 所有 AI 调用统一走后端：额度/专业版判断也在后端完成
         if (!getAuthToken()) {
             return '⚠️ **请先登录**\n\n登录后可获得免费共 3 次 AI 调用额度。';
         }
+        const finalSystemInstruction = buildSystemInstruction(systemInstruction);
 
         const maxRetries = 2;
         let delay = 800;
@@ -1620,7 +1670,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${getAuthToken()}`
                     },
-                    body: JSON.stringify({ prompt, systemInstruction })
+                    body: JSON.stringify({ prompt, systemInstruction: finalSystemInstruction })
                 });
 
                 const data = await resp.json().catch(() => ({}));
@@ -1652,7 +1702,8 @@
                     return `⚠️ **AI 调用失败**\n\n${data?.message || '请稍后再试。'}`;
                 }
 
-                return data.text || '星象模糊，无法解读。';
+                const aiText = data.text || '星象模糊，无法解读。';
+                return simplifyAstrologyTerms(aiText);
             } catch (e) {
                 if (i === maxRetries - 1) return '连接失败：请检查后端服务是否已启动（npm run dev）。';
                 await new Promise(r => setTimeout(r, delay));
@@ -2405,9 +2456,9 @@
             const relStrengthA = getPalaceStrength(chartA, relIdxA).toFixed(1);
             const relStrengthB = getPalaceStrength(chartB, relIdxB).toFixed(1);
 
-            const prompt = `双方合盘信息：\n- 关系定位：${relationLabel}，对应宫位：${relPalaceName}\n- 三维度分数：命格共振度 ${scores.coreScore.toFixed(1)}，关系契合度 ${scores.relationScore.toFixed(1)}，相处顺畅度 ${scores.supportScore.toFixed(1)}\n- 命/身主星：A ${coreStarsA}；B ${coreStarsB}\n- 关系宫主星：A ${relationStarsA}；B ${relationStarsB}\n- 力量对比：命宫 A ${mingStrengthA} vs B ${mingStrengthB}；关系宫 A ${relStrengthA} vs B ${relStrengthB}\n请用紫微斗数合盘视角输出：\n1) 一句话主题判词；\n2) 协同亮点；\n3) 潜在冲突与化解策略；\n4) 3 条可执行的相处/合作建议；\n任一分数低于 60 需提示风险与补救。保持精简、务实，用 Markdown 列表回答。`;
+            const prompt = `双方合盘信息：\n- 关系定位：${relationLabel}，对应宫位：${relPalaceName}\n- 三维度分数：命格共振度 ${scores.coreScore.toFixed(1)}，关系契合度 ${scores.relationScore.toFixed(1)}，相处顺畅度 ${scores.supportScore.toFixed(1)}\n- 命/身主星：A ${coreStarsA}；B ${coreStarsB}\n- 关系宫主星：A ${relationStarsA}；B ${relationStarsB}\n- 力量对比：命宫 A ${mingStrengthA} vs B ${mingStrengthB}；关系宫 A ${relStrengthA} vs B ${relStrengthB}\n请输出通俗、可执行的合盘结论，使用 Markdown 列表并按以下结构：\n1) 关系结论（1 句话，不超过 20 字）；\n2) 关键依据（2-3 条，每条先说现象，再给白话解释）；\n3) 风险与化解（若任一分数低于 60，要明确风险点和补救动作）；\n4) 行动建议（3 条，必须能立刻执行）。`;
 
-            const systemInstruction = '你是紫微斗数合盘分析师，给出简洁可执行的中文建议，避免空洞玄学堆砌。';
+            const systemInstruction = '你是紫微斗数合盘分析师，回答要具体、务实、可落地。';
             const aiText = await callAI(prompt, systemInstruction);
             const finalText = aiText || '星象模糊，暂无法解读。';
             if (resultEl) resultEl.innerHTML = finalText.replace(/\n/g, '<br>');
@@ -2541,7 +2592,7 @@
                 <p class="text-xs text-gray-500 mt-2">正在以此卦问询天机</p>
             </div>
         `;
-        const systemPrompt = `你是一位精通《增删卜易》与传统纳甲筮法的六爻命理大师。你的任务是根据用户摇出的金钱课卦象（本卦、动爻、变卦）进行专业解读。解读要求：1. 准确分析卦名、五行、世应关系。2. 重点分析动爻（老阴/老阳）的吉凶变化，动爻是事情成败的关键。3. 结合变卦判断事情的最终走向。4. 语气专业、神秘但客观，给出具体的行动建议。5. 输出格式使用简单的 Markdown，关键吉凶结论请加粗。`;
+        const systemPrompt = `你是六爻解读助手。请基于用户给出的本卦、动爻、变卦进行分析，要求：1) 先给结果倾向（吉/中/谨慎）；2) 再给依据（卦象变化与关键动爻）；3) 最后给 3 条具体行动建议；4) 术语要配白话解释；5) 使用简单 Markdown，避免神秘化描述。`;
         const userPrompt = `用户起卦结果如下：【本卦】: ${benGuaName} (结构: ${binStr}) 【动爻】: ${movingLinesDesc || "静卦无动爻"} 【变卦/之卦】: ${zhiGuaName} 请开始解卦。`;
         const result = await callAI(userPrompt, systemPrompt);
         contentDiv.innerHTML = marked.parse(result);
@@ -3413,7 +3464,7 @@
         `;
         const palaceName = selectedPalaceData.name;
         const starsDesc = selectedPalaceData.stars.map(s => { let desc = `${s.name}（亮度：${s.brightness}）`; if (s.sihua) desc += ` [化${s.sihua}]`; return desc; }).join('，') || "无主星";
-        const prompt = `请你扮演一位精通紫微斗数的命理大师。请根据以下信息，为用户解析【${palaceName}】的运势：宫位：${palaceName} 宫干支：${selectedPalaceData.stem}${selectedPalaceData.branch} 星曜组合：${starsDesc} 要求：1. 语气神秘、专业但富有现代感，带有鼓励性质。2. 解释主星的核心含义及其在该宫位的表现。3. 如果有四化（禄权科忌），请说明其含义。4. 如果有吉星或煞星，请说明其影响。5. 如果无主星，请解释借对宫星曜的含义（仅简述）。6. 输出格式使用简单的 Markdown。`;
+        const prompt = `请根据以下信息解析【${palaceName}】：宫位：${palaceName} 宫干支：${selectedPalaceData.stem}${selectedPalaceData.branch} 星曜组合：${starsDesc} 输出要求：1) 先给结论（这个宫位当前最值得关注的 1-2 点）；2) 再给原因（主星/四化/吉煞星分别说明影响）；3) 如果无主星，简述借对宫逻辑；4) 最后给 3 条可执行建议；5) 全文通俗易懂，术语配白话解释；6) 使用简洁 Markdown。`;
         const result = await callAI(prompt); contentDiv.innerHTML = marked.parse(result);
     }
 
@@ -3435,7 +3486,7 @@
         const chatBox = document.getElementById('chatMessages');
         const userDiv = document.createElement('div'); userDiv.className = 'msg msg-user'; userDiv.innerText = query; chatBox.appendChild(userDiv); chatBox.scrollTop = chatBox.scrollHeight; input.value = '';
         const loadingDiv = document.createElement('div'); loadingDiv.className = 'msg msg-ai animate-pulse'; loadingDiv.innerText = '大师正在推演中...'; chatBox.appendChild(loadingDiv);
-        const chartSummary = currentChart.getSummary(); const systemPrompt = `你是一位资深的紫微斗数命理大师。以下是用户的命盘数据：\n${chartSummary}\n请根据此数据回答用户的问题。语气要专业、温和、客观，避免过于宿命论，多给建设性建议。`;
+        const chartSummary = currentChart.getSummary(); const systemPrompt = `你是一位紫微斗数分析助手。以下是用户的命盘数据：\n${chartSummary}\n请根据此数据回答用户问题，并遵循：1) 先直接回答问题；2) 再给 2-3 条依据；3) 最后给可执行建议；4) 用通俗中文，术语配白话解释；5) 保持客观，避免宿命化表述。`;
         const response = await callAI(query, systemPrompt);
         chatBox.removeChild(loadingDiv);
         const aiDiv = document.createElement('div'); aiDiv.className = 'msg msg-ai'; aiDiv.innerHTML = marked.parse(response); chatBox.appendChild(aiDiv); chatBox.scrollTop = chatBox.scrollHeight;
@@ -3666,4 +3717,3 @@
 </script>
 </body>
 </html>
-
