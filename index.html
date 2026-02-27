@@ -61,6 +61,33 @@
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior: none; /* Prevent pull-to-refresh */
         }
+
+        /* Mobile/WeChat lightweight mode: reduce expensive blur/compositing */
+        body.mobile-lite .panel,
+        body.mobile-lite .floating-window,
+        body.mobile-lite .onboarding-overlay,
+        body.mobile-lite .ai-content {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+        body.mobile-lite .panel {
+            background: rgba(10, 15, 30, 0.92);
+        }
+        body.mobile-lite .floating-window {
+            background: rgba(15, 23, 42, 0.97);
+        }
+        body.mobile-perf #meteor-canvas {
+            display: none !important;
+        }
+        body.mobile-perf .panel,
+        body.mobile-perf .floating-window,
+        body.mobile-perf .fab {
+            transition: none !important;
+        }
+        body.mobile-perf .spinner {
+            filter: none;
+            box-shadow: none;
+        }
         
         /* Canvas Layer */
         #canvas-container { 
@@ -211,69 +238,128 @@
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
         }
 
-        /* Glow button for LiuYao: 问星AI解卦 (scoped, avoids global button styling) */
-        .glow-btn {
-            --glow-color: rgb(217, 176, 255);
-            --glow-spread-color: rgba(191, 123, 255, 0.781);
-            --enhanced-glow-color: rgb(231, 206, 255);
-            --btn-color: rgb(100, 61, 136);
-
+        /* LiuYao AI button (Uiverse, scoped: no global button reset) */
+        .liuyao-ai-btn {
+            all: unset;
+            cursor: pointer;
             width: 100%;
             margin-top: 15px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-
-            border: 0.25em solid var(--glow-color);
-            padding: 0.95em 1.2em;
-            color: var(--glow-color);
-            font-size: 15px;
-            font-weight: 800;
-            background-color: var(--btn-color);
-            border-radius: 1em;
-            outline: none;
-
-            box-shadow:
-                0 0 1em 0.25em var(--glow-color),
-                0 0 4em 1em var(--glow-spread-color),
-                inset 0 0 0.75em 0.25em var(--glow-color);
-            text-shadow: 0 0 0.5em var(--glow-color);
+        }
+        .liuyao-ai-btn.button {
             position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .glow-btn::after {
-            pointer-events: none;
-            content: "";
-            position: absolute;
-            top: 120%;
-            left: 0;
-            height: 100%;
+            display: inline-flex;
             width: 100%;
-            background-color: var(--glow-spread-color);
-            filter: blur(2em);
-            opacity: 0.7;
-            transform: perspective(1.5em) rotateX(35deg) scale(1, 0.6);
+            justify-content: center;
+            height: 3.5rem;
+            align-items: center;
+            border-radius: 9999px;
+            padding-left: 2rem;
+            padding-right: 2rem;
+            font-family: "Segoe UI", sans-serif;
+            font-size: 1.2rem;
+            font-weight: 640;
+            color: #fafaf6;
+            letter-spacing: -0.06em;
         }
-
-        .glow-btn:hover {
-            color: var(--btn-color);
-            background-color: var(--glow-color);
-            box-shadow:
-                0 0 1em 0.25em var(--glow-color),
-                0 0 4em 2em var(--glow-spread-color),
-                inset 0 0 0.75em 0.25em var(--glow-color);
+        .liuyao-ai-btn.button.button-item {
+            background-color: transparent;
+            color: #1d1d1f;
         }
-
-        .glow-btn:active {
-            box-shadow:
-                0 0 0.6em 0.25em var(--glow-color),
-                0 0 2.5em 2em var(--glow-spread-color),
-                inset 0 0 0.5em 0.25em var(--glow-color);
+        .liuyao-ai-btn.button.button-item .button-bg {
+            border: 1px solid rgba(255, 208, 116);
+            background-color: rgba(255, 208, 116);
         }
-
-        .glow-btn.hidden {
+        .liuyao-ai-btn .button-inner,
+        .liuyao-ai-btn .button-inner-hover,
+        .liuyao-ai-btn .button-inner-static {
+            pointer-events: none;
+            display: block;
+        }
+        .liuyao-ai-btn .button-inner {
+            position: relative;
+            z-index: 2;
+        }
+        .liuyao-ai-btn .button-inner-hover {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transform: translateY(70%);
+        }
+        .liuyao-ai-btn .button-bg {
+            overflow: hidden;
+            border-radius: 2rem;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scale(1);
+            transition: transform 1.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .liuyao-ai-btn .button-bg,
+        .liuyao-ai-btn .button-bg-layer,
+        .liuyao-ai-btn .button-bg-layers {
+            display: block;
+        }
+        .liuyao-ai-btn .button-bg-layers {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%);
+            top: -60%;
+            aspect-ratio: 1 / 1;
+            width: max(200%, 10rem);
+        }
+        .liuyao-ai-btn .button-bg-layer {
+            border-radius: 9999px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scale(0);
+        }
+        .liuyao-ai-btn .button-bg-layer.-purple {
+            background-color: rgba(163, 116, 255);
+        }
+        .liuyao-ai-btn .button-bg-layer.-turquoise {
+            background-color: rgba(23, 241, 209);
+        }
+        .liuyao-ai-btn .button-bg-layer.-yellow {
+            --tw-bg-opacity: 1;
+            background-color: rgba(255, 208, 116, var(--tw-bg-opacity));
+        }
+        .liuyao-ai-btn:hover .button-inner-static {
+            opacity: 0;
+            transform: translateY(-70%);
+            transition:
+                transform 1.4s cubic-bezier(0.19, 1, 0.22, 1),
+                opacity 0.3s linear;
+        }
+        .liuyao-ai-btn:hover .button-inner-hover {
+            opacity: 1;
+            transform: translateY(0);
+            transition:
+                transform 1.4s cubic-bezier(0.19, 1, 0.22, 1),
+                opacity 1.4s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .liuyao-ai-btn:hover .button-bg-layer {
+            transition:
+                transform 1.3s cubic-bezier(0.19, 1, 0.22, 1),
+                opacity 0.3s linear;
+        }
+        .liuyao-ai-btn:hover .button-bg-layer-1 {
+            transform: scale(1);
+        }
+        .liuyao-ai-btn:hover .button-bg-layer-2 {
+            transition-delay: 0.1s;
+            transform: scale(1);
+        }
+        .liuyao-ai-btn:hover .button-bg-layer-3 {
+            transition-delay: 0.2s;
+            transform: scale(1);
+        }
+        .liuyao-ai-btn.hidden {
             display: none;
         }
 
@@ -666,8 +752,53 @@
         .ai-fortune-box { margin-top: 15px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(67, 97, 238, 0.1)); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 8px; padding: 15px; }
         .ai-title { font-size: 0.9rem; color: #a78bfa; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; font-weight: bold; }
         .ai-text { font-size: 0.85rem; color: #e2e8f0; line-height: 1.6; min-height: 40px; }
-        .refresh-btn { width: 100%; background: transparent; border: 1px solid #334155; color: #94a3b8; margin-top: 10px; padding: 8px; font-size: 0.8rem; }
-        .refresh-btn:hover { border-color: #a78bfa; color: #fff; }
+        /* Daily fortune button (Uiverse style, scoped to this button only) */
+        .refresh-btn {
+            display: inline-block;
+            width: 100%;
+            height: 50px;
+            border-radius: 10px;
+            border: 1px solid #03045e;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease-in;
+            z-index: 1;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .refresh-btn::before,
+        .refresh-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 0;
+            height: 100%;
+            transform: skew(15deg);
+            transition: all 0.5s;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .refresh-btn::before {
+            left: -10px;
+            background: #240046;
+        }
+        .refresh-btn::after {
+            right: -10px;
+            background: #5a189a;
+        }
+        .refresh-btn:hover::before,
+        .refresh-btn:hover::after {
+            width: 58%;
+        }
+        .refresh-btn span {
+            color: #03045e;
+            font-size: 18px;
+            transition: all 0.3s ease-in;
+        }
+        .refresh-btn:hover span {
+            color: #e0aaff;
+            transition: 0.3s;
+        }
 
         .life-panel { bottom: 110px; right: 30px; width: 500px; height: 450px; border: 1px solid rgba(239, 68, 68, 0.3); font-family: 'Noto Sans SC', sans-serif; }
         .life-header { padding: 15px; background: linear-gradient(90deg, #2b1212, #1a0f0f); border-bottom: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; }
@@ -716,9 +847,162 @@
         .hex-line.yin::before, .hex-line.yin::after { content: ''; display: block; width: 45%; height: 100%; background: #38bdf8; border-radius: 2px; }
         .move-marker { position: absolute; right: 10px; font-size: 12px; font-weight: bold; }
         .move-o { color: #ef4444; } .move-x { color: #ef4444; }
-        .toss-btn { background: linear-gradient(135deg, #d97706, #b45309); border-color: #f59e0b; margin-top: 15px; }
-        .reset-btn { width: 100%; margin-top: 10px; padding: 8px; background: transparent; border: 1px solid #334155; color: #94a3b8; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
-        .reset-btn:hover { border-color: #ef4444; color: #ef4444; }
+        .liuyao-action-btn {
+            width: 100%;
+            height: 46px;
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            color: #f8fafc;
+            font-size: 0.92rem;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.25s ease, filter 0.25s ease, border-color 0.25s ease;
+            box-shadow: 0 10px 22px rgba(2, 6, 23, 0.38);
+        }
+        .liuyao-action-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.04);
+        }
+        .liuyao-action-btn:active {
+            transform: translateY(0);
+            filter: brightness(0.98);
+        }
+
+        .toss-btn {
+            margin-top: 15px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 45%, #b45309 100%);
+            border-color: rgba(251, 191, 36, 0.72);
+            box-shadow:
+                0 12px 26px rgba(180, 83, 9, 0.38),
+                inset 0 1px 0 rgba(255, 237, 213, 0.28);
+        }
+        .toss-btn:hover {
+            box-shadow:
+                0 14px 30px rgba(217, 119, 6, 0.44),
+                inset 0 1px 0 rgba(255, 237, 213, 0.35);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            border-color: rgba(148, 163, 184, 0.55);
+            color: #dbeafe;
+            box-shadow:
+                0 10px 22px rgba(2, 6, 23, 0.42),
+                inset 0 1px 0 rgba(148, 163, 184, 0.22);
+        }
+        .reset-btn:hover {
+            border-color: rgba(239, 68, 68, 0.75);
+            color: #fecaca;
+            box-shadow:
+                0 12px 26px rgba(127, 29, 29, 0.34),
+                inset 0 1px 0 rgba(254, 202, 202, 0.2);
+        }
+        .liuyao-summary {
+            margin-top: 6px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(56, 189, 248, 0.35);
+            color: #e2e8f0;
+            font-size: 0.78rem;
+            line-height: 1.55;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .liuyao-summary strong {
+            color: #22d3ee;
+            font-weight: 700;
+        }
+
+        .liuyao-question-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 72;
+            background: rgba(2, 6, 23, 0.82);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .liuyao-question-card {
+            width: 100%;
+            max-width: 520px;
+            background: linear-gradient(145deg, #0b1220, #111827);
+            border: 1px solid rgba(45, 212, 191, 0.45);
+            border-radius: 14px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+            padding: 16px;
+        }
+        .liuyao-question-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #5eead4;
+            margin-bottom: 6px;
+        }
+        .liuyao-question-tip {
+            margin: 0 0 10px 0;
+            font-size: 0.82rem;
+            color: #fbbf24;
+        }
+        .liuyao-question-hint {
+            margin: 0 0 10px 0;
+            font-size: 0.76rem;
+            color: #94a3b8;
+            line-height: 1.45;
+        }
+        .liuyao-question-input {
+            width: 100%;
+            min-height: 96px;
+            resize: vertical;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            background: rgba(2, 6, 23, 0.72);
+            color: #e2e8f0;
+            padding: 10px 12px;
+            font-size: 0.92rem;
+            line-height: 1.5;
+            outline: none;
+        }
+        .liuyao-question-input:focus {
+            border-color: #2dd4bf;
+            box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.2);
+        }
+        .liuyao-question-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .liuyao-question-btn {
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.86rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .liuyao-question-btn.cancel {
+            background: rgba(51, 65, 85, 0.85);
+            color: #cbd5e1;
+        }
+        .liuyao-question-btn.cancel:hover {
+            background: rgba(71, 85, 105, 0.95);
+        }
+        .liuyao-question-btn.submit {
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            color: #f8fafc;
+        }
+        .liuyao-question-btn.submit:hover {
+            filter: brightness(1.07);
+        }
 
         .fab-container { position: absolute; bottom: 30px; right: 30px; display: flex; gap: 15px; z-index: 40; pointer-events: auto; transition: all 0.3s ease; }
         .fab { width: 64px; height: 64px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; cursor: pointer; transition: transform 0.2s; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 5px 25px rgba(0,0,0,0.4); backdrop-filter: blur(5px); position: relative; }
@@ -1196,7 +1480,7 @@
                 <span>🔮 今日运程参考</span>
             </div>
             <div class="ai-text" id="calAiText">点击下方按钮，结合您的命盘进行推演...</div>
-            <button class="refresh-btn" onclick="generateDailyReport()">✨ 推演今日运程</button>
+            <button class="refresh-btn" onclick="generateDailyReport()"><span>✨ 推演今日运程</span></button>
         </div>
     </div>
 </div>
@@ -1299,9 +1583,39 @@
             <div class="text-center text-gray-600 mt-10">等待起卦...</div>
         </div>
 
-        <button class="toss-btn" id="tossBtn" onclick="tossCoins()">🤲 摇一卦</button>
-        <button class="glow-btn hidden" id="interpretBtn" onclick="interpretHexagram()">问星AI解卦</button>
-        <button class="reset-btn" onclick="resetHexagram()">🔄 重置卦象</button>
+        <button class="liuyao-action-btn toss-btn" id="tossBtn" onclick="tossCoins()">🤲 摇一卦</button>
+        <button class="liuyao-ai-btn button button-item hidden" id="interpretBtn" onclick="openLiuYaoQuestionDialog()">
+            <span class="button-inner">
+                <span class="button-inner-static">AI解卦</span>
+                <span class="button-inner-hover">AI解卦</span>
+            </span>
+            <span class="button-bg">
+                <span class="button-bg-layers">
+                    <span class="button-bg-layer button-bg-layer-1 -purple"></span>
+                    <span class="button-bg-layer button-bg-layer-2 -turquoise"></span>
+                    <span class="button-bg-layer button-bg-layer-3 -yellow"></span>
+                </span>
+            </span>
+        </button>
+        <button class="liuyao-action-btn reset-btn" onclick="resetHexagram()">🔄 重置卦象</button>
+    </div>
+</div>
+
+<div class="liuyao-question-modal" id="liuyaoQuestionModal" onclick="handleLiuYaoModalBackdrop(event)">
+    <div class="liuyao-question-card">
+        <div class="liuyao-question-title">请输入本次要占问的问题</div>
+        <p class="liuyao-question-tip">提示：一事一卜，不宜多占。</p>
+        <p class="liuyao-question-hint" id="liuyaoQuestionHexHint">请聚焦一个具体问题，例如“这个月是否适合换工作？”</p>
+        <textarea
+            id="liuyaoQuestionInput"
+            class="liuyao-question-input"
+            maxlength="120"
+            placeholder="请输入你最想问的一个问题（最多 120 字）"
+        ></textarea>
+        <div class="liuyao-question-actions">
+            <button class="liuyao-question-btn cancel" onclick="closeLiuYaoQuestionDialog()">取消</button>
+            <button class="liuyao-question-btn submit" onclick="submitLiuYaoQuestion()">开始解卦</button>
+        </div>
     </div>
 </div>
 
@@ -1357,7 +1671,7 @@
         <h3>4) 右下角功能按钮说明</h3>
         <ul>
             <li><strong>🤝 两人合盘</strong>：A 方沿用当前命盘，B 方填生日/时辰/性别，选择关系类型后计算契合度；可再点 AI 分析。</li>
-            <li><strong>🐢 六爻起卦</strong>：点击铜钱或“🤲 摇一卦”，共摇 6 次成卦；出现“问星 AI 解卦”后可一键解读。</li>
+            <li><strong>🐢 六爻起卦</strong>：点击铜钱或“🤲 摇一卦”，共摇 6 次成卦；点击“问星 AI 解卦”后先输入占问问题，再结合本卦/变卦解读。</li>
             <li><strong>📅 今日星历</strong>：展示今日干支/宜忌；生成命盘后可“✨ 推演今日运程”。</li>
             <li><strong>📈 人生大运 K 线</strong>：基于生辰推演大运起伏，并给出简要批注；可在图上滑动查看不同年龄段。</li>
             <li><strong>✨ 命理咨询</strong>：像聊天一样提问（事业/感情/流年等），系统会结合你的命盘摘要回答。</li>
@@ -1457,6 +1771,11 @@
     // === Onboarding ===
     function showOnboarding() {
         if (localStorage.getItem('wx_onboarding_done')) return;
+        // 微信/低配移动端默认不阻塞首屏，提升打开流畅度
+        if (MOBILE_PERF_MODE) {
+            localStorage.setItem('wx_onboarding_done', '1');
+            return;
+        }
         const overlay = document.getElementById('onboarding-overlay');
         if (overlay) overlay.style.display = 'flex';
     }
@@ -1470,6 +1789,18 @@
     const API_BASE = '';
     const AUTH_TOKEN_KEY = 'wx_auth_token';
     let currentUser = null;
+
+    // === Device Performance Profile (微信/移动端优化) ===
+    const USER_AGENT = navigator.userAgent || '';
+    const IS_WECHAT = /MicroMessenger/i.test(USER_AGENT);
+    const IS_MOBILE_DEVICE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(USER_AGENT) || window.innerWidth <= 768;
+    const LOW_CPU = (typeof navigator.hardwareConcurrency === 'number') ? navigator.hardwareConcurrency <= 4 : false;
+    const LOW_MEMORY = (typeof navigator.deviceMemory === 'number') ? navigator.deviceMemory <= 4 : false;
+    const MOBILE_LITE_MODE = IS_MOBILE_DEVICE || IS_WECHAT;
+    const MOBILE_PERF_MODE = IS_WECHAT || (IS_MOBILE_DEVICE && (LOW_CPU || LOW_MEMORY));
+
+    if (MOBILE_LITE_MODE) document.body.classList.add('mobile-lite');
+    if (MOBILE_PERF_MODE) document.body.classList.add('mobile-perf');
 
     function getAuthToken() {
         return localStorage.getItem(AUTH_TOKEN_KEY) || '';
@@ -1605,9 +1936,10 @@
 
     const AI_STYLE_INSTRUCTION = [
         '请使用普通用户容易理解的中文。',
-        '涉及命理术语时，首次出现请使用“术语（白话解释）”格式。',
+        '涉及命理术语时，首次出现请使用“术语（解释）”格式。',
         '回答按“结论 -> 原因 -> 建议”组织，优先短句和列表。',
-        '避免空洞玄学堆砌，不要使用宿命化表达。'
+        '避免空洞玄学堆砌，不要使用宿命化表达。',
+        '不要使用✳、✨、★等装饰符号。'
     ].join('\n');
 
     const AI_TERM_GLOSSARY = [
@@ -1645,6 +1977,20 @@
             result = annotateTermOnce(result, term, explanation);
         });
         return result;
+    }
+
+    function formatAiReadableText(text) {
+        if (typeof text !== 'string' || !text.trim()) return text;
+        let result = text;
+        // Remove decorative star-like symbols to keep content clean.
+        result = result.replace(/[✳✴✶✷✸✹✺✻❇❈❉❊❋✦✧★☆⭐🌟✨]/g, '');
+        // Normalize common bullet variants.
+        result = result.replace(/^[ \t]*[•·▪▫◦●○■□◆◇▶▷►▸▹▻]+\s*/gm, '- ');
+        // Compact redundant blank lines / trailing spaces.
+        result = result.replace(/\r\n/g, '\n');
+        result = result.replace(/[ \t]+$/gm, '');
+        result = result.replace(/\n{3,}/g, '\n\n');
+        return result.trim();
     }
 
     function buildSystemInstruction(systemInstruction = "") {
@@ -1703,7 +2049,8 @@
                 }
 
                 const aiText = data.text || '星象模糊，无法解读。';
-                return simplifyAstrologyTerms(aiText);
+                const simplifiedText = simplifyAstrologyTerms(aiText);
+                return formatAiReadableText(simplifiedText);
             } catch (e) {
                 if (i === maxRetries - 1) return '连接失败：请检查后端服务是否已启动（npm run dev）。';
                 await new Promise(r => setTimeout(r, delay));
@@ -2184,20 +2531,49 @@
     // --- SYNASTRY LOGIC ---
     const RELATION_PALACE_MAP = { lover: '夫妻', friend: '仆役', family: '父母', partner: '官禄' };
     const BRIGHT_WEIGHT = { '庙': 5, '旺': 4.5, '得': 4, '利': 4, '平': 3, '闲': 2.5, '陷': 1.5 };
-    const FOUR_HUA_WEIGHT = { '禄': 4, '权': 3, '科': 3, '忌': -6 };
-    const STAR_SYNERGY = {
-        '紫微|天府': 10, '紫微|左辅': 8, '紫微|右弼': 8, '紫微|七杀': -12, '紫微|破军': -12,
-        '太阳|太阴': 8, '太阳|巨门': -10,
-        '武曲|贪狼': 6, '武曲|太阴': 6, '武曲|天同': -8,
-        '天机|文昌': 6, '天机|文曲': 6,
-        '天同|太阴': 8, '天同|天梁': 6,
-        '天相|紫微': 5, '天相|天府': 5,
-        '贪狼|破军': 4, '七杀|太阴': -9, '破军|太阴': -9,
-        '廉贞|武曲': 3, '廉贞|破军': -6
+    const STAR_GROUP_MAP = {
+        '紫微': 'authority', '天府': 'authority', '廉贞': 'authority', '武曲': 'authority', '天相': 'authority',
+        '七杀': 'breaker', '破军': 'breaker', '贪狼': 'breaker',
+        '天机': 'mind', '太阴': 'mind', '天同': 'mind', '天梁': 'mind',
+        '太阳': 'express', '巨门': 'express'
     };
-    
+    const STAR_GROUP_COMPAT = {
+        'authority|authority': 1.2,
+        'authority|mind': 2.8,
+        'authority|breaker': -0.8,
+        'authority|express': 1.4,
+        'breaker|breaker': -1.2,
+        'breaker|mind': 0.6,
+        'breaker|express': -0.9,
+        'mind|mind': 2.4,
+        'mind|express': 1.8,
+        'express|express': -0.7
+    };
+    const STAR_SYNERGY = {
+        '紫微|天府': 10, '紫微|左辅': 8, '紫微|右弼': 8, '紫微|七杀': -11, '紫微|破军': -11,
+        '太阳|太阴': 11, '太阳|巨门': -12,
+        '武曲|贪狼': 6, '武曲|太阴': 6, '武曲|天同': -8, '武曲|七杀': 3,
+        '天机|文昌': 6, '天机|文曲': 6, '天机|天梁': 5,
+        '天同|太阴': 8, '天同|天梁': 6,
+        '天相|紫微': 6, '天相|天府': 6, '天相|七杀': 4,
+        '贪狼|破军': 4, '贪狼|太阴': -7,
+        '七杀|太阴': -9, '破军|太阴': -9,
+        '廉贞|武曲': 3, '廉贞|破军': -6, '廉贞|天府': -4
+    };
+    const CROSS_HUA_EFFECT = { '禄': 4.2, '权': 2.8, '科': 3.2, '忌': -5.6 };
+    const RELATION_PROFILES = {
+        lover: { relationPalaces: ['夫妻', '福德'], supportPalaces: ['夫妻', '福德', '命宫'], taiSuiFocus: ['夫妻', '命宫', '福德'], coreBias: 1.1 },
+        friend: { relationPalaces: ['仆役', '兄弟', '财帛'], supportPalaces: ['仆役', '兄弟', '命宫'], taiSuiFocus: ['仆役', '兄弟', '财帛'], coreBias: 0.9 },
+        family: { relationPalaces: ['父母', '田宅', '命宫'], supportPalaces: ['父母', '田宅', '福德'], taiSuiFocus: ['父母', '田宅', '命宫'], coreBias: 1.0 },
+        partner: { relationPalaces: ['官禄', '财帛', '父母'], supportPalaces: ['官禄', '财帛', '命宫'], taiSuiFocus: ['官禄', '财帛', '父母'], coreBias: 0.95 }
+    };
+
     function clampScore(val, min = 0, max = 100) {
         return Math.min(Math.max(val, min), max);
+    }
+
+    function uniqueValidIndices(indices) {
+        return [...new Set(indices.filter(i => Number.isInteger(i) && i >= 0))];
     }
 
     function getPalaceIndex(chart, palaceKey) {
@@ -2225,17 +2601,37 @@
         });
         return Math.max(score, 5);
     }
-    
+
+    function getPalaceQuality(chart, palaceKey) {
+        const idx = getPalaceIndex(chart, palaceKey);
+        if (idx < 0 || !chart || !chart.chartData[idx]) return 0;
+        const palace = chart.chartData[idx];
+        let quality = 0;
+        palace.stars.forEach(star => {
+            if (star.category === 'main') quality += 1.8;
+            if (star.category === 'lucky') quality += 1.0;
+            if (star.category === 'bad') quality -= 1.4;
+            if (['庙', '旺', '得', '利'].includes(star.brightness)) quality += 1.1;
+            else if (star.brightness === '平') quality += 0.2;
+            else quality -= 0.9;
+            if (star.sihua === '禄') quality += 1.8;
+            if (star.sihua === '权') quality += 1.2;
+            if (star.sihua === '科') quality += 1.4;
+            if (star.sihua === '忌') quality -= 2.4;
+        });
+        return quality;
+    }
+
     function getMainStars(chart, indices) {
         const list = [];
-        indices.forEach(idx => {
+        uniqueValidIndices(indices).forEach(idx => {
             const p = chart.chartData[idx];
             if (!p) return;
             p.stars.forEach(s => { if (s.category === 'main') list.push(s); });
         });
         return list;
     }
-    
+
     function getSynergyScore(starsA, starsB) {
         let total = 0;
         starsA.forEach(a => {
@@ -2246,23 +2642,31 @@
         });
         return total;
     }
-    
+
+    function getGroupCompatibility(starsA, starsB) {
+        let total = 0;
+        starsA.forEach(a => {
+            starsB.forEach(b => {
+                const gA = STAR_GROUP_MAP[a.name];
+                const gB = STAR_GROUP_MAP[b.name];
+                if (!gA || !gB) return;
+                const key = [gA, gB].sort().join('|');
+                total += (STAR_GROUP_COMPAT[key] || 0);
+            });
+        });
+        return total;
+    }
+
     function getAvgBrightness(stars) {
         if (stars.length === 0) return 3;
         let sum = 0;
         stars.forEach(s => { sum += BRIGHT_WEIGHT[s.brightness] || 3; });
         return sum / stars.length;
     }
-    
-    function getFourHuaScore(stars) {
-        let val = 0;
-        stars.forEach(s => { if (s.sihua) val += (FOUR_HUA_WEIGHT[s.sihua] || 0); });
-        return val;
-    }
-    
+
     function getSupportRisk(chart, palaceIndices) {
         let good = 0, bad = 0;
-        palaceIndices.forEach(idx => {
+        uniqueValidIndices(palaceIndices).forEach(idx => {
             const p = chart.chartData[idx];
             if (!p) return;
             p.stars.forEach(star => {
@@ -2276,7 +2680,63 @@
         });
         return { good, bad };
     }
-    
+
+    function getCrossHuaInfluence(sourceChart, targetChart, keyIndices) {
+        const rules = SI_HUA_RULES[sourceChart.yearStemIdx];
+        if (!rules) return { total: 0, positive: 0, negative: 0 };
+        const keys = uniqueValidIndices(keyIndices);
+        let positive = 0;
+        let negative = 0;
+        const entries = [
+            ['禄', rules.Lu],
+            ['权', rules.Quan],
+            ['科', rules.Ke],
+            ['忌', rules.Ji]
+        ];
+        entries.forEach(([hua, starName]) => {
+            if (!starName) return;
+            targetChart.chartData.forEach((palace, idx) => {
+                const hitCount = palace.stars.filter(s => s.name === starName).length;
+                if (!hitCount) return;
+                const focusWeight = keys.includes(idx) ? 1.0 : 0.35;
+                const effect = (CROSS_HUA_EFFECT[hua] || 0) * hitCount * focusWeight;
+                if (effect >= 0) positive += effect;
+                else negative += Math.abs(effect);
+            });
+        });
+        return { total: positive - negative, positive, negative };
+    }
+
+    function getTaiSuiInfluence(sourceChart, targetChart, focusIndices) {
+        const sourceBranch = EARTHLY_BRANCHES[sourceChart.yearBranchIdx];
+        const taiSuiIdx = targetChart.chartData.findIndex(p => p.branch === sourceBranch);
+        if (taiSuiIdx < 0) return 0;
+        const quality = getPalaceQuality(targetChart, taiSuiIdx);
+        const focus = uniqueValidIndices(focusIndices);
+        const focusWeight = focus.includes(taiSuiIdx) ? 1.45 : 0.9;
+        return quality * focusWeight;
+    }
+
+    function buildRelationIndexSet(chart, relationType, relIdx, mingIdx, shenIdx) {
+        const profile = RELATION_PROFILES[relationType] || RELATION_PROFILES.friend;
+        const safeShen = shenIdx === -1 ? mingIdx : shenIdx;
+        const fudeIdx = getPalaceIndex(chart, '福德');
+        const relationIndices = uniqueValidIndices([
+            relIdx,
+            ...profile.relationPalaces.map(name => getPalaceIndex(chart, name)),
+            mingIdx
+        ]);
+        const supportIndices = uniqueValidIndices([
+            relIdx,
+            ...profile.supportPalaces.map(name => getPalaceIndex(chart, name)),
+            mingIdx,
+            safeShen
+        ]);
+        const coreIndices = uniqueValidIndices([mingIdx, safeShen, fudeIdx]);
+        const taiSuiFocus = uniqueValidIndices(profile.taiSuiFocus.map(name => getPalaceIndex(chart, name)));
+        return { coreIndices, relationIndices, supportIndices, taiSuiFocus, fudeIdx, safeShen };
+    }
+
     function calcSynastryScores(chartA, chartB, relationType) {
         const relPalaceName = RELATION_PALACE_MAP[relationType] || '仆役';
         const relIdxA = getPalaceIndex(chartA, relPalaceName);
@@ -2285,44 +2745,99 @@
         const mingIdxB = chartB.chartData.findIndex(p => p.isMing);
         const shenIdxA = chartA.chartData.findIndex(p => p.isShen);
         const shenIdxB = chartB.chartData.findIndex(p => p.isShen);
-        // 命格共振度
-        const coreMainA = getMainStars(chartA, [mingIdxA, shenIdxA]);
-        const coreMainB = getMainStars(chartB, [mingIdxB, shenIdxB]);
-        const coreSynergy = getSynergyScore(coreMainA, coreMainB);
-        const brightDiff = Math.abs(getAvgBrightness(coreMainA) - getAvgBrightness(coreMainB));
-        const huaBonus = getFourHuaScore(coreMainA) + getFourHuaScore(coreMainB);
-        const coreStrengthGap = Math.abs(getPalaceStrength(chartA, mingIdxA) + getPalaceStrength(chartA, shenIdxA) - (getPalaceStrength(chartB, mingIdxB) + getPalaceStrength(chartB, shenIdxB)));
-        const coreBase = 55 + coreSynergy * 1.25 + huaBonus * 1.1 - brightDiff * 4 - coreStrengthGap * 0.18;
-        const coreScore = clampScore(coreBase, 10, 100);
-        
-        // 关系契合度
-        const relationMainA = getMainStars(chartA, [relIdxA]);
-        const relationMainB = getMainStars(chartB, [relIdxB]);
-        const relSynergy = getSynergyScore(relationMainA, relationMainB);
-        const relationStrength = (getPalaceStrength(chartA, relIdxA) + getPalaceStrength(chartB, relIdxB)) / 2;
-        const crossSupport = (getPalaceStrength(chartA, mingIdxA) + getPalaceStrength(chartB, mingIdxB)) / 4;
+        const profile = RELATION_PROFILES[relationType] || RELATION_PROFILES.friend;
+
+        const idxSetA = buildRelationIndexSet(chartA, relationType, relIdxA, mingIdxA, shenIdxA);
+        const idxSetB = buildRelationIndexSet(chartB, relationType, relIdxB, mingIdxB, shenIdxB);
+
+        // 1) 命格共振度：命/身/福德主星互补 + 结构平衡 + 跨盘四化
+        const coreStarsA = getMainStars(chartA, idxSetA.coreIndices);
+        const coreStarsB = getMainStars(chartB, idxSetB.coreIndices);
+        const coreSynergy = getSynergyScore(coreStarsA, coreStarsB);
+        const coreGroupFit = getGroupCompatibility(coreStarsA, coreStarsB);
+        const coreBrightDiff = Math.abs(getAvgBrightness(coreStarsA) - getAvgBrightness(coreStarsB));
+        const coreStrengthGap = Math.abs(
+            getPalaceStrength(chartA, mingIdxA) + getPalaceStrength(chartA, idxSetA.safeShen)
+            - (getPalaceStrength(chartB, mingIdxB) + getPalaceStrength(chartB, idxSetB.safeShen))
+        );
+        const coreCrossA2B = getCrossHuaInfluence(chartA, chartB, idxSetB.coreIndices);
+        const coreCrossB2A = getCrossHuaInfluence(chartB, chartA, idxSetA.coreIndices);
+        const coreCrossTotal = coreCrossA2B.total + coreCrossB2A.total;
+        const coreScore = clampScore(
+            52
+            + coreSynergy * 0.95
+            + coreGroupFit * 1.35
+            - coreBrightDiff * 3.6
+            - coreStrengthGap * 0.16
+            + coreCrossTotal * 0.9
+            + profile.coreBias * 2,
+            8, 100
+        );
+
+        // 2) 关系契合度：关系宫主轴 + 太岁入卦 + 跨盘四化作用到关系宫群
+        const relationStarsA = getMainStars(chartA, idxSetA.relationIndices);
+        const relationStarsB = getMainStars(chartB, idxSetB.relationIndices);
+        const relationSynergy = getSynergyScore(relationStarsA, relationStarsB);
+        const relationGroupFit = getGroupCompatibility(relationStarsA, relationStarsB);
+        const relationQualityA = idxSetA.relationIndices.reduce((sum, idx) => sum + getPalaceQuality(chartA, idx), 0);
+        const relationQualityB = idxSetB.relationIndices.reduce((sum, idx) => sum + getPalaceQuality(chartB, idx), 0);
+        const relationCrossA2B = getCrossHuaInfluence(chartA, chartB, idxSetB.relationIndices);
+        const relationCrossB2A = getCrossHuaInfluence(chartB, chartA, idxSetA.relationIndices);
+        const taiSuiA2B = getTaiSuiInfluence(chartA, chartB, idxSetB.taiSuiFocus);
+        const taiSuiB2A = getTaiSuiInfluence(chartB, chartA, idxSetA.taiSuiFocus);
         const relStrengthGap = Math.abs(getPalaceStrength(chartA, relIdxA) - getPalaceStrength(chartB, relIdxB));
-        const relationScore = clampScore(50 + relSynergy * 1.2 + relationStrength / 3 + crossSupport / 5 - relStrengthGap * 0.3, 10, 100);
-        
-        // 相处顺畅度
-        const balanceA = getSupportRisk(chartA, [mingIdxA, shenIdxA, relIdxA]);
-        const balanceB = getSupportRisk(chartB, [mingIdxB, shenIdxB, relIdxB]);
-        const netGood = (balanceA.good + balanceB.good) - (balanceA.bad + balanceB.bad);
-        const strengthGap = Math.abs(getPalaceStrength(chartA, relIdxA) - getPalaceStrength(chartB, relIdxB));
+        const relationScore = clampScore(
+            48
+            + relationSynergy * 0.92
+            + relationGroupFit * 1.15
+            + (relationQualityA + relationQualityB) * 1.65
+            + (relationCrossA2B.total + relationCrossB2A.total) * 1.1
+            + (taiSuiA2B + taiSuiB2A) * 1.4
+            - relStrengthGap * 0.24,
+            8, 100
+        );
+
+        // 3) 相处顺畅度：吉凶结构 + 跨盘化忌压力 + 强弱失衡惩罚
+        const supportA = getSupportRisk(chartA, idxSetA.supportIndices);
+        const supportB = getSupportRisk(chartB, idxSetB.supportIndices);
+        const supportCrossA2B = getCrossHuaInfluence(chartA, chartB, idxSetB.supportIndices);
+        const supportCrossB2A = getCrossHuaInfluence(chartB, chartA, idxSetA.supportIndices);
+        const netSupport = (supportA.good + supportB.good) - (supportA.bad + supportB.bad);
+        const crossPositive = supportCrossA2B.positive + supportCrossB2A.positive;
+        const crossNegative = supportCrossA2B.negative + supportCrossB2A.negative;
         const mingGap = Math.abs(getPalaceStrength(chartA, mingIdxA) - getPalaceStrength(chartB, mingIdxB));
-        const tensionPairs = getSynergyScore(relationMainA, relationMainB) < 0 ? 1 : 0;
-        const supportScore = clampScore(58 + netGood * 6 - strengthGap * 0.6 - mingGap * 0.35 - tensionPairs * 10, 5, 100);
-        
-        return { coreScore, relationScore, supportScore, relPalaceName, relIdxA, relIdxB, mingIdxA, mingIdxB, shenIdxA, shenIdxB };
+        const supportStrengthGap = Math.abs(getPalaceStrength(chartA, relIdxA) - getPalaceStrength(chartB, relIdxB));
+        const supportScore = clampScore(
+            56
+            + netSupport * 4.3
+            + crossPositive * 1.05
+            - crossNegative * 1.45
+            - mingGap * 0.22
+            - supportStrengthGap * 0.3,
+            5, 100
+        );
+
+        return {
+            coreScore,
+            relationScore,
+            supportScore,
+            relPalaceName,
+            relIdxA,
+            relIdxB,
+            mingIdxA,
+            mingIdxB,
+            shenIdxA,
+            shenIdxB
+        };
     }
     
     function renderSynastryResult(scores) {
         const resultEl = document.getElementById('synastryResult');
         if (!resultEl) return;
         const cards = [
-            { title: '命格共振度', score: scores.coreScore, desc: '对比双方命宫与身宫的力量与差异，分数越高说明气场更同频、沟通成本更低。' },
-            { title: '关系契合度', score: scores.relationScore, desc: `以${scores.relPalaceName}为主轴，评估角色分工与互补性，适合的关系越能发挥各自优势。` },
-            { title: '相处顺畅度', score: scores.supportScore, desc: '看关系宫/命宫的吉曜与煞曜占比，并考虑双方强弱差距和星曜差异，分数高代表阻力小、磨合成本低。' }
+            { title: '命格共振度', score: scores.coreScore, desc: '综合命宫/身宫/福德的主星互补、星系匹配与跨盘四化影响，分数越高代表底层同频更强。' },
+            { title: '关系契合度', score: scores.relationScore, desc: `以${scores.relPalaceName}为主轴，叠加太岁入卦与四化互飞，评估双方在该关系中的互动质量与成长空间。` },
+            { title: '相处顺畅度', score: scores.supportScore, desc: '结合吉凶结构、化忌压力与强弱失衡，分数越高代表磨合成本更低、长期关系更稳。' }
         ];
         resultEl.innerHTML = cards.map(c => `
             <div class="syn-result-card">
@@ -2456,7 +2971,7 @@
             const relStrengthA = getPalaceStrength(chartA, relIdxA).toFixed(1);
             const relStrengthB = getPalaceStrength(chartB, relIdxB).toFixed(1);
 
-            const prompt = `双方合盘信息：\n- 关系定位：${relationLabel}，对应宫位：${relPalaceName}\n- 三维度分数：命格共振度 ${scores.coreScore.toFixed(1)}，关系契合度 ${scores.relationScore.toFixed(1)}，相处顺畅度 ${scores.supportScore.toFixed(1)}\n- 命/身主星：A ${coreStarsA}；B ${coreStarsB}\n- 关系宫主星：A ${relationStarsA}；B ${relationStarsB}\n- 力量对比：命宫 A ${mingStrengthA} vs B ${mingStrengthB}；关系宫 A ${relStrengthA} vs B ${relStrengthB}\n请输出通俗、可执行的合盘结论，使用 Markdown 列表并按以下结构：\n1) 关系结论（1 句话，不超过 20 字）；\n2) 关键依据（2-3 条，每条先说现象，再给白话解释）；\n3) 风险与化解（若任一分数低于 60，要明确风险点和补救动作）；\n4) 行动建议（3 条，必须能立刻执行）。`;
+            const prompt = `双方合盘信息：\n- 关系定位：${relationLabel}，对应宫位：${relPalaceName}\n- 三维度分数：命格共振度 ${scores.coreScore.toFixed(1)}，关系契合度 ${scores.relationScore.toFixed(1)}，相处顺畅度 ${scores.supportScore.toFixed(1)}\n- 命/身主星：A ${coreStarsA}；B ${coreStarsB}\n- 关系宫主星：A ${relationStarsA}；B ${relationStarsB}\n- 力量对比：命宫 A ${mingStrengthA} vs B ${mingStrengthB}；关系宫 A ${relStrengthA} vs B ${relStrengthB}\n请输出通俗、可执行的合盘结论，使用 Markdown 列表并按以下结构：\n1) 关系结论（1 句话，不超过 20 字）；\n2) 关键依据（2-3 条，每条先说现象，再给解释）；\n3) 风险与化解（若任一分数低于 60，要明确风险点和补救动作）；\n4) 行动建议（3 条，必须能立刻执行）。`;
 
             const systemInstruction = '你是紫微斗数合盘分析师，回答要具体、务实、可落地。';
             const aiText = await callAI(prompt, systemInstruction);
@@ -2485,6 +3000,32 @@
         '101110': '泽火革', '011101': '火风鼎', '100100': '震为雷', '001001': '艮为山', '001011': '风山渐', '110100': '雷泽归妹', '101100': '雷火丰', '001101': '火山旅',
         '011011': '巽为风', '110110': '兑为泽', '010011': '风水涣', '110010': '水泽节', '110011': '风泽中孚', '001100': '雷山小过', '101011': '水火既济', '110101': '火水未济'
     };
+
+    function getHexagramSnapshot() {
+        if (currentYaoLines.length !== 6) return null;
+
+        const benBinStr = [...currentYaoLines].reverse().map(y => y.type).join('');
+        const benGuaName = HEX_64[benBinStr] || "未知卦";
+        const bianLines = currentYaoLines.map(y => {
+            if (y.val === 6) return 1;
+            if (y.val === 9) return 0;
+            return y.type;
+        });
+        const bianBinStr = [...bianLines].reverse().join('');
+        const bianGuaName = HEX_64[bianBinStr] || "未知卦";
+        const movingLines = currentYaoLines
+            .map((y, i) => y.isMoving ? `第${i + 1}爻发动（${y.val === 9 ? '老阳' : '老阴'}）` : null)
+            .filter(Boolean);
+
+        return {
+            benBinStr,
+            benGuaName,
+            bianBinStr,
+            bianGuaName,
+            movingLinesDesc: movingLines.join('，'),
+            hasMovingLine: movingLines.length > 0
+        };
+    }
 
     function toggleLiuYaoPanel() {
         const panel = document.getElementById('liuYaoPanel');
@@ -2547,6 +3088,9 @@
         document.getElementById('interpretBtn').classList.remove('flex');
         const coins = document.querySelectorAll('.coin');
         coins.forEach(c => { c.classList.remove('yang'); c.classList.remove('yin'); });
+        closeLiuYaoQuestionDialog();
+        const questionInput = document.getElementById('liuyaoQuestionInput');
+        if (questionInput) questionInput.value = '';
         isTossing = false;
     }
 
@@ -2563,21 +3107,71 @@
             }
             container.appendChild(row);
         });
-        if (currentYaoLines.length === 6) {
-            const binStr = [...currentYaoLines].reverse().map(y => y.type).join('');
-            const name = HEX_64[binStr] || "未知卦";
-            const infoDiv = document.createElement('div'); infoDiv.className = "text-center text-yellow-400 font-bold mt-2"; infoDiv.innerHTML = `<div>本卦: ${name}</div>`;
+        const snapshot = getHexagramSnapshot();
+        if (snapshot) {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = "liuyao-summary";
+            infoDiv.innerHTML = `
+                <div><strong>本卦：</strong>${snapshot.benGuaName}</div>
+                <div><strong>变卦：</strong>${snapshot.bianGuaName}</div>
+                <div><strong>动爻：</strong>${snapshot.hasMovingLine ? snapshot.movingLinesDesc : '静卦无动爻（以本卦为主）'}</div>
+            `;
             container.appendChild(infoDiv);
         }
     }
 
-    async function interpretHexagram() {
-        const binStr = [...currentYaoLines].reverse().map(y => y.type).join('');
-        const benGuaName = HEX_64[binStr] || "未知卦";
-        const zhiLines = currentYaoLines.map(y => { if (y.val === 6) return 1; if (y.val === 9) return 0; return y.type; });
-        const zhiBinStr = [...zhiLines].reverse().join('');
-        const zhiGuaName = HEX_64[zhiBinStr] || "未知卦";
-        const movingLinesDesc = currentYaoLines.map((y, i) => { if (!y.isMoving) return null; return `第${i+1}爻发动 (${y.val === 9 ? '老阳' : '老阴'})`; }).filter(x => x).join(', ');
+    function openLiuYaoQuestionDialog() {
+        const snapshot = getHexagramSnapshot();
+        if (!snapshot) {
+            showToast('请先摇满六爻，再进行解卦', 'warn');
+            return;
+        }
+        const modal = document.getElementById('liuyaoQuestionModal');
+        const input = document.getElementById('liuyaoQuestionInput');
+        const hint = document.getElementById('liuyaoQuestionHexHint');
+        if (hint) {
+            hint.innerText = `本卦：${snapshot.benGuaName} ｜ 变卦：${snapshot.bianGuaName} ｜ ${snapshot.hasMovingLine ? snapshot.movingLinesDesc : '静卦无动爻'}`;
+        }
+        if (modal) modal.style.display = 'flex';
+        if (input) {
+            input.value = '';
+            setTimeout(() => input.focus(), 40);
+        }
+    }
+
+    function closeLiuYaoQuestionDialog() {
+        const modal = document.getElementById('liuyaoQuestionModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function handleLiuYaoModalBackdrop(event) {
+        if (event?.target?.id === 'liuyaoQuestionModal') closeLiuYaoQuestionDialog();
+    }
+
+    function submitLiuYaoQuestion() {
+        const input = document.getElementById('liuyaoQuestionInput');
+        const question = (input?.value || '').trim();
+        if (!question) {
+            showToast('请先输入本次要占问的问题', 'warn');
+            if (input) input.focus();
+            return;
+        }
+        closeLiuYaoQuestionDialog();
+        void interpretHexagram(question);
+    }
+
+    async function interpretHexagram(userQuestion = '') {
+        const snapshot = getHexagramSnapshot();
+        if (!snapshot) {
+            showToast('请先完成六次摇卦', 'warn');
+            return;
+        }
+        const question = String(userQuestion || '').trim();
+        if (!question) {
+            showToast('请先输入你想问的问题', 'warn');
+            openLiuYaoQuestionDialog();
+            return;
+        }
         const modal = document.getElementById('ai-modal');
         const contentDiv = document.getElementById('ai-result-text');
         modal.style.display = 'flex';
@@ -2592,8 +3186,8 @@
                 <p class="text-xs text-gray-500 mt-2">正在以此卦问询天机</p>
             </div>
         `;
-        const systemPrompt = `你是六爻解读助手。请基于用户给出的本卦、动爻、变卦进行分析，要求：1) 先给结果倾向（吉/中/谨慎）；2) 再给依据（卦象变化与关键动爻）；3) 最后给 3 条具体行动建议；4) 术语要配白话解释；5) 使用简单 Markdown，避免神秘化描述。`;
-        const userPrompt = `用户起卦结果如下：【本卦】: ${benGuaName} (结构: ${binStr}) 【动爻】: ${movingLinesDesc || "静卦无动爻"} 【变卦/之卦】: ${zhiGuaName} 请开始解卦。`;
+        const systemPrompt = `你是六爻解卦助手。请严格围绕用户当前这个问题解读，不要发散到其他事项。遵循“一事一卜，不宜多占”。输出要求：1) 先直接回答用户问题；2) 再给卦象依据（本卦看现状，动爻看变化，变卦看趋势）；3) 最后给 3 条可执行建议。语言简洁清晰，避免空泛套话。`;
+        const userPrompt = `用户问题：${question}\n卦象信息如下：\n- 本卦：${snapshot.benGuaName}（结构：${snapshot.benBinStr}）\n- 变卦：${snapshot.bianGuaName}（结构：${snapshot.bianBinStr}）\n- 动爻：${snapshot.hasMovingLine ? snapshot.movingLinesDesc : '静卦无动爻'}\n请只围绕这个问题，结合本卦、动爻、变卦给出解读。`;
         const result = await callAI(userPrompt, systemPrompt);
         contentDiv.innerHTML = marked.parse(result);
     }
@@ -2647,6 +3241,12 @@
         document.body.classList.add('theme-blueprint');
     })();
 
+    function getRendererPixelRatioCap() {
+        if (MOBILE_PERF_MODE) return 1.1;
+        if (IS_MOBILE_DEVICE) return 1.5;
+        return 2;
+    }
+
     function init3D() {
         const container = document.getElementById('canvas-container');
         scene = new THREE.Scene();
@@ -2654,14 +3254,19 @@
         camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
         camera.position.set(0, -60, 45);
         camera.lookAt(0, 0, 0);
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer = new THREE.WebGLRenderer({
+            antialias: !MOBILE_PERF_MODE,
+            alpha: true,
+            powerPreference: MOBILE_PERF_MODE ? 'low-power' : 'high-performance'
+        });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, getRendererPixelRatioCap()));
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = THEME.exposure;
         container.appendChild(renderer.domElement);
         controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true; controls.dampingFactor = 0.05;
+        controls.enableDamping = !MOBILE_PERF_MODE;
+        controls.dampingFactor = MOBILE_PERF_MODE ? 0 : 0.05;
         controls.maxDistance = 150; controls.minDistance = 20;
         
         ambientLight = new THREE.AmbientLight(THEME.ambient.color, THEME.ambient.intensity); scene.add(ambientLight);
@@ -2670,7 +3275,7 @@
 
         // Particle System (Optimization: reduce count on mobile)
         const isMobile = window.innerWidth < 768;
-        const particleCount = isMobile ? 8000 : 20000; 
+        const particleCount = MOBILE_PERF_MODE ? 2600 : (isMobile ? 6000 : 20000); 
         const positions = new Float32Array(particleCount * 3); const randoms = new Float32Array(particleCount); const radius = 3.8; 
         for (let i = 0; i < particleCount; i++) {
             const k = i + 0.5; const phi = Math.acos(1 - 2 * k / particleCount); const theta = Math.PI * (1 + Math.sqrt(5)) * k;
@@ -2719,6 +3324,11 @@
     function initMeteorLayer() {
         meteorCanvas = document.getElementById('meteor-canvas');
         if (!meteorCanvas) return;
+        if (MOBILE_PERF_MODE) {
+            meteorCanvas.style.display = 'none';
+            return;
+        }
+        meteorCanvas.style.display = 'block';
         meteorCtx = meteorCanvas.getContext('2d');
         resizeMeteorCanvas();
         // 中等频率：首次稍微延迟一点出现
@@ -2926,12 +3536,13 @@
 
     function addBackgroundStars() {
         const geometry = new THREE.BufferGeometry(); const vertices = []; const colors = []; const colorObj = new THREE.Color();
-        for (let i = 0; i < 3000; i++) {
+        const starCount = MOBILE_PERF_MODE ? 900 : (IS_MOBILE_DEVICE ? 1700 : 3000);
+        for (let i = 0; i < starCount; i++) {
             vertices.push(THREE.MathUtils.randFloatSpread(400), THREE.MathUtils.randFloatSpread(400), THREE.MathUtils.randFloatSpread(400));
             colorObj.setHSL(0.6 + Math.random() * 0.1, 0.8, 0.5 + Math.random() * 0.5); colors.push(colorObj.r, colorObj.g, colorObj.b);
         }
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-        const material = new THREE.PointsMaterial({ size: 0.6, vertexColors: true, transparent: true, opacity: 0.8 });
+        const material = new THREE.PointsMaterial({ size: MOBILE_PERF_MODE ? 0.5 : 0.6, vertexColors: true, transparent: true, opacity: MOBILE_PERF_MODE ? 0.68 : 0.8 });
         bgStars = new THREE.Points(geometry, material);
         bgStars.name = 'bgStars';
         bgStars.material.size = THEME.bgStars.size;
@@ -2941,12 +3552,13 @@
     
     function addSpaceDust() {
         const geometry = new THREE.BufferGeometry(); const vertices = [];
-        for (let i = 0; i < 1500; i++) {
+        const dustCount = MOBILE_PERF_MODE ? 420 : (IS_MOBILE_DEVICE ? 900 : 1500);
+        for (let i = 0; i < dustCount; i++) {
             const r = 30 + Math.random() * 60; const theta = Math.random() * Math.PI * 2;
             const x = r * Math.cos(theta); const y = r * Math.sin(theta); const z = (Math.random() - 0.5) * 15; vertices.push(x, y, z);
         }
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        const material = new THREE.PointsMaterial({ color: 0x4466aa, size: 0.4, transparent: true, opacity: 0.4 });
+        const material = new THREE.PointsMaterial({ color: 0x4466aa, size: MOBILE_PERF_MODE ? 0.35 : 0.4, transparent: true, opacity: MOBILE_PERF_MODE ? 0.28 : 0.4 });
         spaceDust = new THREE.Points(geometry, material);
         spaceDust.name = "dust";
         spaceDust.material.color.setHex(THEME.dust.color);
@@ -2957,6 +3569,16 @@
     // (C) Near-field parallax dust - fewer, larger particles for depth
     function addNearDust() {
         if (!scene) return;
+        if (MOBILE_PERF_MODE) {
+            const oldPerf = scene.getObjectByName('nearDust');
+            if (oldPerf) {
+                scene.remove(oldPerf);
+                if (oldPerf.geometry) oldPerf.geometry.dispose();
+                if (oldPerf.material) oldPerf.material.dispose();
+            }
+            nearDust = null;
+            return;
+        }
         const key = `${Math.round(window.innerWidth / 40)}x${Math.round(window.innerHeight / 40)}`;
         if (nearDust && key === nearDustLayoutKey) return;
         nearDustLayoutKey = key;
@@ -3253,6 +3875,7 @@
         document.getElementById('loading').style.display = 'flex'; document.getElementById('loading').style.opacity = 1;
         // Mobile UX: Collapse input panel automatically
         if (window.innerWidth <= 768) { document.getElementById('inputPanel').classList.add('collapsed'); }
+        const chartRenderDelay = MOBILE_PERF_MODE ? 850 : 2500;
         
         setTimeout(() => {
             const date = document.getElementById('birthDate').value; const hourIdx = document.getElementById('birthHour').value; const gender = document.getElementById('gender').value;
@@ -3270,7 +3893,7 @@
                 renderChart3D(currentChart);
             } catch (e) { console.error(e); showToast('生成失败，请检查输入', 'error'); }
             document.getElementById('loading').style.opacity = 0; setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 500);
-        }, 2500); 
+        }, chartRenderDelay); 
     }
 
     function renderChart3D(chart) {
@@ -3280,7 +3903,8 @@
 
     function onWindowResize() {
         camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
-        resizeMeteorCanvas();
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, getRendererPixelRatioCap()));
+        if (!MOBILE_PERF_MODE) resizeMeteorCanvas();
         addNearDust();
         
         // --- MOBILE CAMERA ADJUSTMENT ---
@@ -3464,7 +4088,7 @@
         `;
         const palaceName = selectedPalaceData.name;
         const starsDesc = selectedPalaceData.stars.map(s => { let desc = `${s.name}（亮度：${s.brightness}）`; if (s.sihua) desc += ` [化${s.sihua}]`; return desc; }).join('，') || "无主星";
-        const prompt = `请根据以下信息解析【${palaceName}】：宫位：${palaceName} 宫干支：${selectedPalaceData.stem}${selectedPalaceData.branch} 星曜组合：${starsDesc} 输出要求：1) 先给结论（这个宫位当前最值得关注的 1-2 点）；2) 再给原因（主星/四化/吉煞星分别说明影响）；3) 如果无主星，简述借对宫逻辑；4) 最后给 3 条可执行建议；5) 全文通俗易懂，术语配白话解释；6) 使用简洁 Markdown。`;
+        const prompt = `请根据以下信息解析【${palaceName}】：宫位：${palaceName} 宫干支：${selectedPalaceData.stem}${selectedPalaceData.branch} 星曜组合：${starsDesc} 输出要求：1) 先给结论（这个宫位当前最值得关注的 1-2 点）；2) 再给原因（主星/四化/吉煞星分别说明影响）；3) 如果无主星，简述借对宫逻辑；4) 最后给 3 条可执行建议；5) 全文通俗易懂，术语配解释；6) 使用简洁 Markdown。`;
         const result = await callAI(prompt); contentDiv.innerHTML = marked.parse(result);
     }
 
@@ -3486,16 +4110,23 @@
         const chatBox = document.getElementById('chatMessages');
         const userDiv = document.createElement('div'); userDiv.className = 'msg msg-user'; userDiv.innerText = query; chatBox.appendChild(userDiv); chatBox.scrollTop = chatBox.scrollHeight; input.value = '';
         const loadingDiv = document.createElement('div'); loadingDiv.className = 'msg msg-ai animate-pulse'; loadingDiv.innerText = '大师正在推演中...'; chatBox.appendChild(loadingDiv);
-        const chartSummary = currentChart.getSummary(); const systemPrompt = `你是一位紫微斗数分析助手。以下是用户的命盘数据：\n${chartSummary}\n请根据此数据回答用户问题，并遵循：1) 先直接回答问题；2) 再给 2-3 条依据；3) 最后给可执行建议；4) 用通俗中文，术语配白话解释；5) 保持客观，避免宿命化表述。`;
+        const chartSummary = currentChart.getSummary(); const systemPrompt = `你是一位紫微斗数分析助手。以下是用户的命盘数据：\n${chartSummary}\n请根据此数据回答用户问题，并遵循：1) 先直接回答问题；2) 再给 2-3 条依据；3) 最后给可执行建议；4) 用通俗中文，术语配解释；5) 保持客观，避免宿命化表述。`;
         const response = await callAI(query, systemPrompt);
         chatBox.removeChild(loadingDiv);
         const aiDiv = document.createElement('div'); aiDiv.className = 'msg msg-ai'; aiDiv.innerHTML = marked.parse(response); chatBox.appendChild(aiDiv); chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function animate() {
-        requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera);
+    let lastFrameTs = 0;
+    const FRAME_INTERVAL_MS = MOBILE_PERF_MODE ? 33 : 0; // ~30fps on perf mode
+
+    function animate(now = performance.now()) {
+        requestAnimationFrame(animate);
+        if (FRAME_INTERVAL_MS && now - lastFrameTs < FRAME_INTERVAL_MS) return;
+        lastFrameTs = now;
+
+        controls.update(); renderer.render(scene, camera);
         chartObj.rotation.z += 0.0003; if (coreMesh) { coreMesh.rotation.z += 0.005; }
-        if (coreUniforms) { coreUniforms.uTime.value = performance.now() / 1000; }
+        if (coreUniforms) { coreUniforms.uTime.value = now / 1000; }
         const dust = scene.getObjectByName('dust'); if (dust) dust.rotation.z -= 0.0002;
 
         // (C) near dust drift (subtle depth)
@@ -3505,16 +4136,17 @@
         }
 
         // (A) halo breathe + click pulse
-        updateHalo(performance.now());
+        updateHalo(now);
 
         // 流星层：低频、低成本
-        updateAndDrawMeteors(performance.now());
+        if (!MOBILE_PERF_MODE) updateAndDrawMeteors(now);
     }
 
     try { init3D(); } catch (e) { console.error("3D Init Failed", e); setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 1000); }
     
     // First run logic
-    setTimeout(() => { const loader = document.getElementById('loading'); if (loader && loader.style.display !== 'none') { loader.style.opacity = 0; setTimeout(() => { loader.style.display = 'none'; }, 500); } }, 2000);
+    const firstLoadDelay = MOBILE_PERF_MODE ? 950 : 2000;
+    setTimeout(() => { const loader = document.getElementById('loading'); if (loader && loader.style.display !== 'none') { loader.style.opacity = 0; setTimeout(() => { loader.style.display = 'none'; }, 500); } }, firstLoadDelay);
     ['dailyPanel','lifePanel','liuYaoPanel','chatWindow','synastryPanel','helpPanel'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
     
     // Mobile initialization: Show input panel (紫微星系) by default on first load
