@@ -1373,14 +1373,14 @@
                 </div>
 
                 <div id="authForm" style="margin-top: 10px;">
-                    <input type="text" id="authUsername" placeholder="用户名（3-32）" autocomplete="username" style="width: 100%; margin-top: 6px; background: rgba(0,0,0,0.4); border: 1px solid #334455; color: #e0f0ff; padding: 10px; border-radius: 6px; font-size: 14px;">
+                    <input type="email" id="authUsername" placeholder="邮箱地址" autocomplete="email" style="width: 100%; margin-top: 6px; background: rgba(0,0,0,0.4); border: 1px solid #334455; color: #e0f0ff; padding: 10px; border-radius: 6px; font-size: 14px;">
                     <input type="password" id="authPassword" placeholder="密码（6-72）" autocomplete="current-password" style="width: 100%; margin-top: 8px; background: rgba(0,0,0,0.4); border: 1px solid #334455; color: #e0f0ff; padding: 10px; border-radius: 6px; font-size: 14px;">
 
                     <div style="display:flex; gap:10px; margin-top: 10px;">
                         <button id="loginBtn" onclick="loginUser()" style="flex:1; background: linear-gradient(135deg, #0ea5e9, #2563eb); border: 1px solid rgba(56,189,248,.6); color: #fff; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 800;">登录</button>
                         <button id="registerBtn" onclick="registerUser()" style="flex:1; background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(148, 163, 184, 0.35); color: #e2e8f0; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 800;">注册</button>
                     </div>
-                    <div style="margin-top: 8px; font-size: 0.7rem; color: #64748b; text-align: center; line-height: 1.4;">新用户点「注册」创建账号 · 老用户直接「登录」</div>
+                    <div style="margin-top: 8px; font-size: 0.7rem; color: #64748b; text-align: center; line-height: 1.4;">使用邮箱注册账号 · 已注册用户直接登录</div>
                 </div>
 
                 <div id="authActions" style="margin-top: 10px; display:none;">
@@ -1497,7 +1497,7 @@
         <canvas id="lifeChart"></canvas>
     </div>
     <div class="life-analysis" id="lifeAnalysisText">
-        <div class="animate-pulse text-gray-500">请先生成星盘，系统将依据《渊海子平》与《子平真诠》的月令提纲法，结合大运流年为您推演一生起伏...</div>
+        <div class="animate-pulse text-gray-500">请先生成星盘，系统将结合命局结构与大运流年为您推演一生起伏...</div>
     </div>
 </div>
 
@@ -1880,7 +1880,7 @@
     async function loginUser() {
         const u = document.getElementById('authUsername')?.value?.trim();
         const p = document.getElementById('authPassword')?.value || '';
-        if (!u || !p) { showToast('请输入用户名和密码', 'warn'); return; }
+        if (!u || !p) { showToast('请输入邮箱和密码', 'warn'); return; }
         try {
             const resp = await fetch(`${API_BASE}/api/auth/login`, {
                 method: 'POST',
@@ -1901,7 +1901,7 @@
     async function registerUser() {
         const u = document.getElementById('authUsername')?.value?.trim();
         const p = document.getElementById('authPassword')?.value || '';
-        if (!u || !p) { showToast('请输入用户名和密码', 'warn'); return; }
+        if (!u || !p) { showToast('请输入邮箱和密码', 'warn'); return; }
         try {
             const resp = await fetch(`${API_BASE}/api/auth/register`, {
                 method: 'POST',
@@ -2319,6 +2319,272 @@
         };
     }
 
+    const LIFE_STEM_ELEMENT_MAP = {
+        '甲': '木', '乙': '木', '丙': '火', '丁': '火', '戊': '土',
+        '己': '土', '庚': '金', '辛': '金', '壬': '水', '癸': '水'
+    };
+    const LIFE_BRANCH_MAIN_ELEMENT_MAP = {
+        '寅': '木', '卯': '木',
+        '巳': '火', '午': '火',
+        '辰': '土', '戌': '土', '丑': '土', '未': '土',
+        '申': '金', '酉': '金',
+        '亥': '水', '子': '水'
+    };
+    const LIFE_BRANCH_HIDDEN_STEMS = {
+        '子': [['癸', 1.0]],
+        '丑': [['己', 0.6], ['癸', 0.25], ['辛', 0.15]],
+        '寅': [['甲', 0.6], ['丙', 0.25], ['戊', 0.15]],
+        '卯': [['乙', 1.0]],
+        '辰': [['戊', 0.6], ['乙', 0.25], ['癸', 0.15]],
+        '巳': [['丙', 0.6], ['戊', 0.25], ['庚', 0.15]],
+        '午': [['丁', 0.7], ['己', 0.3]],
+        '未': [['己', 0.6], ['丁', 0.25], ['乙', 0.15]],
+        '申': [['庚', 0.6], ['壬', 0.25], ['戊', 0.15]],
+        '酉': [['辛', 1.0]],
+        '戌': [['戊', 0.6], ['辛', 0.25], ['丁', 0.15]],
+        '亥': [['壬', 0.7], ['甲', 0.3]]
+    };
+    const LIFE_BRANCH_CLASH_MAP = {
+        '子': '午', '午': '子', '丑': '未', '未': '丑',
+        '寅': '申', '申': '寅', '卯': '酉', '酉': '卯',
+        '辰': '戌', '戌': '辰', '巳': '亥', '亥': '巳'
+    };
+    const LIFE_BRANCH_COMBINE_MAP = {
+        '子': '丑', '丑': '子', '寅': '亥', '亥': '寅',
+        '卯': '戌', '戌': '卯', '辰': '酉', '酉': '辰',
+        '巳': '申', '申': '巳', '午': '未', '未': '午'
+    };
+    const LIFE_STEM_CLASH_MAP = {
+        '甲': '庚', '庚': '甲',
+        '乙': '辛', '辛': '乙',
+        '丙': '壬', '壬': '丙',
+        '丁': '癸', '癸': '丁',
+        '戊': '己', '己': '戊'
+    };
+    const LIFE_ELEMENTS = ['木', '火', '土', '金', '水'];
+    const LIFE_ELEMENT_GENERATES = { '木': '火', '火': '土', '土': '金', '金': '水', '水': '木' };
+    const LIFE_ELEMENT_CONTROLS = { '木': '土', '火': '金', '土': '水', '金': '木', '水': '火' };
+    const LIFE_ELEMENT_GENERATED_BY = { '木': '水', '火': '木', '土': '火', '金': '土', '水': '金' };
+    const LIFE_ELEMENT_CONTROLLED_BY = { '木': '金', '火': '水', '土': '木', '金': '火', '水': '土' };
+
+    function createLifeElementVector(init = 0) {
+        return { '木': init, '火': init, '土': init, '金': init, '水': init };
+    }
+
+    function addLifeElement(vec, element, value) {
+        if (!element || vec[element] === undefined) return;
+        vec[element] += value;
+    }
+
+    function stableLifeUnitHash(input) {
+        const str = String(input);
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+        }
+        return (h >>> 0) / 4294967295;
+    }
+
+    function getLifeNoise(parts, channel = '') {
+        const key = `${parts.join('|')}|${channel}`;
+        return stableLifeUnitHash(key) * 2 - 1;
+    }
+
+    function getLifeSeason(monthZhi) {
+        const map = {
+            '寅': 'Spring', '卯': 'Spring', '辰': 'Spring',
+            '巳': 'Summer', '午': 'Summer', '未': 'Summer',
+            '申': 'Autumn', '酉': 'Autumn', '戌': 'Autumn',
+            '亥': 'Winter', '子': 'Winter', '丑': 'Winter'
+        };
+        return map[monthZhi] || 'Spring';
+    }
+
+    function getBranchElementBlend(branch) {
+        const blend = createLifeElementVector(0);
+        const hidden = LIFE_BRANCH_HIDDEN_STEMS[branch];
+        if (!hidden || hidden.length === 0) {
+            addLifeElement(blend, LIFE_BRANCH_MAIN_ELEMENT_MAP[branch], 1);
+            return blend;
+        }
+        hidden.forEach(([stem, ratio]) => addLifeElement(blend, LIFE_STEM_ELEMENT_MAP[stem], ratio));
+        return blend;
+    }
+
+    function scoreLifeElementBlend(blend, bias) {
+        return LIFE_ELEMENTS.reduce((sum, el) => sum + (blend[el] || 0) * (bias[el] || 0), 0);
+    }
+
+    function buildDayMasterBias(dayStem, monthZhi, natalBranches) {
+        const dayEl = LIFE_STEM_ELEMENT_MAP[dayStem] || '木';
+        const resourceEl = LIFE_ELEMENT_GENERATED_BY[dayEl];
+        const outputEl = LIFE_ELEMENT_GENERATES[dayEl];
+        const wealthEl = LIFE_ELEMENT_CONTROLS[dayEl];
+        const officerEl = LIFE_ELEMENT_CONTROLLED_BY[dayEl];
+        const monthEl = LIFE_BRANCH_MAIN_ELEMENT_MAP[monthZhi];
+
+        let strength = 0;
+        if (monthEl === dayEl) strength += 1.0;
+        if (monthEl === resourceEl) strength += 0.9;
+        if (monthEl === officerEl) strength -= 0.7;
+        if (monthEl === wealthEl) strength -= 0.5;
+
+        (natalBranches || []).forEach(branch => {
+            const blend = getBranchElementBlend(branch);
+            strength += (blend[dayEl] || 0) * 0.55;
+            strength += (blend[resourceEl] || 0) * 0.35;
+            strength -= (blend[officerEl] || 0) * 0.22;
+        });
+
+        const isStrong = strength >= 1.2;
+        const bias = createLifeElementVector(0);
+        if (isStrong) {
+            addLifeElement(bias, wealthEl, 1.45);
+            addLifeElement(bias, outputEl, 1.35);
+            addLifeElement(bias, officerEl, 0.95);
+            addLifeElement(bias, dayEl, -1.2);
+            addLifeElement(bias, resourceEl, -0.9);
+        } else {
+            addLifeElement(bias, dayEl, 1.5);
+            addLifeElement(bias, resourceEl, 1.35);
+            addLifeElement(bias, outputEl, 0.35);
+            addLifeElement(bias, wealthEl, -1.05);
+            addLifeElement(bias, officerEl, -1.15);
+        }
+        return { bias, dayEl, resourceEl, outputEl, wealthEl, officerEl, isStrong };
+    }
+
+    function buildClimateBias(monthZhi) {
+        const season = getLifeSeason(monthZhi);
+        const climateBias = createLifeElementVector(0);
+        if (season === 'Winter') {
+            climateBias['火'] = 1.2; climateBias['木'] = 0.6; climateBias['水'] = -0.35;
+        } else if (season === 'Summer') {
+            climateBias['水'] = 1.2; climateBias['金'] = 0.65; climateBias['火'] = -0.35;
+        } else if (season === 'Spring') {
+            climateBias['火'] = 0.7; climateBias['金'] = 0.55; climateBias['木'] = -0.2;
+        } else {
+            climateBias['水'] = 0.7; climateBias['木'] = 0.55; climateBias['金'] = -0.2;
+        }
+        return { season, climateBias };
+    }
+
+    function scoreStemBranchFit(gan, zhi, bias) {
+        const stemEl = LIFE_STEM_ELEMENT_MAP[gan];
+        const stemScore = bias[stemEl] || 0;
+        const branchBlend = getBranchElementBlend(zhi);
+        const branchScore = scoreLifeElementBlend(branchBlend, bias);
+        return {
+            total: stemScore + branchScore * 1.25,
+            stemScore,
+            branchScore,
+            stemEl,
+            branchBlend
+        };
+    }
+
+    function getDaYunModifier(gan, zhi) {
+        const ganEl = LIFE_STEM_ELEMENT_MAP[gan];
+        const zhiEl = LIFE_BRANCH_MAIN_ELEMENT_MAP[zhi];
+        let factor = 1;
+        const flags = [];
+        if (!ganEl || !zhiEl) return { factor, flags };
+        if (LIFE_ELEMENT_CONTROLS[ganEl] === zhiEl) {
+            factor *= 0.72;
+            flags.push('盖头');
+        }
+        if (LIFE_ELEMENT_CONTROLS[zhiEl] === ganEl) {
+            factor *= 0.72;
+            flags.push('截脚');
+        }
+        if (LIFE_ELEMENT_GENERATES[ganEl] === zhiEl || LIFE_ELEMENT_GENERATES[zhiEl] === ganEl) {
+            factor *= 1.08;
+        }
+        return { factor, flags };
+    }
+
+    function isLifeStemClash(a, b) {
+        return LIFE_STEM_CLASH_MAP[a] === b;
+    }
+
+    function isLifeStemControl(a, b) {
+        const ea = LIFE_STEM_ELEMENT_MAP[a];
+        const eb = LIFE_STEM_ELEMENT_MAP[b];
+        if (!ea || !eb) return false;
+        return LIFE_ELEMENT_CONTROLS[ea] === eb;
+    }
+
+    function isLifeBranchClash(a, b) {
+        return LIFE_BRANCH_CLASH_MAP[a] === b;
+    }
+
+    function isLifeBranchCombine(a, b) {
+        return LIFE_BRANCH_COMBINE_MAP[a] === b;
+    }
+
+    function getClimateScore(monthZhi, dyGan, dyZhi, lnGan, lnZhi, climateBias) {
+        const incoming = createLifeElementVector(0);
+        addLifeElement(incoming, LIFE_STEM_ELEMENT_MAP[dyGan], 0.8);
+        addLifeElement(incoming, LIFE_STEM_ELEMENT_MAP[lnGan], 0.6);
+        const dyBlend = getBranchElementBlend(dyZhi);
+        const lnBlend = getBranchElementBlend(lnZhi);
+        LIFE_ELEMENTS.forEach(el => {
+            incoming[el] += (dyBlend[el] || 0) * 1.0;
+            incoming[el] += (lnBlend[el] || 0) * 0.85;
+        });
+        return scoreLifeElementBlend(incoming, climateBias);
+    }
+
+    function evaluateLifeResonance(args) {
+        const { monthZhi, dayStem, dyGan, dyZhi, lnGan, lnZhi, dyFitTotal, lnFitTotal, age, dyStartAge } = args;
+        let score = 0;
+        let riskBoost = 0;
+        const flags = [];
+
+        if (isLifeBranchClash(monthZhi, dyZhi)) {
+            score -= 6;
+            riskBoost += 2;
+            flags.push('运冲月令');
+        }
+        if (isLifeBranchClash(monthZhi, lnZhi)) {
+            score -= 5;
+            riskBoost += 2;
+            flags.push('岁冲月令');
+        }
+        if (isLifeBranchCombine(monthZhi, dyZhi)) {
+            score += 3;
+            flags.push('运合月令');
+        }
+        if (isLifeBranchCombine(monthZhi, lnZhi)) {
+            score += 2;
+        }
+
+        if (dyGan === lnGan && dyZhi === lnZhi) {
+            score += (dyFitTotal + lnFitTotal) >= 0 ? 8 : -10;
+            riskBoost += 3;
+            flags.push('岁运并临');
+        }
+
+        const hasTianKe = isLifeStemClash(lnGan, dyGan) || isLifeStemControl(lnGan, dyGan) || isLifeStemControl(dyGan, lnGan);
+        if (hasTianKe && isLifeBranchClash(lnZhi, dyZhi)) {
+            score -= 10;
+            riskBoost += 4;
+            flags.push('天克地冲');
+        }
+
+        if (Math.abs(age - dyStartAge) <= 1) {
+            score -= 2;
+            riskBoost += 2;
+            flags.push('交运震荡');
+        }
+
+        if (isLifeStemControl(lnGan, dayStem)) score -= 2;
+        if (isLifeStemControl(dayStem, lnGan)) score += 1.5;
+
+        return { score, riskBoost, flags: [...new Set(flags)] };
+    }
+
     function calculateLifeTrendData(birthDateStr, hourIdx, gender) {
         const d = parseLocalYmd(birthDateStr);
         if (!d) throw new Error("Invalid birthDateStr: " + birthDateStr);
@@ -2327,16 +2593,14 @@
         const solar = Solar.fromDate(d);
         const lunar = solar.getLunar();
         const eightChar = lunar.getEightChar();
-        const monthZhi = eightChar.getMonthZhi(); 
-        
-        const seasons = { '寅': 'Spring', '卯': 'Spring', '辰': 'Spring', '巳': 'Summer', '午': 'Summer', '未': 'Summer', '申': 'Autumn', '酉': 'Autumn', '戌': 'Autumn', '亥': 'Winter', '子': 'Winter', '丑': 'Winter' };
-        const season = seasons[monthZhi];
-        let favorElements = [];
-        if (season === 'Winter') favorElements = ['火', '木']; 
-        else if (season === 'Summer') favorElements = ['水', '金']; 
-        else if (season === 'Spring') favorElements = ['火', '金']; 
-        else if (season === 'Autumn') favorElements = ['水', '木']; 
-        
+        const monthZhi = eightChar.getMonthZhi();
+        const dayStem = eightChar.getDayGan();
+        const natalBranches = [eightChar.getYearZhi(), monthZhi, eightChar.getDayZhi(), eightChar.getTimeZhi()];
+        const dayMasterProfile = buildDayMasterBias(dayStem, monthZhi, natalBranches);
+        const mergedBias = { ...dayMasterProfile.bias };
+        const climate = buildClimateBias(monthZhi);
+        LIFE_ELEMENTS.forEach(el => { mergedBias[el] += (climate.climateBias[el] || 0) * 0.65; });
+
         const yun = lunar.getEightChar().getYun(parseInt(gender));
         const daYunArr = yun.getDaYun();
         let qiYunAge = 0;
@@ -2345,52 +2609,101 @@
         }
 
         let kLineData = [];
-        const elMap = { '甲':'木','乙':'木','寅':'木','卯':'木', '丙':'火','丁':'火','巳':'火','午':'火', '戊':'土','己':'土','辰':'土','戌':'土','丑':'土','未':'土', '庚':'金','辛':'金','申':'金','酉':'金', '壬':'水','癸':'水','亥':'水','子':'水' };
 
-        for (let i = 0; i < daYunArr.length; i++) { 
-            const dy = daYunArr[i]; 
-            if (!dy) continue; 
+        for (let i = 0; i < daYunArr.length; i++) {
+            const dy = daYunArr[i];
+            if (!dy) continue;
             const daYunGanZhi = dy.getGanZhi();
             const gan = daYunGanZhi.charAt(0);
             const zhi = daYunGanZhi.charAt(1);
-            let daYunScore = 0;
-            const ganEl = elMap[gan];
-            const zhiEl = elMap[zhi];
-            if (favorElements.includes(ganEl)) daYunScore += 5; else daYunScore -= 2;
-            if (favorElements.includes(zhiEl)) daYunScore += 5; else daYunScore -= 2;
-            const clashes = { '子':'午', '午':'子', '丑':'未', '未':'丑', '寅':'申', '申':'寅', '卯':'酉', '酉':'卯', '辰':'戌', '戌':'辰', '巳':'亥', '亥':'巳' };
-            let isClash = (clashes[monthZhi] === zhi);
-            const liunians = dy.getLiuNian(); 
-            
+            const dyStartAge = dy.getStartAge();
+            const dyFit = scoreStemBranchFit(gan, zhi, mergedBias);
+            const dyModifier = getDaYunModifier(gan, zhi);
+            const dayunPower = dyFit.total * dyModifier.factor;
+            const liunians = dy.getLiuNian();
+
             for (let j = 0; j < liunians.length; j++) {
                 const liunian = liunians[j];
-                const a = liunian.getAge(); 
+                const a = liunian.getAge();
                 if (a < qiYunAge) continue;
                 if (a > 100) break;
                 const lnGanZhi = liunian.getGanZhi();
                 const lnGan = lnGanZhi.charAt(0);
                 const lnZhi = lnGanZhi.charAt(1);
-                let yearlyMod = 0;
-                if (favorElements.includes(elMap[lnGan])) yearlyMod += 5; else yearlyMod -= 2;
-                if (favorElements.includes(elMap[lnZhi])) yearlyMod += 5; else yearlyMod -= 2;
-                if (clashes[monthZhi] === lnZhi) yearlyMod -= 10;
-                if (isClash) yearlyMod += (Math.random() > 0.5 ? 8 : -8);
-                
-                let prevClose = kLineData.length > 0 ? kLineData[kLineData.length-1].close : 50;
-                let idealScore = 50 + (daYunScore * 2) + yearlyMod;
+                const lnFit = scoreStemBranchFit(lnGan, lnZhi, mergedBias);
+                const climateScore = getClimateScore(monthZhi, gan, zhi, lnGan, lnZhi, climate.climateBias);
+                const resonance = evaluateLifeResonance({
+                    monthZhi,
+                    dayStem,
+                    dyGan: gan,
+                    dyZhi: zhi,
+                    lnGan,
+                    lnZhi,
+                    dyFitTotal: dyFit.total,
+                    lnFitTotal: lnFit.total,
+                    age: a,
+                    dyStartAge
+                });
+
+                // 结构40% / 调候15% / 大运力度25% / 流年共振20%
+                const structureScore = (dayunPower * 0.62 + lnFit.total * 0.38) * 10;
+                const environmentScore = climateScore * 6;
+                const dayunStrengthScore = dayunPower * 12;
+                const resonanceScore = resonance.score;
+                const composite =
+                    structureScore * 0.40 +
+                    environmentScore * 0.15 +
+                    dayunStrengthScore * 0.25 +
+                    resonanceScore * 0.20;
+
+                const prevClose = kLineData.length > 0 ? kLineData[kLineData.length - 1].close : 50;
+                const target = clampScore(50 + composite, 6, 97);
+                const seedParts = [birthDateStr, hourIdx, gender, a, liunian.getYear(), gan, zhi, lnGan, lnZhi];
+                const adjustRatio = 0.28 + Math.min(0.22, Math.abs(composite) / 90);
+
                 let open = prevClose;
-                let close = open + (idealScore - open) * 0.3; 
-                let volatility = 5;
-                if (isClash) volatility += 10;
-                if (clashes[lnZhi] === monthZhi) volatility += 10; 
-                let high = Math.max(open, close) + Math.random() * volatility;
-                let low = Math.min(open, close) - Math.random() * volatility;
-                if(high > 100) high = 100; if(low < 0) low = 0;
-                
-                kLineData.push({ age: a, year: liunian.getYear(), ganZhi: lnGanZhi, open: Math.floor(open), close: Math.floor(close), high: Math.floor(high), low: Math.floor(low), daYun: `${gan}${zhi}` });
+                let close = open + (target - open) * adjustRatio;
+                close += getLifeNoise(seedParts, 'close') * 1.6;
+                close = clampScore(close, 0, 100);
+
+                let volatility = 4.2 + Math.abs(close - open) * 0.25 + resonance.riskBoost * 1.3;
+                if (resonance.flags.includes('天克地冲')) volatility += 3.5;
+                if (resonance.flags.includes('岁运并临')) volatility += 2.2;
+                if (dyModifier.flags.length > 0) volatility += 1.4;
+
+                const hiFactor = 0.42 + stableLifeUnitHash(seedParts.join('|') + '|high') * 0.68;
+                const loFactor = 0.42 + stableLifeUnitHash(seedParts.join('|') + '|low') * 0.68;
+                const high = clampScore(Math.max(open, close) + volatility * hiFactor, 0, 100);
+                const low = clampScore(Math.min(open, close) - volatility * loFactor, 0, 100);
+
+                let signal = '震荡';
+                if (composite >= 7 && close >= open) signal = '上行';
+                else if (composite <= -7 && close <= open) signal = '回撤';
+                else if (volatility >= 14) signal = '高波动';
+
+                const riskLevel = volatility >= 15 ? '高' : (volatility >= 10 ? '中' : '低');
+                const flags = [...new Set([...(dyModifier.flags || []), ...(resonance.flags || [])])];
+
+                kLineData.push({
+                    age: a,
+                    year: liunian.getYear(),
+                    ganZhi: lnGanZhi,
+                    open: Math.round(open),
+                    close: Math.round(close),
+                    high: Math.round(high),
+                    low: Math.round(low),
+                    score: Math.round(target),
+                    signal,
+                    riskLevel,
+                    flags,
+                    volatility: Number(volatility.toFixed(1)),
+                    daYun: `${gan}${zhi}`,
+                    season: climate.season
+                });
             }
         }
-        latestLifeData = kLineData; 
+
+        latestLifeData = kLineData;
         return kLineData;
     }
 
@@ -2444,7 +2757,8 @@
             const d = data[highlightIndex];
             const x = padding + highlightIndex * barW + barW/2;
             const y = 50; 
-            const tipText = `${d.age}岁 · ${d.year}年 (${d.ganZhi}) · 大运: ${d.daYun}`;
+            const flagText = d.flags && d.flags.length ? ` · ${d.flags[0]}` : '';
+            const tipText = `${d.age}岁 · ${d.year}年 (${d.ganZhi}) · 大运:${d.daYun} · ${d.signal}${flagText}`;
             ctx.font = "bold 14px sans-serif"; const textWidth = ctx.measureText(tipText).width;
             let tipX = x - textWidth/2; if (tipX < padding) tipX = padding; if (tipX + textWidth > w - padding) tipX = w - padding - textWidth;
             ctx.fillStyle = "rgba(0, 0, 0, 0.8)"; ctx.fillRect(tipX - 10, y - 20, textWidth + 20, 30);
@@ -2524,9 +2838,41 @@
         const birthYear = bd.getFullYear();
         const currentAge = nowYear - birthYear;
         const currentData = data.find(d => d.age === currentAge) || data[data.length-1];
-        const daYunStr = currentData ? currentData.daYun : "--";
         const analysisDiv = document.getElementById('lifeAnalysisText');
-        analysisDiv.innerHTML = `<div class="mb-2"><strong class="text-white">当前大运:</strong> <span class="text-yellow-400 text-lg">${daYunStr}</span> (约${currentAge}岁)</div><div class="mb-2"><strong class="text-white">月令提纲:</strong> ${monthZhi}月 (格局核心)</div><div><strong class="text-blue-400">大师批注:</strong> 此造日元为<span class="text-white">${dayGan}</span>，生于${monthZhi}月。依据《子平真诠》，月令为提纲之府，决定人生格局上限。当前行运至<span class="text-yellow-400">${daYunStr}</span>，需注意大运地支与月令的刑冲合害关系。若K线震荡剧烈（红绿交替频繁），代表流年引动了局中隐患，名为“运冲提纲”或“岁运并临”，建议该阶段守成主静，顺应天时。</div>`;
+        if (!data || data.length === 0) {
+            analysisDiv.innerHTML = '<div class="text-gray-500">暂无可用走势数据，请检查出生信息后重试。</div>';
+            return;
+        }
+        const foundIdx = data.findIndex(d => d.age >= currentAge);
+        const safeIdx = foundIdx === -1 ? Math.max(0, data.length - 1) : foundIdx;
+        const displayData = data[safeIdx] || currentData;
+        const daYunStr = displayData ? displayData.daYun : "--";
+        const baziObj = info.baziObj;
+        const natalBranches = [baziObj.getYearZhi(), baziObj.getMonthZhi(), baziObj.getDayZhi(), baziObj.getTimeZhi()];
+        const bodyProfile = buildDayMasterBias(dayGan, monthZhi, natalBranches);
+        const bodyLabel = bodyProfile.isStrong ? '身强' : '身弱';
+        const bodyBrief = bodyProfile.isStrong
+            ? '日主多见得令、通根或印比帮扶，取用宜财官食伤以泄秀制衡。'
+            : '日主失令或根气不足、克泄耗偏重，取用宜印比生扶以固本培元。';
+
+        const fortuneScore = displayData?.score ?? 50;
+        let luckState = '中平';
+        let advice = '以稳为主，按计划推进。';
+        if (fortuneScore >= 72) { luckState = '偏吉'; advice = '可适度进取，优先推进关键目标。'; }
+        else if (fortuneScore >= 60) { luckState = '小吉'; advice = '稳中求进，重点做增量布局。'; }
+        else if (fortuneScore <= 35) { luckState = '偏凶'; advice = '以守代攻，先控风险与现金流。'; }
+        else if (fortuneScore <= 47) { luckState = '偏弱'; advice = '降低杠杆，聚焦基本盘与修复。'; }
+
+        const pressureText = displayData?.riskLevel === '高'
+            ? '阶段压力偏高'
+            : (displayData?.riskLevel === '中' ? '阶段压力中等' : '阶段压力可控');
+        const briefAnalysis = `当前${daYunStr}大运综合评估为${luckState}（${fortuneScore}分），${pressureText}。建议：${advice}`;
+        analysisDiv.innerHTML = `
+            <div class="mb-1"><strong class="text-white">当前大运:</strong> <span class="text-yellow-400 text-lg">${daYunStr}</span>（约${currentAge}岁）</div>
+            <div class="mb-1"><strong class="text-white">身强身弱:</strong> <span class="text-cyan-300">${bodyLabel}</span> · ${bodyBrief}</div>
+            <div class="mb-1 text-xs text-gray-400">说明：身强/身弱以日主在月令是否得令、地支是否通根、印比扶助与克泄耗强弱综合判断，不等于性格强弱。</div>
+            <div><strong class="text-blue-400">大运精简解析:</strong> ${briefAnalysis}</div>
+        `;
     }
     
     // --- SYNASTRY LOGIC ---
@@ -2763,17 +3109,45 @@
         );
         const coreCrossA2B = getCrossHuaInfluence(chartA, chartB, idxSetB.coreIndices);
         const coreCrossB2A = getCrossHuaInfluence(chartB, chartA, idxSetA.coreIndices);
-        const coreCrossTotal = coreCrossA2B.total + coreCrossB2A.total;
-        const coreScore = clampScore(
-            52
-            + coreSynergy * 0.95
-            + coreGroupFit * 1.35
-            - coreBrightDiff * 3.6
-            - coreStrengthGap * 0.16
-            + coreCrossTotal * 0.9
-            + profile.coreBias * 2,
-            8, 100
-        );
+        const corePairCount = Math.max(1, coreStarsA.length * coreStarsB.length);
+        const coreSynergyPerPair = coreSynergy / corePairCount;
+        const coreGroupPerPair = coreGroupFit / corePairCount;
+
+        const coreQualityA = idxSetA.coreIndices.reduce((sum, idx) => sum + getPalaceQuality(chartA, idx), 0);
+        const coreQualityB = idxSetB.coreIndices.reduce((sum, idx) => sum + getPalaceQuality(chartB, idx), 0);
+        const coreAxisCount = Math.max(1, idxSetA.coreIndices.length + idxSetB.coreIndices.length);
+        const coreQualityMean = (coreQualityA + coreQualityB) / coreAxisCount;
+        const coreQualitySignal = Math.tanh(coreQualityMean / 6) * 11;
+        const coreQualityGap = Math.abs(coreQualityA - coreQualityB);
+
+        const coreSupportA = getSupportRisk(chartA, idxSetA.coreIndices);
+        const coreSupportB = getSupportRisk(chartB, idxSetB.coreIndices);
+        const coreGood = coreSupportA.good + coreSupportB.good;
+        const coreBad = coreSupportA.bad + coreSupportB.bad;
+
+        const coreCrossPositive = coreCrossA2B.positive + coreCrossB2A.positive;
+        const coreCrossNegative = coreCrossA2B.negative + coreCrossB2A.negative;
+        const coreCrossDirectionalGap = Math.abs(coreCrossA2B.total - coreCrossB2A.total);
+        const coreRiskPenalty = Math.max(0, coreBad * 1.8 - coreGood * 0.65);
+
+        let coreRaw =
+            46
+            + profile.coreBias * 2.2
+            + coreSynergyPerPair * 5.2
+            + coreGroupPerPair * 7.2
+            + coreQualitySignal
+            + coreCrossPositive * 0.9
+            - coreCrossNegative * 1.35
+            - coreBrightDiff * 2.8
+            - coreStrengthGap * 0.21
+            - coreQualityGap * 0.4
+            - coreRiskPenalty
+            - coreCrossDirectionalGap * 0.85;
+
+        // 高分压缩，防止命格分数整体抬升到 80+。
+        if (coreRaw > 84) coreRaw = 84 + (coreRaw - 84) * 0.5;
+        if (coreRaw > 93) coreRaw = 93 + (coreRaw - 93) * 0.25;
+        const coreScore = clampScore(coreRaw, 8, 100);
 
         // 2) 关系契合度：关系宫主轴 + 太岁入卦 + 跨盘四化作用到关系宫群
         const relationStarsA = getMainStars(chartA, idxSetA.relationIndices);
@@ -2787,36 +3161,104 @@
         const taiSuiA2B = getTaiSuiInfluence(chartA, chartB, idxSetB.taiSuiFocus);
         const taiSuiB2A = getTaiSuiInfluence(chartB, chartA, idxSetA.taiSuiFocus);
         const relStrengthGap = Math.abs(getPalaceStrength(chartA, relIdxA) - getPalaceStrength(chartB, relIdxB));
-        const relationScore = clampScore(
-            48
-            + relationSynergy * 0.92
-            + relationGroupFit * 1.15
-            + (relationQualityA + relationQualityB) * 1.65
-            + (relationCrossA2B.total + relationCrossB2A.total) * 1.1
-            + (taiSuiA2B + taiSuiB2A) * 1.4
-            - relStrengthGap * 0.24,
-            8, 100
+        const relationPairCount = Math.max(1, relationStarsA.length * relationStarsB.length);
+        const relationSynergyPerPair = relationSynergy / relationPairCount;
+        const relationGroupPerPair = relationGroupFit / relationPairCount;
+
+        // 关系宫质量不再线性放大，改为均值后压缩，避免“主星多就天然高分”。
+        const relationAxisCount = Math.max(1, idxSetA.relationIndices.length + idxSetB.relationIndices.length);
+        const relationQualityMean = (relationQualityA + relationQualityB) / relationAxisCount;
+        const relationQualitySignal = Math.tanh(relationQualityMean / 6) * 12;
+
+        const relationSupportA = getSupportRisk(chartA, idxSetA.relationIndices);
+        const relationSupportB = getSupportRisk(chartB, idxSetB.relationIndices);
+        const relationGood = relationSupportA.good + relationSupportB.good;
+        const relationBad = relationSupportA.bad + relationSupportB.bad;
+
+        const relationCrossPositive = relationCrossA2B.positive + relationCrossB2A.positive;
+        const relationCrossNegative = relationCrossA2B.negative + relationCrossB2A.negative;
+        const crossDirectionalGap = Math.abs(relationCrossA2B.total - relationCrossB2A.total);
+
+        const relationTaiSuiPositive = Math.max(taiSuiA2B, 0) + Math.max(taiSuiB2A, 0);
+        const relationTaiSuiNegative = Math.max(-taiSuiA2B, 0) + Math.max(-taiSuiB2A, 0);
+
+        // 报告强调“化忌可产生黏性但也会形成压力”；能否被福德厚度消化是关键门槛。
+        const fudeResilience =
+            Math.max(0, getPalaceQuality(chartA, idxSetA.fudeIdx)) +
+            Math.max(0, getPalaceQuality(chartB, idxSetB.fudeIdx));
+        const unresolvedJiPressure = Math.max(
+            0,
+            relationCrossNegative * 1.25 + relationBad - (fudeResilience * 0.6 + relationGood * 0.45)
         );
+
+        const qualityGap = Math.abs(relationQualityA - relationQualityB);
+        const relRiskPenalty = Math.max(0, relationBad * 2.1 - relationGood * 0.6);
+        const imbalancePenalty =
+            relStrengthGap * 0.35
+            + qualityGap * 0.45
+            + crossDirectionalGap * 1.05;
+
+        let relationRaw =
+            42
+            + profile.coreBias * 2
+            + relationSynergyPerPair * 4.4
+            + relationGroupPerPair * 6.2
+            + relationQualitySignal
+            + relationCrossPositive * 1.1
+            - relationCrossNegative * 1.9
+            + relationTaiSuiPositive * 0.7
+            - relationTaiSuiNegative * 1.1
+            - relRiskPenalty
+            - unresolvedJiPressure * 2.4
+            - imbalancePenalty;
+
+        // 高分区压缩：防止多数样本被堆到 80+。
+        if (relationRaw > 82) relationRaw = 82 + (relationRaw - 82) * 0.45;
+        if (relationRaw > 92) relationRaw = 92 + (relationRaw - 92) * 0.25;
+        const relationScore = clampScore(relationRaw, 8, 100);
 
         // 3) 相处顺畅度：吉凶结构 + 跨盘化忌压力 + 强弱失衡惩罚
         const supportA = getSupportRisk(chartA, idxSetA.supportIndices);
         const supportB = getSupportRisk(chartB, idxSetB.supportIndices);
         const supportCrossA2B = getCrossHuaInfluence(chartA, chartB, idxSetB.supportIndices);
         const supportCrossB2A = getCrossHuaInfluence(chartB, chartA, idxSetA.supportIndices);
-        const netSupport = (supportA.good + supportB.good) - (supportA.bad + supportB.bad);
-        const crossPositive = supportCrossA2B.positive + supportCrossB2A.positive;
-        const crossNegative = supportCrossA2B.negative + supportCrossB2A.negative;
+        const supportGood = supportA.good + supportB.good;
+        const supportBad = supportA.bad + supportB.bad;
+        const supportBalance = supportGood - supportBad;
+        const supportCrossPositive = supportCrossA2B.positive + supportCrossB2A.positive;
+        const supportCrossNegative = supportCrossA2B.negative + supportCrossB2A.negative;
+        const supportCrossDirectionalGap = Math.abs(supportCrossA2B.total - supportCrossB2A.total);
         const mingGap = Math.abs(getPalaceStrength(chartA, mingIdxA) - getPalaceStrength(chartB, mingIdxB));
         const supportStrengthGap = Math.abs(getPalaceStrength(chartA, relIdxA) - getPalaceStrength(chartB, relIdxB));
-        const supportScore = clampScore(
-            56
-            + netSupport * 4.3
-            + crossPositive * 1.05
-            - crossNegative * 1.45
-            - mingGap * 0.22
-            - supportStrengthGap * 0.3,
-            5, 100
+        const supportAxisCount = Math.max(1, idxSetA.supportIndices.length + idxSetB.supportIndices.length);
+        const supportDensity = (supportGood - supportBad) / supportAxisCount;
+        const supportSignal = Math.tanh(supportDensity / 3.2) * 14;
+        const supportResilience =
+            Math.max(0, getPalaceQuality(chartA, idxSetA.fudeIdx)) +
+            Math.max(0, getPalaceQuality(chartB, idxSetB.fudeIdx));
+        const unresolvedSupportPressure = Math.max(
+            0,
+            supportCrossNegative * 1.2 + supportBad - (supportGood * 0.75 + supportResilience * 0.55)
         );
+        const supportRiskPenalty = Math.max(0, supportBad * 2.0 - supportGood * 0.7);
+        const supportMismatchPenalty =
+            mingGap * 0.28
+            + supportStrengthGap * 0.36
+            + supportCrossDirectionalGap * 0.95;
+
+        let supportRaw =
+            41
+            + supportSignal
+            + supportBalance * 1.35
+            + supportCrossPositive * 0.85
+            - supportCrossNegative * 1.6
+            - supportRiskPenalty
+            - unresolvedSupportPressure * 2.1
+            - supportMismatchPenalty;
+
+        if (supportRaw > 84) supportRaw = 84 + (supportRaw - 84) * 0.52;
+        if (supportRaw > 93) supportRaw = 93 + (supportRaw - 93) * 0.28;
+        const supportScore = clampScore(supportRaw, 5, 100);
 
         return {
             coreScore,
@@ -4050,14 +4492,113 @@
         if (panel.style.display === 'flex') { panel.style.display = 'none'; } else { panel.style.display = 'flex'; initDailyCalendar(); }
     }
 
+    const DAILY_REPORT_CACHE_STORAGE_KEY = 'wx_daily_report_cache_v1';
+    const DAILY_REPORT_CACHE_VERSION = 'daily_report_prompt_v1';
+    const DAILY_REPORT_CACHE_MAX_ENTRIES = 120;
+    const dailyReportInFlight = {};
+    const dailyReportCache = loadDailyReportCache();
+
+    function loadDailyReportCache() {
+        try {
+            const raw = localStorage.getItem(DAILY_REPORT_CACHE_STORAGE_KEY);
+            if (!raw) return {};
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') return {};
+            return parsed;
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function saveDailyReportCache() {
+        try {
+            localStorage.setItem(DAILY_REPORT_CACHE_STORAGE_KEY, JSON.stringify(dailyReportCache));
+        } catch (e) {}
+    }
+
+    function pruneDailyReportCache() {
+        const entries = Object.entries(dailyReportCache);
+        if (entries.length <= DAILY_REPORT_CACHE_MAX_ENTRIES) return;
+        entries.sort((a, b) => (b[1]?.ts || 0) - (a[1]?.ts || 0));
+        const keep = new Set(entries.slice(0, DAILY_REPORT_CACHE_MAX_ENTRIES).map(([k]) => k));
+        Object.keys(dailyReportCache).forEach(k => { if (!keep.has(k)) delete dailyReportCache[k]; });
+    }
+
+    function stableHash(str) {
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+        }
+        return (h >>> 0).toString(36);
+    }
+
+    function getCurrentChartIdentity() {
+        if (!currentChart) return '';
+        const birthDate = document.getElementById('birthDate')?.value || '';
+        const birthHour = String(document.getElementById('birthHour')?.value ?? currentChart.lunarHourIdx ?? '');
+        const gender = String(document.getElementById('gender')?.value ?? currentChart.gender ?? '');
+        return [
+            birthDate,
+            birthHour,
+            gender,
+            currentChart.yearStemIdx,
+            currentChart.yearBranchIdx,
+            currentChart.bureau,
+            currentChart.ziWeiIdx
+        ].join('|');
+    }
+
+    function buildDailyReportCacheKey(todayDate) {
+        const chartIdentity = getCurrentChartIdentity() || (currentChart ? currentChart.getSummary().substring(0, 800) : '');
+        return `${DAILY_REPORT_CACHE_VERSION}|${todayDate}|${stableHash(chartIdentity)}`;
+    }
+
+    function isDailyReportCacheable(text) {
+        if (!text || typeof text !== 'string') return false;
+        const t = text.trim();
+        if (!t) return false;
+        if (t.startsWith('⚠️')) return false;
+        if (t.startsWith('连接失败')) return false;
+        return true;
+    }
+
     async function generateDailyReport() {
         const aiTextDiv = document.getElementById('calAiText');
         if (!currentChart) { aiTextDiv.innerText = "请先在左侧输入生日并生成命盘，以便大师为您推算今日运势。"; return; }
-        aiTextDiv.innerHTML = '<span class="animate-pulse">大师正在掐指一算...</span>';
         const now = new Date(); const lunar = Lunar.fromDate(now);
         const todayInfo = { date: `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`, lunar: `${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}`, ganzhi: `${lunar.getDayInGanZhi()}日`, yi: lunar.getDayYi().join(','), ji: lunar.getDayJi().join(',') };
+        const cacheKey = buildDailyReportCacheKey(todayInfo.date);
+        const cached = dailyReportCache[cacheKey];
+        if (cached && typeof cached.text === 'string' && cached.text.trim()) {
+            aiTextDiv.innerText = cached.text;
+            return;
+        }
+
+        aiTextDiv.innerHTML = '<span class="animate-pulse">大师正在掐指一算...</span>';
+        if (dailyReportInFlight[cacheKey]) {
+            const reused = await dailyReportInFlight[cacheKey];
+            aiTextDiv.innerText = reused;
+            return;
+        }
+
         const prompt = `今天是：${todayInfo.date} (农历${todayInfo.lunar}, ${todayInfo.ganzhi})。宜：${todayInfo.yi}。忌：${todayInfo.ji}。用户命盘摘要：${currentChart.getSummary().substring(0, 500)}... 请结合今日的日课（干支五行、宜忌）和用户的命盘结构，给出一小段（100字以内）的今日运势提醒。要求：简单易懂，有参考价值，口语化，像个老朋友的叮嘱。注意：直接输出运势内容即可，严禁在结尾显示“共xx字”或类似的字数统计。`;
-        const result = await callAI(prompt); aiTextDiv.innerText = result;
+        dailyReportInFlight[cacheKey] = (async () => {
+            const result = await callAI(prompt);
+            if (isDailyReportCacheable(result)) {
+                dailyReportCache[cacheKey] = { text: result, ts: Date.now() };
+                pruneDailyReportCache();
+                saveDailyReportCache();
+            }
+            return result;
+        })();
+
+        try {
+            const result = await dailyReportInFlight[cacheKey];
+            aiTextDiv.innerText = result;
+        } finally {
+            delete dailyReportInFlight[cacheKey];
+        }
     }
 
     async function analyzeCurrentPalace() {
