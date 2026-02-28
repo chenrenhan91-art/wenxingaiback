@@ -4776,7 +4776,7 @@
             return;
         }
 
-        const prompt = `今天是：${todayInfo.date} (农历${todayInfo.lunar}, ${todayInfo.ganzhi})。宜：${todayInfo.yi}。忌：${todayInfo.ji}。用户命盘摘要：${currentChart.getSummary().substring(0, 500)}... 请结合今日的日课（干支五行、宜忌）和用户的命盘结构，给出一小段（100字以内）的今日运势提醒。要求：简单易懂，有参考价值，口语化，像个老朋友的叮嘱。注意：直接输出运势内容即可，严禁在结尾显示“共xx字”或类似的字数统计。`;
+        const prompt = `今天是：${todayInfo.date} (农历${todayInfo.lunar}, ${todayInfo.ganzhi})。宜：${todayInfo.yi}。忌：${todayInfo.ji}。用户命盘摘要：${currentChart.getSummary().substring(0, 500)}... 请结合今日的日课（干支五行、宜忌）和用户的命盘结构，给出一小段（100字以内）的今日运势提醒。要求：简单易懂，有参考价值，口语化。注意：直接输出运势内容即可，严禁在结尾显示“共xx字”或类似的字数统计。`;
         dailyReportInFlight[cacheKey] = (async () => {
             const result = await callAI(prompt);
             if (isDailyReportCacheable(result)) {
