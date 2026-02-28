@@ -77,7 +77,8 @@
             background: rgba(15, 23, 42, 0.97);
         }
         body.mobile-perf #meteor-canvas {
-            display: none !important;
+            display: block !important;
+            opacity: 0.42;
         }
         body.mobile-perf .panel,
         body.mobile-perf .floating-window,
@@ -3242,8 +3243,6 @@
     })();
 
     function getRendererPixelRatioCap() {
-        if (MOBILE_PERF_MODE) return 1.1;
-        if (IS_MOBILE_DEVICE) return 1.5;
         return 2;
     }
 
@@ -3275,7 +3274,7 @@
 
         // Particle System (Optimization: reduce count on mobile)
         const isMobile = window.innerWidth < 768;
-        const particleCount = MOBILE_PERF_MODE ? 2600 : (isMobile ? 6000 : 20000); 
+        const particleCount = MOBILE_PERF_MODE ? 4200 : (isMobile ? 6000 : 20000); 
         const positions = new Float32Array(particleCount * 3); const randoms = new Float32Array(particleCount); const radius = 3.8; 
         for (let i = 0; i < particleCount; i++) {
             const k = i + 0.5; const phi = Math.acos(1 - 2 * k / particleCount); const theta = Math.PI * (1 + Math.sqrt(5)) * k;
@@ -3324,18 +3323,15 @@
     function initMeteorLayer() {
         meteorCanvas = document.getElementById('meteor-canvas');
         if (!meteorCanvas) return;
-        if (MOBILE_PERF_MODE) {
-            meteorCanvas.style.display = 'none';
-            return;
-        }
         meteorCanvas.style.display = 'block';
+        meteorCanvas.style.opacity = MOBILE_PERF_MODE ? '0.42' : '0.75';
         meteorCtx = meteorCanvas.getContext('2d');
         resizeMeteorCanvas();
         // 中等频率：首次稍微延迟一点出现
         const now = performance.now();
         meteors = [];
         meteorLastTs = now;
-        nextMeteorAt = now + randRange(1200, 2600);
+        nextMeteorAt = now + (MOBILE_PERF_MODE ? randRange(2600, 4200) : randRange(1200, 2600));
     }
 
     function resizeMeteorCanvas() {
@@ -3372,10 +3368,10 @@
         const angle = randRange(Math.PI * 0.15, Math.PI * 0.28); // ~27°-50°
         const dirX = Math.cos(angle);
         const dirY = Math.sin(angle);
-        const speed = randRange(820, 1180); // px/s
-        const length = randRange(200, 360);
-        const width = randRange(1.6, 2.8);
-        const ttl = randRange(0.85, 1.55);
+        const speed = MOBILE_PERF_MODE ? randRange(700, 980) : randRange(820, 1180); // px/s
+        const length = MOBILE_PERF_MODE ? randRange(150, 280) : randRange(200, 360);
+        const width = MOBILE_PERF_MODE ? randRange(1.2, 2.0) : randRange(1.6, 2.8);
+        const ttl = MOBILE_PERF_MODE ? randRange(0.75, 1.35) : randRange(0.85, 1.55);
         const hueShift = randRange(-8, 10);
 
         meteors.push({
@@ -3391,7 +3387,7 @@
         });
 
         // 下一次出现：约 3 秒一次（带少量抖动，避免机械感）
-        nextMeteorAt = now + randRange(2400, 3600);
+        nextMeteorAt = now + (MOBILE_PERF_MODE ? randRange(4200, 6200) : randRange(2400, 3600));
     }
 
     function updateAndDrawMeteors(now) {
@@ -3399,7 +3395,8 @@
         const dt = Math.min(0.05, Math.max(0, (now - meteorLastTs) / 1000));
         meteorLastTs = now;
 
-        if (now >= nextMeteorAt && meteors.length < 2) {
+        const maxMeteors = MOBILE_PERF_MODE ? 1 : 2;
+        if (now >= nextMeteorAt && meteors.length < maxMeteors) {
             // 控制同时数量，避免干扰星盘
             spawnMeteor(now);
         }
@@ -3418,7 +3415,8 @@
             const p = Math.min(1, m.t / m.ttl);
             const fadeIn = Math.min(1, p / 0.12);
             const fadeOut = 1 - Math.max(0, (p - 0.55) / 0.45);
-            const alpha = 0.46 * fadeIn * fadeOut; // 略更明显，但仍控制遮挡
+            const alphaBase = MOBILE_PERF_MODE ? 0.34 : 0.46;
+            const alpha = alphaBase * fadeIn * fadeOut; // 略更明显，但仍控制遮挡
 
             const tailX = m.x - m.dirX * m.length;
             const tailY = m.y - m.dirY * m.length;
@@ -3536,13 +3534,13 @@
 
     function addBackgroundStars() {
         const geometry = new THREE.BufferGeometry(); const vertices = []; const colors = []; const colorObj = new THREE.Color();
-        const starCount = MOBILE_PERF_MODE ? 900 : (IS_MOBILE_DEVICE ? 1700 : 3000);
+        const starCount = MOBILE_PERF_MODE ? 1400 : (IS_MOBILE_DEVICE ? 1700 : 3000);
         for (let i = 0; i < starCount; i++) {
             vertices.push(THREE.MathUtils.randFloatSpread(400), THREE.MathUtils.randFloatSpread(400), THREE.MathUtils.randFloatSpread(400));
             colorObj.setHSL(0.6 + Math.random() * 0.1, 0.8, 0.5 + Math.random() * 0.5); colors.push(colorObj.r, colorObj.g, colorObj.b);
         }
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-        const material = new THREE.PointsMaterial({ size: MOBILE_PERF_MODE ? 0.5 : 0.6, vertexColors: true, transparent: true, opacity: MOBILE_PERF_MODE ? 0.68 : 0.8 });
+        const material = new THREE.PointsMaterial({ size: MOBILE_PERF_MODE ? 0.55 : 0.6, vertexColors: true, transparent: true, opacity: MOBILE_PERF_MODE ? 0.72 : 0.8 });
         bgStars = new THREE.Points(geometry, material);
         bgStars.name = 'bgStars';
         bgStars.material.size = THEME.bgStars.size;
@@ -3552,13 +3550,13 @@
     
     function addSpaceDust() {
         const geometry = new THREE.BufferGeometry(); const vertices = [];
-        const dustCount = MOBILE_PERF_MODE ? 420 : (IS_MOBILE_DEVICE ? 900 : 1500);
+        const dustCount = MOBILE_PERF_MODE ? 700 : (IS_MOBILE_DEVICE ? 900 : 1500);
         for (let i = 0; i < dustCount; i++) {
             const r = 30 + Math.random() * 60; const theta = Math.random() * Math.PI * 2;
             const x = r * Math.cos(theta); const y = r * Math.sin(theta); const z = (Math.random() - 0.5) * 15; vertices.push(x, y, z);
         }
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        const material = new THREE.PointsMaterial({ color: 0x4466aa, size: MOBILE_PERF_MODE ? 0.35 : 0.4, transparent: true, opacity: MOBILE_PERF_MODE ? 0.28 : 0.4 });
+        const material = new THREE.PointsMaterial({ color: 0x4466aa, size: MOBILE_PERF_MODE ? 0.38 : 0.4, transparent: true, opacity: MOBILE_PERF_MODE ? 0.3 : 0.4 });
         spaceDust = new THREE.Points(geometry, material);
         spaceDust.name = "dust";
         spaceDust.material.color.setHex(THEME.dust.color);
@@ -3569,16 +3567,6 @@
     // (C) Near-field parallax dust - fewer, larger particles for depth
     function addNearDust() {
         if (!scene) return;
-        if (MOBILE_PERF_MODE) {
-            const oldPerf = scene.getObjectByName('nearDust');
-            if (oldPerf) {
-                scene.remove(oldPerf);
-                if (oldPerf.geometry) oldPerf.geometry.dispose();
-                if (oldPerf.material) oldPerf.material.dispose();
-            }
-            nearDust = null;
-            return;
-        }
         const key = `${Math.round(window.innerWidth / 40)}x${Math.round(window.innerHeight / 40)}`;
         if (nearDust && key === nearDustLayoutKey) return;
         nearDustLayoutKey = key;
@@ -3591,7 +3579,7 @@
         }
 
         const isMobile = window.innerWidth < 768;
-        const count = isMobile ? 160 : 420;
+        const count = MOBILE_PERF_MODE ? 90 : (isMobile ? 160 : 420);
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(count * 3);
         for (let i = 0; i < count; i++) {
@@ -3608,9 +3596,9 @@
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         const material = new THREE.PointsMaterial({
             color: 0x93c5fd,
-            size: isMobile ? 1.35 : 1.65,
+            size: MOBILE_PERF_MODE ? 1.1 : (isMobile ? 1.35 : 1.65),
             transparent: true,
-            opacity: isMobile ? 0.12 : 0.16,
+            opacity: MOBILE_PERF_MODE ? 0.08 : (isMobile ? 0.12 : 0.16),
             blending: THREE.AdditiveBlending,
             depthWrite: false
         });
@@ -3904,7 +3892,7 @@
     function onWindowResize() {
         camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, getRendererPixelRatioCap()));
-        if (!MOBILE_PERF_MODE) resizeMeteorCanvas();
+        resizeMeteorCanvas();
         addNearDust();
         
         // --- MOBILE CAMERA ADJUSTMENT ---
@@ -4139,7 +4127,7 @@
         updateHalo(now);
 
         // 流星层：低频、低成本
-        if (!MOBILE_PERF_MODE) updateAndDrawMeteors(now);
+        updateAndDrawMeteors(now);
     }
 
     try { init3D(); } catch (e) { console.error("3D Init Failed", e); setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 1000); }
