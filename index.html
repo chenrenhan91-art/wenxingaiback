@@ -1940,6 +1940,7 @@
         '涉及命理术语时，首次出现请使用“术语（解释）”格式。',
         '回答按“结论 -> 原因 -> 建议”组织，优先短句和列表。',
         '避免空洞玄学堆砌，不要使用宿命化表达。',
+        '不要输出拼音、拉丁字母音译或英文转写（如 zi wei、ming gong）。',
         '不要使用✳、✨、★等装饰符号。'
     ].join('\n');
 
@@ -1980,9 +1981,26 @@
         return result;
     }
 
+    function stripPinyinTransliteration(text) {
+        if (typeof text !== 'string' || !text.trim()) return text;
+        let result = text;
+        // Remove explicit pinyin lines.
+        result = result.replace(/^[ \t]*(?:拼音|pinyin)\s*[：:][^\n]*$/gim, '');
+        // Remove pinyin transliteration in parentheses/brackets.
+        result = result.replace(/[（(]\s*[A-Za-z\u00C0-\u024F\u1E00-\u1EFFüÜǖǘǚǜāáǎàēéěèīíǐìōóǒòūúǔùńňḿ\d\s'`.-]{2,}\s*[)）]/g, '');
+        // Remove inline transliteration after slash: “术语/zi wei”.
+        result = result.replace(/([一-龥])\s*[/／]\s*[A-Za-z\u00C0-\u024F\u1E00-\u1EFFüÜǖǘǚǜāáǎàēéěèīíǐìōóǒòūúǔùńňḿ\d\s'`.-]{2,}/g, '$1');
+        result = result.replace(/[ \t]{2,}/g, ' ');
+        result = result.replace(/[ \t]+([，。；：、！？,.!?])/g, '$1');
+        result = result.replace(/\n{3,}/g, '\n\n');
+        return result.trim();
+    }
+
     function formatAiReadableText(text) {
         if (typeof text !== 'string' || !text.trim()) return text;
         let result = text;
+        // Remove pinyin/transliteration to keep output pure Chinese.
+        result = stripPinyinTransliteration(result);
         // Remove decorative star-like symbols to keep content clean.
         result = result.replace(/[✳✴✶✷✸✹✺✻❇❈❉❊❋✦✧★☆⭐🌟✨]/g, '');
         // Normalize common bullet variants.
@@ -4461,18 +4479,195 @@
     }
 
     // Daily Calendar Logic
-    function getModernYiJi(dateStr, chart) {
-        let hash = 0; for (let i = 0; i < dateStr.length; i++) { hash = ((hash << 5) - hash) + dateStr.charCodeAt(i); hash |= 0; }
-        let userOffset = 0; let starPersonality = "general"; 
-        if (chart) { userOffset = (chart.ziWeiIdx * 137) + (chart.bureau * 19); const mingPalace = chart.chartData.find(p => p.isMing); if (mingPalace) { const stars = mingPalace.stars.map(s => s.name); if (stars.includes('七杀') || stars.includes('破军') || stars.includes('贪狼')) { starPersonality = "aggressive"; } else if (stars.includes('天同') || stars.includes('太阴') || stars.includes('天梁')) { starPersonality = "gentle"; } } }
-        const personalizedSeed = hash + userOffset;
-        const commonYi = ["写代码", "重构", "提交PR", "摸鱼", "喝奶茶", "健身", "约会", "表白", "理财", "吸猫", "早睡", "阅读", "冥想", "大扫除", "听音乐", "看展", "学习新框架", "备份数据", "复盘", "断舍离", "做饭", "散步", "玩游戏", "睡懒觉"];
-        const commonJi = ["熬夜", "乱立Flag", "直接推产", "过度焦虑", "内耗", "吵架", "借钱", "暴饮暴食", "久坐", "盲目跟风", "冲动消费", "忘记保存", "拖延症", "八卦", "无意义会议", "剧透", "迟到", "冷战"];
-        const aggroYi = ["挑战权威", "极限运动", "创业", "大额投资", "通宵冲刺"]; const gentleYi = ["泡脚", "种花", "写日记", "做SPA", "听轻音乐"];
-        let finalYi = [...commonYi]; let finalJi = [...commonJi];
-        if (starPersonality === "aggressive") { finalYi.push(...aggroYi); } else if (starPersonality === "gentle") { finalYi.push(...gentleYi); }
-        const pickItems = (pool, count, seedVal) => { let result = []; let tempPool = [...pool]; for (let i = 0; i < count; i++) { const rnd = Math.abs(Math.sin(seedVal + i * 13)) * 10000; const idx = Math.floor((rnd - Math.floor(rnd)) * tempPool.length); result.push(tempPool[idx]); tempPool.splice(idx, 1); } return result; };
-        return { yi: pickItems(finalYi, 4, personalizedSeed), ji: pickItems(finalJi, 4, personalizedSeed + 42) };
+    const DAILY_BRANCH_ORDER = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+    const DAILY_STEM_ELEMENT = { '甲': '木', '乙': '木', '丙': '火', '丁': '火', '戊': '土', '己': '土', '庚': '金', '辛': '金', '壬': '水', '癸': '水' };
+    const DAILY_OFFICER_ORDER = ['建', '除', '满', '平', '定', '执', '破', '危', '成', '收', '开', '闭'];
+    const DAILY_OFFICER_RULES = {
+        '建': { yi: ['制定本周计划', '开始新习惯', '整理房间', '发起约见'], ji: ['临时推翻长期安排', '仓促断联'] },
+        '除': { yi: ['断舍离', '清理桌面', '删除无用文件', '深度清洁'], ji: ['仓促开始大计划', '临时做重大承诺'] },
+        '满': { yi: ['朋友聚会', '家庭聚餐', '买菜补货', '拍照记录生活'], ji: ['暴饮暴食', '透支消费'] },
+        '平': { yi: ['沟通误会', '协调家务', '例行通勤', '处理琐事'], ji: ['赌气做决定', '争强好胜'] },
+        '定': { yi: ['确认行程', '预约体检', '固定作息', '完成清单'], ji: ['频繁改主意', '临时放鸽子'] },
+        '执': { yi: ['执行待办', '晨练打卡', '推进拖延事项', '收纳归位'], ji: ['半途而废', '同时开太多任务'] },
+        '破': { yi: ['戒坏习惯', '停用无效订阅', '丢弃过期物品', '重置生活环境'], ji: ['冲动争吵', '摔门式处理关系'] },
+        '危': { yi: ['安全检查', '检查证件药品', '放慢节奏', '备份手机数据'], ji: ['夜间疲劳驾驶', '冒险出行', '高风险娱乐'] },
+        '成': { yi: ['完成重要待办', '家庭聚会', '纪念日安排', '提交阶段总结'], ji: ['翻旧账', '过度承诺'] },
+        '收': { yi: ['结清账单', '收纳归档', '取快递', '清点预算'], ji: ['冲动下单', '拖欠账款'] },
+        '开': { yi: ['联系朋友', '短途出行', '尝试新菜谱', '发布日常内容'], ji: ['泄露隐私', '过度社交透支'] },
+        '闭': { yi: ['早点休息', '冥想放松', '减少屏幕时间', '在家整理'], ji: ['熬夜刷屏', '密集应酬'] }
+    };
+    const DAILY_TEN_GOD_RULES = {
+        '印': { yi: ['阅读学习', '健康管理', '整理笔记', '安静复盘'], ji: ['无准备硬上', '盲目冒进'] },
+        '比劫': { yi: ['朋友互助', '结伴运动', '家人协作', '清理积压任务'], ji: ['借钱担保', '硬碰硬较劲'] },
+        '食伤': { yi: ['创意记录', '拍照剪辑', '表达感谢', '分享日常'], ji: ['口无遮拦', '情绪化发言'] },
+        '财': { yi: ['记账对账', '比价采购', '还款缴费', '整理预算'], ji: ['冲动消费', '透支信用'] },
+        '官杀': { yi: ['按时作息', '证件办理', '守时守约', '执行规则'], ji: ['拖延迟到', '触碰规则边界'] }
+    };
+
+    function dedupeList(list) {
+        const seen = new Set();
+        const out = [];
+        (list || []).forEach(item => {
+            const t = String(item || '').trim();
+            if (!t || seen.has(t)) return;
+            seen.add(t);
+            out.push(t);
+        });
+        return out;
+    }
+
+    function pickDeterministicItems(pool, count, seedVal, fallback = []) {
+        const primary = dedupeList(pool);
+        const fb = dedupeList(fallback);
+        while (primary.length < count && fb.length > 0) {
+            const candidate = fb.shift();
+            if (!primary.includes(candidate)) primary.push(candidate);
+        }
+        if (primary.length === 0) return [];
+        const temp = [...primary];
+        const result = [];
+        const take = Math.min(count, temp.length);
+        for (let i = 0; i < take; i++) {
+            const rnd = Math.abs(Math.sin(seedVal + i * 13.37)) * 10000;
+            const idx = Math.floor((rnd - Math.floor(rnd)) * temp.length);
+            result.push(temp[idx]);
+            temp.splice(idx, 1);
+        }
+        while (result.length < count && fb.length > 0) {
+            const candidate = fb.shift();
+            if (!result.includes(candidate)) result.push(candidate);
+        }
+        return result;
+    }
+
+    function getOfficerByMonthDayZhi(monthZhi, dayZhi) {
+        const m = DAILY_BRANCH_ORDER.indexOf(monthZhi);
+        const d = DAILY_BRANCH_ORDER.indexOf(dayZhi);
+        if (m < 0 || d < 0) return '平';
+        const idx = (d - m + 12) % 12;
+        return DAILY_OFFICER_ORDER[idx] || '平';
+    }
+
+    function getElementRelation(dayMasterStem, targetStem) {
+        const dayEl = DAILY_STEM_ELEMENT[dayMasterStem];
+        const tarEl = DAILY_STEM_ELEMENT[targetStem];
+        if (!dayEl || !tarEl) return '';
+        if (dayEl === tarEl) return '比劫';
+        if (LIFE_ELEMENT_GENERATED_BY[dayEl] === tarEl) return '印';
+        if (LIFE_ELEMENT_GENERATES[dayEl] === tarEl) return '食伤';
+        if (LIFE_ELEMENT_CONTROLS[dayEl] === tarEl) return '财';
+        if (LIFE_ELEMENT_CONTROLLED_BY[dayEl] === tarEl) return '官杀';
+        return '';
+    }
+
+    function getModernYiJi(dateStr, chart, dayCtx = {}) {
+        let hash = 0;
+        for (let i = 0; i < dateStr.length; i++) { hash = ((hash << 5) - hash) + dateStr.charCodeAt(i); hash |= 0; }
+
+        const monthZhi = String(dayCtx.monthZhi || '').trim();
+        const dayZhi = String(dayCtx.dayZhi || '').trim();
+        const dayGan = String(dayCtx.dayGan || '').trim();
+        const officer = getOfficerByMonthDayZhi(monthZhi, dayZhi);
+        const officerRule = DAILY_OFFICER_RULES[officer] || DAILY_OFFICER_RULES['平'];
+
+        let userOffset = 0;
+        const profileYi = [];
+        const profileJi = [];
+        let tenGodKey = '';
+
+        if (chart) {
+            userOffset = (chart.ziWeiIdx * 137) + (chart.bureau * 19);
+            const mingPalace = chart.chartData.find(p => p.isMing);
+            const mingStars = mingPalace ? mingPalace.stars.map(s => s.name) : [];
+            const aggressiveSet = ['七杀', '破军', '贪狼', '廉贞', '武曲'];
+            const gentleSet = ['天同', '太阴', '天梁', '天府', '天相'];
+            const expressionSet = ['太阳', '巨门', '天机', '文昌', '文曲'];
+            const aggressiveScore = mingStars.filter(s => aggressiveSet.includes(s)).length;
+            const gentleScore = mingStars.filter(s => gentleSet.includes(s)).length;
+            const expressionScore = mingStars.filter(s => expressionSet.includes(s)).length;
+
+            let jiCount = 0;
+            let goodHuaCount = 0;
+            chart.chartData.forEach(p => {
+                p.stars.forEach(star => {
+                    if (star.sihua === '忌') jiCount += 1;
+                    if (star.sihua === '禄' || star.sihua === '权' || star.sihua === '科') goodHuaCount += 1;
+                });
+            });
+
+            if (aggressiveScore >= 2) {
+                profileYi.push('推进棘手家务', '高强度训练', '主动解决难题', '完成拖延事项');
+                profileJi.push('冲动消费', '硬碰硬翻脸', '熬夜硬扛');
+            }
+            if (gentleScore >= 2) {
+                profileYi.push('健康管理', '家庭沟通', '情绪修复', '长期规划复盘');
+                profileJi.push('过度迎合', '拖延关键决策');
+            }
+            if (expressionScore >= 2) {
+                profileYi.push('表达感谢', '记录分享', '联系朋友', '整理社交消息');
+                profileJi.push('话说太满', '情绪化回消息');
+            }
+            if (goodHuaCount >= 5) {
+                profileYi.push('安排重要会面', '落实储蓄计划', '推进长期计划');
+            }
+            if (jiCount >= 3) {
+                profileJi.push('深夜网购', '冲动请客', '酒后出行', '长期熬夜');
+            }
+
+            const bureauElementMap = { 2: '水', 3: '木', 4: '金', 5: '土', 6: '火' };
+            const bureauElement = bureauElementMap[chart.bureau];
+            if (bureauElement === '木') {
+                profileYi.push('学习新技能', '户外散步');
+                profileJi.push('计划过载');
+            } else if (bureauElement === '火') {
+                profileYi.push('社交互动', '整理妆发穿搭');
+                profileJi.push('情绪上头');
+            } else if (bureauElement === '土') {
+                profileYi.push('家务整理', '烹饪备餐');
+                profileJi.push('固执拖延');
+            } else if (bureauElement === '金') {
+                profileYi.push('清理账单', '断舍离衣柜');
+                profileJi.push('过度苛责');
+            } else if (bureauElement === '水') {
+                profileYi.push('复盘记日记', '早点睡');
+                profileJi.push('多线分心');
+            }
+
+            try {
+                const natalDayStem = chart.lunar && typeof chart.lunar.getDayGan === 'function' ? chart.lunar.getDayGan() : '';
+                tenGodKey = getElementRelation(natalDayStem, dayGan);
+            } catch (e) {
+                tenGodKey = '';
+            }
+        }
+
+        const tenGodRule = DAILY_TEN_GOD_RULES[tenGodKey] || { yi: [], ji: [] };
+        const personalizedSeed = hash + userOffset + officer.charCodeAt(0) + (tenGodKey ? tenGodKey.charCodeAt(0) : 0);
+
+        const baseYi = [
+            '规律作息', '阅读学习', '运动拉伸', '整理待办',
+            '备份数据', '复盘计划', '主动沟通', '处理积压事项',
+            '洗衣换床品', '买菜备餐', '记录灵感', '家庭联络'
+        ];
+        const baseJi = [
+            '熬夜透支', '冲动消费', '情绪化争执', '无准备表态',
+            '口头承诺过量', '忽略健康信号', '拖延关键节点', '盲目跟风下单',
+            '带情绪做决策', '无意义内耗', '刷屏过度', '超负荷排程'
+        ];
+
+        let yiPool = dedupeList([...officerRule.yi, ...tenGodRule.yi, ...profileYi, ...baseYi]);
+        let jiPool = dedupeList([...officerRule.ji, ...tenGodRule.ji, ...profileJi, ...baseJi]);
+
+        // Resolve direct conflicts: if same item appears in both pools, prioritize Ji.
+        const jiSet = new Set(jiPool);
+        yiPool = yiPool.filter(item => !jiSet.has(item));
+        if (yiPool.length < 6) yiPool = dedupeList([...yiPool, ...baseYi]);
+        if (jiPool.length < 6) jiPool = dedupeList([...jiPool, ...baseJi]);
+
+        return {
+            yi: pickDeterministicItems(yiPool, 4, personalizedSeed, baseYi),
+            ji: pickDeterministicItems(jiPool, 4, personalizedSeed + 42, baseJi)
+        };
     }
     
     function initDailyCalendar() {
@@ -4481,7 +4676,15 @@
         document.getElementById('calSolarDate').innerText = `${solar.getYear()}年${solar.getMonth()}月${solar.getDay()}日`;
         document.getElementById('calLunarDate').innerText = `${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}`;
         document.getElementById('calGanzhi').innerText = `${lunar.getYearInGanZhi()}年 · ${lunar.getMonthInGanZhi()}月 · ${lunar.getDayInGanZhi()}日`;
-        const modernData = getModernYiJi(dateStr, currentChart);
+        const monthGanZhi = lunar.getMonthInGanZhi ? lunar.getMonthInGanZhi() : '';
+        const dayGanZhi = lunar.getDayInGanZhi ? lunar.getDayInGanZhi() : '';
+        const modernData = getModernYiJi(dateStr, currentChart, {
+            monthGanZhi,
+            dayGanZhi,
+            monthZhi: monthGanZhi ? monthGanZhi.charAt(monthGanZhi.length - 1) : '',
+            dayZhi: dayGanZhi ? dayGanZhi.charAt(dayGanZhi.length - 1) : '',
+            dayGan: dayGanZhi ? dayGanZhi.charAt(0) : ''
+        });
         if (currentChart) { document.querySelector('.yiji-box.yi').style.border = "1px solid rgba(50, 205, 50, 0.6)"; document.querySelector('.yiji-box.ji').style.border = "1px solid rgba(255, 69, 0, 0.6)"; }
         document.getElementById('calYi').innerText = modernData.yi.join(' · '); document.getElementById('calJi').innerText = modernData.ji.join(' · ');
     }
