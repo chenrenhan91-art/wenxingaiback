@@ -2865,13 +2865,6 @@
         const safeIdx = foundIdx === -1 ? Math.max(0, data.length - 1) : foundIdx;
         const displayData = data[safeIdx] || currentData;
         const daYunStr = displayData ? displayData.daYun : "--";
-        const baziObj = info.baziObj;
-        const natalBranches = [baziObj.getYearZhi(), baziObj.getMonthZhi(), baziObj.getDayZhi(), baziObj.getTimeZhi()];
-        const bodyProfile = buildDayMasterBias(dayGan, monthZhi, natalBranches);
-        const bodyLabel = bodyProfile.isStrong ? '身强' : '身弱';
-        const bodyBrief = bodyProfile.isStrong
-            ? '日主多见得令、通根或印比帮扶，取用宜财官食伤以泄秀制衡。'
-            : '日主失令或根气不足、克泄耗偏重，取用宜印比生扶以固本培元。';
 
         const fortuneScore = displayData?.score ?? 50;
         let luckState = '中平';
@@ -2887,8 +2880,6 @@
         const briefAnalysis = `当前${daYunStr}大运综合评估为${luckState}（${fortuneScore}分），${pressureText}。建议：${advice}`;
         analysisDiv.innerHTML = `
             <div class="mb-1"><strong class="text-white">当前大运:</strong> <span class="text-yellow-400 text-lg">${daYunStr}</span>（约${currentAge}岁）</div>
-            <div class="mb-1"><strong class="text-white">身强身弱:</strong> <span class="text-cyan-300">${bodyLabel}</span> · ${bodyBrief}</div>
-            <div class="mb-1 text-xs text-gray-400">说明：身强/身弱以日主在月令是否得令、地支是否通根、印比扶助与克泄耗强弱综合判断，不等于性格强弱。</div>
             <div><strong class="text-blue-400">大运精简解析:</strong> ${briefAnalysis}</div>
         `;
     }
