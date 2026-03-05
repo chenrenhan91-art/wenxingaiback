@@ -1252,6 +1252,207 @@
         body.theme-blueprint .panel { border-color: rgba(56, 189, 248, 0.22); }
         body.theme-blueprint .input-panel { border-left-color: #38bdf8; }
         body.theme-blueprint .info-panel { border-right-color: #38bdf8; }
+
+        /* === 命盘五维雷达图模态框 === */
+        .radar-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 65;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .radar-content {
+            background: linear-gradient(145deg, #080e1a, #0f1724, #111827);
+            border: 1px solid rgba(56, 189, 248, 0.32);
+            border-radius: 20px;
+            padding: 24px 22px 20px;
+            width: 100%;
+            max-width: 440px;
+            max-height: 92vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08) inset,
+                        0 30px 80px rgba(0, 0, 0, 0.65),
+                        0 0 50px rgba(56, 189, 248, 0.08);
+            scrollbar-width: thin;
+            scrollbar-color: #334155 transparent;
+        }
+        .radar-header {
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        .radar-title {
+            font-size: 1.3rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, #38bdf8, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: block;
+        }
+        .radar-subtitle {
+            display: block;
+            text-align: center;
+            font-size: 0.76rem;
+            color: #475569;
+            letter-spacing: 0.5px;
+            margin-top: 3px;
+            margin-bottom: 16px;
+        }
+        .radar-canvas-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        #radarCanvas {
+            display: block;
+            border-radius: 12px;
+        }
+        .radar-scores-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            margin-bottom: 18px;
+            padding: 14px 14px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            border-radius: 12px;
+        }
+        .radar-score-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .radar-score-label {
+            width: 34px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            flex: 0 0 auto;
+            letter-spacing: 0.5px;
+        }
+        .radar-score-bar-bg {
+            flex: 1;
+            height: 7px;
+            border-radius: 999px;
+            background: rgba(30, 41, 59, 0.8);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .radar-score-bar-fill {
+            height: 100%;
+            border-radius: inherit;
+            transition: width 1.1s cubic-bezier(0.22, 0.8, 0.22, 1);
+            width: 0%;
+        }
+        .radar-score-num {
+            width: 26px;
+            text-align: right;
+            font-size: 0.78rem;
+            font-weight: 800;
+            font-family: ui-monospace, 'Courier New', monospace;
+            flex: 0 0 auto;
+        }
+        .radar-score-desc {
+            font-size: 0.68rem;
+            color: #475569;
+            width: 48px;
+            flex: 0 0 auto;
+            text-align: right;
+        }
+        .radar-explore-section {
+            border-top: 1px solid rgba(56, 189, 248, 0.12);
+            padding-top: 16px;
+        }
+        .radar-explore-hint {
+            text-align: center;
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        .radar-explore-hint strong {
+            color: #94a3b8;
+        }
+        .radar-palace-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .radar-palace-btn {
+            background: rgba(56, 189, 248, 0.05);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-radius: 10px;
+            padding: 10px 6px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.22s ease;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #bae6fd;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .radar-palace-btn:hover {
+            background: rgba(56, 189, 248, 0.13);
+            border-color: rgba(56, 189, 248, 0.45);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.15);
+        }
+        .radar-palace-btn:active { transform: translateY(0); }
+        .rpb-icon { font-size: 1.1rem; }
+        .rpb-name { font-size: 0.75rem; font-weight: 900; }
+        .rpb-sub { font-size: 0.65rem; color: #64748b; font-weight: 400; }
+        .radar-close-btn {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.5);
+            color: #64748b;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            letter-spacing: 0.5px;
+        }
+        .radar-close-btn:hover {
+            background: rgba(30, 41, 59, 0.75);
+            color: #94a3b8;
+            border-color: rgba(100, 116, 139, 0.5);
+        }
+        .radar-dim-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            margin-left: 4px;
+        }
+        .radar-dim-high { background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+        .radar-dim-mid  { background: rgba(251, 191, 36, 0.12); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.25); }
+        .radar-dim-low  { background: rgba(248, 113, 113, 0.12); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.25); }
+
+        @media (max-width: 480px) {
+            .radar-content { padding: 18px 14px 16px; }
+            .radar-title { font-size: 1.1rem; letter-spacing: 2px; }
+            #radarCanvas { width: 260px !important; height: 260px !important; }
+            .radar-palace-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+            .radar-palace-btn { padding: 8px 4px 6px; font-size: 0.75rem; }
+            .rpb-icon { font-size: 1rem; }
+        }
     </style>
 </head>
 <body>
@@ -1708,6 +1909,30 @@
         <div id="ai-modal-actions" style="margin-top:20px; padding-top:15px; border-top:1px solid rgba(255,255,255,0.1); display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
             <button onclick="copyAiResult()" style="display:inline-flex; align-items:center; gap:6px; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.4); color:#bae6fd; padding:10px 20px; border-radius:10px; cursor:pointer; font-size:0.85rem; font-weight:700; transition:all 0.2s;">📋 复制内容</button>
             <button onclick="closeAiModal()" style="display:inline-flex; align-items:center; gap:6px; background:rgba(148,163,184,0.1); border:1px solid rgba(148,163,184,0.3); color:#94a3b8; padding:10px 20px; border-radius:10px; cursor:pointer; font-size:0.85rem; font-weight:700; transition:all 0.2s;">✕ 关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- Radar Chart Modal (命盘五维运势) -->
+<div id="radar-modal" class="radar-modal-overlay">
+    <div class="radar-content">
+        <button class="close-modal" onclick="closeRadarModal()" style="float:right; position:relative; top:0; right:0; margin:0; padding:4px 10px; font-size:20px; z-index:1;">&times;</button>
+        <div class="radar-header">
+            <span class="radar-title">✨ 命盘五维运势</span>
+            <span class="radar-subtitle">基于紫微斗数宫位星曜组合分析 · 点击宫位探索 AI 解读</span>
+        </div>
+        <div class="radar-canvas-wrapper">
+            <canvas id="radarCanvas" width="300" height="300"></canvas>
+        </div>
+        <div class="radar-explore-section">
+            <p class="radar-explore-hint">
+                💡 以下宫位是各维度的核心所在<br>
+                <strong>点击宫位 → 右侧面板查看星曜 → AI 深度解析</strong>
+            </p>
+            <div id="radarPalaceGrid" class="radar-palace-grid">
+                <!-- Palace buttons injected by JS -->
+            </div>
+            <button class="radar-close-btn" onclick="closeRadarModal()">稍后慢慢探索 →</button>
         </div>
     </div>
 </div>
@@ -4330,6 +4555,8 @@
                 document.getElementById('chatMessages').innerHTML = '<div class="msg msg-ai">你好！我是你的 AI 命理助手。我已经读取了你的全盘数据，你可以问我任何关于事业、感情或流年的问题。</div>';
                 
                 renderChart3D(currentChart);
+                // 延迟显示五维雷达图（等待3D渲染完成和加载屏消失后）
+                setTimeout(() => showRadarModal(currentChart), 750);
             } catch (e) { console.error(e); showToast('生成失败，请检查输入', 'error'); }
             document.getElementById('loading').style.opacity = 0; setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 500);
         }, chartRenderDelay); 
@@ -5068,6 +5295,310 @@
 
     // Initialize records list on page load
     refreshRecordsList(); 
+
+    // ===== 命盘五维雷达图 =====
+
+    /**
+     * 根据紫微命盘各宫位星曜组合计算五个维度的评分 (10-99)
+     * - 事业: 官禄宫 + 命宫
+     * - 财运: 财帛宫 + 田宅宫
+     * - 感情: 夫妻宫 + 福德宫
+     * - 健康: 疾厄宫
+     * - 贵人: 命宫/官禄/迁移/仆役/父母 吉星密度
+     */
+    function calcRadarScores(chart) {
+        if (!chart || !chart.chartData) return null;
+
+        const BRIGHT_W = { '庙': 10, '旺': 8, '得': 7, '利': 6, '平': 5, '陷': 3, '闲': 3 };
+
+        function getP(name) {
+            return chart.chartData.find(p => p && p.name === name) || null;
+        }
+
+        // 宫位评分核心：以50为基准，正负星权重叠加
+        function evalPalace(palace, posStars, negStars) {
+            if (!palace) return 50;
+            let score = 50;
+            palace.stars.forEach(star => {
+                const bw = BRIGHT_W[star.brightness] || 5;
+                let delta = 0;
+                if (posStars.includes(star.name)) {
+                    delta += bw * 1.4; // 正面星权重
+                } else if (negStars.includes(star.name)) {
+                    delta -= bw * 1.2; // 负面星权重
+                } else if (star.category === 'lucky') {
+                    delta += bw * 0.6;
+                } else if (star.category === 'bad') {
+                    delta -= bw * 0.85;
+                } else {
+                    delta += (bw - 5) * 0.3; // 主星亮度偏差
+                }
+                // 四化修正
+                if (star.sihua === '禄') delta += 12;
+                if (star.sihua === '权') delta += 9;
+                if (star.sihua === '科') delta += 5;
+                if (star.sihua === '忌') delta -= 14;
+                score += delta;
+            });
+            return score;
+        }
+
+        function clamp(v) { return Math.min(Math.max(Math.round(v), 10), 99); }
+
+        // ── 事业 ──
+        const careerPos = ['紫微', '天府', '武曲', '太阳', '天相', '左辅', '右弼', '文昌', '文曲', '禄存'];
+        const careerNeg = ['七杀', '破军', '廉贞', '巨门', '擎羊', '陀罗'];
+        const career = clamp(
+            evalPalace(getP('官禄'), careerPos, careerNeg) * 0.65 +
+            evalPalace(getP('命宫'), careerPos, careerNeg) * 0.35
+        );
+
+        // ── 财运 ──
+        const wealthPos = ['武曲', '天府', '太阴', '紫微', '禄存', '太阳', '天机'];
+        const wealthNeg = ['破军', '廉贞', '七杀', '擎羊', '陀罗'];
+        const wealth = clamp(
+            evalPalace(getP('财帛'), wealthPos, wealthNeg) * 0.65 +
+            evalPalace(getP('田宅'), wealthPos, wealthNeg) * 0.35
+        );
+
+        // ── 感情 ──
+        const lovePos = ['天同', '太阴', '廉贞', '贪狼', '天相', '左辅', '右弼', '紫微', '天梁'];
+        const loveNeg = ['七杀', '破军', '巨门', '擎羊', '陀罗'];
+        const love = clamp(
+            evalPalace(getP('夫妻'), lovePos, loveNeg) * 0.7 +
+            evalPalace(getP('福德'), lovePos, loveNeg) * 0.3
+        );
+
+        // ── 健康 ──
+        const healthPos = ['天梁', '天同', '天机', '太阴', '天相', '紫微', '天府'];
+        const healthNeg = ['七杀', '破军', '廉贞', '擎羊', '陀罗'];
+        const health = clamp(evalPalace(getP('疾厄'), healthPos, healthNeg));
+
+        // ── 贵人 ── 六宫吉星加权
+        const guirenPos = ['左辅', '右弼', '文昌', '文曲', '禄存', '天梁', '太阴', '天相', '天同', '天机'];
+        const guirenNeg = ['擎羊', '陀罗', '七杀', '廉贞'];
+        const guirenPalaces = [
+            { name: '命宫',  w: 0.28 },
+            { name: '官禄',  w: 0.22 },
+            { name: '迁移',  w: 0.18 },
+            { name: '仆役',  w: 0.16 },
+            { name: '父母',  w: 0.10 },
+            { name: '兄弟',  w: 0.06 },
+        ];
+        let guirenRaw = 0;
+        guirenPalaces.forEach(({ name, w }) => {
+            guirenRaw += evalPalace(getP(name), guirenPos, guirenNeg) * w;
+        });
+        const guiren = clamp(guirenRaw);
+
+        return { career, wealth, love, health, guiren };
+    }
+
+    // 维度标签等级
+    function getScoreLevel(v) {
+        if (v >= 80) return { label: '旺', cls: 'radar-dim-high' };
+        if (v >= 60) return { label: '中', cls: 'radar-dim-mid' };
+        return { label: '弱', cls: 'radar-dim-low' };
+    }
+
+    // 雷达图绘制（progress: 0→1 动画）
+    function drawRadarChart(canvas, scores, progress) {
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+        const cx = W / 2;
+        const cy = H / 2;
+        const R = Math.min(cx, cy) * 0.67;
+        ctx.clearRect(0, 0, W, H);
+
+        const labels  = ['事业', '财运', '感情', '健康', '贵人'];
+        const rawVals = [scores.career, scores.wealth, scores.love, scores.health, scores.guiren];
+        const vals    = rawVals.map(v => v * progress);
+        const colors  = ['#38bdf8', '#fbbf24', '#f472b6', '#4ade80', '#a78bfa'];
+        const N = 5;
+        const angleStep = (Math.PI * 2) / N;
+        const startAngle = -Math.PI / 2; // 从正上方开始
+
+        function getPoint(i, r) {
+            const angle = startAngle + i * angleStep;
+            return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle), angle };
+        }
+
+        // ── 背景网格（5层同心五边形）──
+        for (let l = 1; l <= 5; l++) {
+            const r = R * l / 5;
+            ctx.beginPath();
+            for (let i = 0; i < N; i++) {
+                const pt = getPoint(i, r);
+                i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = l === 5
+                ? 'rgba(56, 189, 248, 0.22)'
+                : 'rgba(56, 189, 248, 0.07)';
+            ctx.lineWidth = l === 5 ? 1.3 : 0.8;
+            ctx.stroke();
+            // 刻度标签（最外圈内侧）
+            if (l === 5) {
+                ctx.fillStyle = 'rgba(71, 85, 105, 0.9)';
+                ctx.font = '9px monospace';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText('100', cx + 3, cy - r + 1);
+            }
+        }
+
+        // ── 轴线 ──
+        for (let i = 0; i < N; i++) {
+            const outerPt = getPoint(i, R);
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(outerPt.x, outerPt.y);
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.1)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // ── 数据多边形（渐变填充）──
+        ctx.beginPath();
+        for (let i = 0; i < N; i++) {
+            const pt = getPoint(i, R * vals[i] / 100);
+            i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+        }
+        ctx.closePath();
+
+        // 径向渐变
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+        grad.addColorStop(0, 'rgba(56, 189, 248, 0.52)');
+        grad.addColorStop(0.6, 'rgba(124, 58, 237, 0.3)');
+        grad.addColorStop(1, 'rgba(167, 139, 250, 0.15)');
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // 边线光晕
+        ctx.shadowColor = 'rgba(56, 189, 248, 0.5)';
+        ctx.shadowBlur = 8;
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // ── 顶点圆点 + 标签（progress>0.9时显示）──
+        for (let i = 0; i < N; i++) {
+            const pt   = getPoint(i, R * vals[i] / 100);
+            const lblPt = getPoint(i, R + 24);
+
+            // 发光点
+            ctx.shadowColor = colors[i];
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2);
+            ctx.fillStyle = colors[i];
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            if (progress >= 0.9) {
+                // 标签
+                ctx.font = 'bold 13px "Noto Sans SC", sans-serif';
+                const cosA = Math.cos(lblPt.angle);
+                const sinA = Math.sin(lblPt.angle);
+                ctx.textAlign     = cosA > 0.18 ? 'left'   : (cosA < -0.18 ? 'right'  : 'center');
+                ctx.textBaseline  = sinA > 0.18 ? 'top'    : (sinA < -0.18 ? 'bottom' : 'middle');
+                ctx.fillStyle = colors[i];
+                ctx.fillText(labels[i], lblPt.x, lblPt.y);
+
+                // 分值小字
+                const scorePt = getPoint(i, R + 40);
+                ctx.font = '10px monospace';
+                ctx.fillStyle = 'rgba(148, 163, 184, 0.8)';
+                ctx.textAlign    = cosA > 0.18 ? 'left'   : (cosA < -0.18 ? 'right'  : 'center');
+                ctx.textBaseline = sinA > 0.18 ? 'top'    : (sinA < -0.18 ? 'bottom' : 'middle');
+                ctx.fillText(String(rawVals[i]), scorePt.x, scorePt.y);
+            }
+        }
+    }
+
+    // 展示雷达图模态框
+    function showRadarModal(chart) {
+        const scores = calcRadarScores(chart);
+        if (!scores) return;
+
+        const modal = document.getElementById('radar-modal');
+        if (!modal) return;
+        modal.style.display = 'flex';
+
+        // ── 构建评分条 ──
+        const dims = [
+            { key: 'career', label: '事业', color: '#38bdf8', desc: '官禄·命宫' },
+            { key: 'wealth', label: '财运', color: '#fbbf24', desc: '财帛·田宅' },
+            { key: 'love',   label: '感情', color: '#f472b6', desc: '夫妻·福德' },
+            { key: 'health', label: '健康', color: '#4ade80', desc: '疾厄宫'    },
+            { key: 'guiren', label: '贵人', color: '#a78bfa', desc: '迁移·仆役' },
+        ];
+        // ── 构建宫位按钮 ──
+        const palaceConf = [
+            { name: '官禄', icon: '💼', sub: '事业' },
+            { name: '财帛', icon: '💰', sub: '财运' },
+            { name: '夫妻', icon: '💕', sub: '感情' },
+            { name: '疾厄', icon: '🌿', sub: '健康' },
+            { name: '迁移', icon: '🌟', sub: '贵人' },
+            { name: '命宫', icon: '🔮', sub: '命格' },
+        ];
+        const palaceGrid = document.getElementById('radarPalaceGrid');
+        if (palaceGrid) {
+            palaceGrid.innerHTML = palaceConf.map(p => `
+                <button class="radar-palace-btn" onclick="navigateToRadarPalace('${p.name}')">
+                    <span class="rpb-icon">${p.icon}</span>
+                    <span class="rpb-name">${p.name}</span>
+                    <span class="rpb-sub">${p.sub}</span>
+                </button>`).join('');
+        }
+
+        // ── 雷达图动画 ──
+        const canvas = document.getElementById('radarCanvas');
+        if (canvas) {
+            let progress = 0;
+            const FPS60 = 1000 / 60;
+            let lastT = 0;
+            function animateRadar(now) {
+                if (now - lastT < 10) { requestAnimationFrame(animateRadar); return; }
+                lastT = now;
+                progress = Math.min(progress + 0.045, 1);
+                drawRadarChart(canvas, scores, progress);
+                if (progress < 1) requestAnimationFrame(animateRadar);
+            }
+            requestAnimationFrame(animateRadar);
+        }
+    }
+
+    function closeRadarModal() {
+        const modal = document.getElementById('radar-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    // 从雷达图跳转到对应宫位
+    function navigateToRadarPalace(palaceName) {
+        closeRadarModal();
+        if (!currentChart) return;
+        const palaceData = currentChart.chartData.find(p => p && p.name === palaceName);
+        if (!palaceData) return;
+        showInfoPanel(palaceData);
+        const infoPanel = document.getElementById('infoPanel');
+        if (infoPanel) {
+            if (window.innerWidth <= 768) {
+                infoPanel.classList.add('active');
+            } else {
+                infoPanel.classList.remove('collapsed');
+                infoPanel.classList.add('active');
+            }
+        }
+        setTimeout(() => showToast(`💡 点击"✨ 问星 AI 深度解析"可解读【${palaceName}】`, 'info', 3500), 200);
+    }
+
+
 
 </script>
 </body>
