@@ -1876,7 +1876,7 @@
                 <label class="text-xs text-slate-400">关系类型</label>
                 <select id="relationType" class="syn-input">
                     <option value="lover">恋人 / 配偶（夫妻宫）</option>
-                    <option value="friend" selected>朋友 / 社交（仆役宫）</option>
+                    <option value="friend" selected>朋友 / 社交（交友宫）</option>
                     <option value="family">亲人 / 长辈（父母宫）</option>
                     <option value="partner">事业搭档（官禄宫）</option>
                 </select>
@@ -2434,7 +2434,7 @@
     // --- ZI WEI DOU SHU LOGIC ---
     const HEAVENLY_STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
     const EARTHLY_BRANCHES = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
-    const PALACE_NAMES = ['命宫', '兄弟', '夫妻', '子女', '财帛', '疾厄', '迁移', '仆役', '官禄', '田宅', '福德', '父母'];
+    const PALACE_NAMES = ['命宫', '兄弟', '夫妻', '子女', '财帛', '疾厄', '迁移', '交友', '官禄', '田宅', '福德', '父母'];
     
     function getBureau(stemIdx, branchIdx) {
         const NAYIN_BUREAU = [
@@ -3238,7 +3238,7 @@
     }
     
     // --- SYNASTRY LOGIC ---
-    const RELATION_PALACE_MAP = { lover: '夫妻', friend: '仆役', family: '父母', partner: '官禄' };
+    const RELATION_PALACE_MAP = { lover: '夫妻', friend: '交友', family: '父母', partner: '官禄' };
     const BRIGHT_WEIGHT = { '庙': 5, '旺': 4.5, '得': 4, '利': 4, '平': 3, '闲': 2.5, '陷': 1.5 };
     const STAR_GROUP_MAP = {
         '紫微': 'authority', '天府': 'authority', '廉贞': 'authority', '武曲': 'authority', '天相': 'authority',
@@ -3272,7 +3272,7 @@
     const CROSS_HUA_EFFECT = { '禄': 4.2, '权': 2.8, '科': 3.2, '忌': -5.6 };
     const RELATION_PROFILES = {
         lover: { relationPalaces: ['夫妻', '福德'], supportPalaces: ['夫妻', '福德', '命宫'], taiSuiFocus: ['夫妻', '命宫', '福德'], coreBias: 1.1 },
-        friend: { relationPalaces: ['仆役', '兄弟', '财帛'], supportPalaces: ['仆役', '兄弟', '命宫'], taiSuiFocus: ['仆役', '兄弟', '财帛'], coreBias: 0.9 },
+        friend: { relationPalaces: ['交友', '兄弟', '财帛'], supportPalaces: ['交友', '兄弟', '命宫'], taiSuiFocus: ['交友', '兄弟', '财帛'], coreBias: 0.9 },
         family: { relationPalaces: ['父母', '田宅', '命宫'], supportPalaces: ['父母', '田宅', '福德'], taiSuiFocus: ['父母', '田宅', '命宫'], coreBias: 1.0 },
         partner: { relationPalaces: ['官禄', '财帛', '父母'], supportPalaces: ['官禄', '财帛', '命宫'], taiSuiFocus: ['官禄', '财帛', '父母'], coreBias: 0.95 }
     };
@@ -3289,6 +3289,45 @@
         if (typeof palaceKey === 'number') return palaceKey;
         if (!chart || !chart.chartData) return -1;
         return chart.chartData.findIndex(p => p && p.name === palaceKey);
+    }
+
+    // 当关系宫无主星时，返回对宫（六合宫）索引作为替代
+    function getEffectiveRelIdx(chart, relIdx) {
+        if (relIdx < 0) return relIdx;
+        const hasMain = (chart.chartData[relIdx]?.stars || []).some(s => s.category === 'main');
+        return hasMain ? relIdx : (relIdx + 6) % 12;
+    }
+
+    // 获取跨盘四化明细（来源盘天干引动目标盘中哪颗星化何）
+    function getCrossHuaDetails(sourceChart, targetChart) {
+        const rules = SI_HUA_RULES[sourceChart.yearStemIdx];
+        const stemName = HEAVENLY_STEMS[sourceChart.yearStemIdx] || '?';
+        if (!rules) return { stemName, details: [] };
+        const details = [];
+        [['禄', rules.Lu], ['权', rules.Quan], ['科', rules.Ke], ['忌', rules.Ji]].forEach(([hua, starName]) => {
+            if (!starName) return;
+            targetChart.chartData.forEach(palace => {
+                if (palace.stars.some(s => s.name === starName)) {
+                    details.push(`${starName}化${hua}→${palace.name}`);
+                }
+            });
+        });
+        return { stemName, details };
+    }
+
+    // 太岁入卦法：来源盘生肖地支落入目标盘哪个宫位，返回文字描述
+    function getTaiSuiPositionDesc(sourceChart, targetChart) {
+        const sourceBranch = EARTHLY_BRANCHES[sourceChart.yearBranchIdx];
+        const taiSuiIdx = targetChart.chartData.findIndex(p => p.branch === sourceBranch);
+        if (taiSuiIdx < 0) return null;
+        const palace = targetChart.chartData[taiSuiIdx];
+        const mainStarsStr = palace.stars
+            .filter(s => s.category === 'main')
+            .map(s => `${s.name}${s.sihua ? '化' + s.sihua : ''}(${s.brightness})`)
+            .join('、') || '无主星';
+        const quality = getPalaceQuality(targetChart, taiSuiIdx);
+        const auspice = quality >= 2 ? '吉' : quality >= -1 ? '中性' : '凶';
+        return `${sourceBranch}年落入${palace.name}[${mainStarsStr}]（气场${auspice}）`;
     }
 
     function getPalaceStrength(chart, palaceKey) {
@@ -3430,24 +3469,27 @@
         const profile = RELATION_PROFILES[relationType] || RELATION_PROFILES.friend;
         const safeShen = shenIdx === -1 ? mingIdx : shenIdx;
         const fudeIdx = getPalaceIndex(chart, '福德');
+        // 关系宫无主星时借对宫（六合宫）参与计算，避免空宫导致评分偏移
+        const effRelIdx = getEffectiveRelIdx(chart, relIdx);
+        const relIdxSet = (effRelIdx !== relIdx && effRelIdx >= 0) ? [relIdx, effRelIdx] : [relIdx];
         const relationIndices = uniqueValidIndices([
-            relIdx,
+            ...relIdxSet,
             ...profile.relationPalaces.map(name => getPalaceIndex(chart, name)),
             mingIdx
         ]);
         const supportIndices = uniqueValidIndices([
-            relIdx,
+            ...relIdxSet,
             ...profile.supportPalaces.map(name => getPalaceIndex(chart, name)),
             mingIdx,
             safeShen
         ]);
         const coreIndices = uniqueValidIndices([mingIdx, safeShen, fudeIdx]);
         const taiSuiFocus = uniqueValidIndices(profile.taiSuiFocus.map(name => getPalaceIndex(chart, name)));
-        return { coreIndices, relationIndices, supportIndices, taiSuiFocus, fudeIdx, safeShen };
+        return { coreIndices, relationIndices, supportIndices, taiSuiFocus, fudeIdx, safeShen, effRelIdx };
     }
 
     function calcSynastryScores(chartA, chartB, relationType) {
-        const relPalaceName = RELATION_PALACE_MAP[relationType] || '仆役';
+        const relPalaceName = RELATION_PALACE_MAP[relationType] || '交友';
         const relIdxA = getPalaceIndex(chartA, relPalaceName);
         const relIdxB = getPalaceIndex(chartB, relPalaceName);
         const mingIdxA = chartA.chartData.findIndex(p => p.isMing);
@@ -3498,8 +3540,8 @@
             + coreSynergyPerPair * 5.2
             + coreGroupPerPair * 7.2
             + coreQualitySignal
-            + coreCrossPositive * 0.9
-            - coreCrossNegative * 1.1
+            + coreCrossPositive * 1.15
+            - coreCrossNegative * 1.35
             - coreBrightDiff * 2.2
             - coreStrengthGap * 0.16
             - coreQualityGap * 0.28
@@ -3522,7 +3564,7 @@
         const relationCrossB2A = getCrossHuaInfluence(chartB, chartA, idxSetA.relationIndices);
         const taiSuiA2B = getTaiSuiInfluence(chartA, chartB, idxSetB.taiSuiFocus);
         const taiSuiB2A = getTaiSuiInfluence(chartB, chartA, idxSetA.taiSuiFocus);
-        const relStrengthGap = Math.abs(getPalaceStrength(chartA, relIdxA) - getPalaceStrength(chartB, relIdxB));
+        const relStrengthGap = Math.abs(getPalaceStrength(chartA, idxSetA.effRelIdx) - getPalaceStrength(chartB, idxSetB.effRelIdx));
         const relationPairCount = Math.max(1, relationStarsA.length * relationStarsB.length);
         const relationSynergyPerPair = relationSynergy / relationPairCount;
         const relationGroupPerPair = relationGroupFit / relationPairCount;
@@ -3566,10 +3608,10 @@
             + relationSynergyPerPair * 4.8
             + relationGroupPerPair * 6.6
             + relationQualitySignal
-            + relationCrossPositive * 1.2
-            - relationCrossNegative * 1.45
-            + relationTaiSuiPositive * 0.8
-            - relationTaiSuiNegative * 0.8
+            + relationCrossPositive * 1.55
+            - relationCrossNegative * 1.8
+            + relationTaiSuiPositive * 1.05
+            - relationTaiSuiNegative * 1.05
             - relRiskPenalty
             - unresolvedJiPressure * 1.45
             - imbalancePenalty;
@@ -3591,7 +3633,7 @@
         const supportCrossNegative = supportCrossA2B.negative + supportCrossB2A.negative;
         const supportCrossDirectionalGap = Math.abs(supportCrossA2B.total - supportCrossB2A.total);
         const mingGap = Math.abs(getPalaceStrength(chartA, mingIdxA) - getPalaceStrength(chartB, mingIdxB));
-        const supportStrengthGap = Math.abs(getPalaceStrength(chartA, relIdxA) - getPalaceStrength(chartB, relIdxB));
+        const supportStrengthGap = Math.abs(getPalaceStrength(chartA, idxSetA.effRelIdx) - getPalaceStrength(chartB, idxSetB.effRelIdx));
         const supportAxisCount = Math.max(1, idxSetA.supportIndices.length + idxSetB.supportIndices.length);
         const supportDensity = (supportGood - supportBad) / supportAxisCount;
         const supportSignal = Math.tanh(supportDensity / 3.2) * 14;
@@ -3612,8 +3654,8 @@
             52
             + supportSignal
             + supportBalance * 1.45
-            + supportCrossPositive * 0.95
-            - supportCrossNegative * 1.25
+            + supportCrossPositive * 1.15
+            - supportCrossNegative * 1.5
             - supportRiskPenalty
             - unresolvedSupportPressure * 1.35
             - supportMismatchPenalty;
@@ -3622,10 +3664,15 @@
         if (supportRaw > 95) supportRaw = 95 + (supportRaw - 95) * 0.4;
         const supportScore = clampScore(supportRaw, 18, 100);
 
+        // 化忌黏性系数：跨盘化忌交织强度减去福德宫韧性，衡量深度纠缠程度
+        const totalCrossNeg = coreCrossNegative + relationCrossNegative + supportCrossNegative;
+        const jiNexusScore = Math.max(0, totalCrossNeg - fudeResilience * 0.4);
+
         return {
             coreScore,
             relationScore,
             supportScore,
+            jiNexusScore,
             relPalaceName,
             relIdxA,
             relIdxB,
@@ -3644,13 +3691,19 @@
             { title: '关系契合度', score: scores.relationScore, desc: `以${scores.relPalaceName}为主轴，叠加太岁入卦与四化互飞，评估双方在该关系中的互动质量与成长空间。` },
             { title: '相处顺畅度', score: scores.supportScore, desc: '结合吉凶结构、化忌压力与强弱失衡，分数越高代表磨合成本更低、长期关系更稳。' }
         ];
+        const jiNexus = scores.jiNexusScore || 0;
+        const jiNote = jiNexus > 8
+            ? `<div style="margin-top:10px;padding:9px 13px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);border-radius:8px;font-size:0.78rem;color:#fca5a5;line-height:1.55;">⚡ <strong>强化忌牵引 · 深度羁绊结构</strong>：双方存在强烈的宿命纠缠，相互消耗却难以割舍——化忌的黏性是最深的羁绊，需福德宫的厚度方能化解升华。</div>`
+            : jiNexus > 3
+            ? `<div style="margin-top:10px;padding:9px 13px;background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.28);border-radius:8px;font-size:0.78rem;color:#fdba74;line-height:1.55;">☯ <strong>化忌有感 · 存在纠缠成分</strong>：双方有化忌交织，会产生压力与执念，亦是关系深度的一部分，能否化解取决于双方福德宫的包容力。</div>`
+            : '';
         resultEl.innerHTML = cards.map(c => `
             <div class="syn-result-card">
                 <div class="score-row"><span>${c.title}</span><span>${Math.round(c.score)}%</span></div>
                 <div class="score-bar"><span style="width:${Math.round(c.score)}%"></span></div>
                 <div class="score-desc">${c.desc}</div>
             </div>
-        `).join('');
+        `).join('') + jiNote;
     }
     
     function toggleSynastryPanel() {
@@ -3740,7 +3793,7 @@
             const scores = calcSynastryScores(chartA, chartB, relationType);
             renderSynastryResult(scores);
 
-            const relPalaceName = RELATION_PALACE_MAP[relationType] || '仆役';
+            const relPalaceName = RELATION_PALACE_MAP[relationType] || '交友';
             const relIdxA = getPalaceIndex(chartA, relPalaceName);
             const relIdxB = getPalaceIndex(chartB, relPalaceName);
             const mingIdxA = chartA.chartData.findIndex(p => p.isMing);
@@ -3751,34 +3804,104 @@
             const safeShenB = shenIdxB === -1 ? mingIdxB : shenIdxB;
             const relationLabelMap = {
                 lover: '恋人 / 配偶（夫妻宫）',
-                friend: '朋友 / 社交（仆役宫）',
+                friend: '朋友 / 社交（交友宫）',
                 family: '亲人 / 长辈（父母宫）',
                 partner: '事业搭档（官禄宫）'
             };
-            const relationLabel = relationLabelMap[relationType] || '朋友 / 社交（仆役宫）';
+            const relationLabel = relationLabelMap[relationType] || '朋友 / 社交（交友宫）';
 
             const formatStars = (stars) => {
                 if (!stars || stars.length === 0) return '无主星';
                 return stars.map(s => {
                     const tags = [];
-                    if (s.sihua) tags.push(s.sihua);
+                    if (s.sihua) tags.push('化' + s.sihua);
                     if (s.brightness) tags.push(s.brightness);
-                    return `${s.name}${tags.length ? '·' + tags.join('/') : ''}`;
+                    return `${s.name}${tags.length ? '(' + tags.join('/') + ')' : ''}`;
                 }).join('、');
             };
 
+            // 命/身主星
             const coreStarsA = formatStars(getMainStars(chartA, [mingIdxA, safeShenA]));
             const coreStarsB = formatStars(getMainStars(chartB, [mingIdxB, safeShenB]));
-            const relationStarsA = formatStars(getMainStars(chartA, [relIdxA]));
-            const relationStarsB = formatStars(getMainStars(chartB, [relIdxB]));
-            const mingStrengthA = getPalaceStrength(chartA, mingIdxA).toFixed(1);
-            const mingStrengthB = getPalaceStrength(chartB, mingIdxB).toFixed(1);
-            const relStrengthA = getPalaceStrength(chartA, relIdxA).toFixed(1);
-            const relStrengthB = getPalaceStrength(chartB, relIdxB).toFixed(1);
 
-            const prompt = `双方合盘信息：\n- 关系定位：${relationLabel}，对应宫位：${relPalaceName}\n- 三维度分数：命格共振度 ${scores.coreScore.toFixed(1)}，关系契合度 ${scores.relationScore.toFixed(1)}，相处顺畅度 ${scores.supportScore.toFixed(1)}\n- 命/身主星：A ${coreStarsA}；B ${coreStarsB}\n- 关系宫主星：A ${relationStarsA}；B ${relationStarsB}\n- 力量对比：命宫 A ${mingStrengthA} vs B ${mingStrengthB}；关系宫 A ${relStrengthA} vs B ${relStrengthB}\n请输出通俗、可执行的合盘结论，使用 Markdown 列表并按以下结构：\n1) 关系结论（1 句话，不超过 20 字）；\n2) 关键依据（2-3 条，每条先说现象，再给解释）；\n3) 风险与化解（若任一分数低于 60，要明确风险点和补救动作）；\n4) 行动建议（3 条，必须能立刻执行）。`;
+            // 关系宫：无主星时借对宫（六合宫），避免空宫误导
+            const effRelIdxA = getEffectiveRelIdx(chartA, relIdxA);
+            const effRelIdxB = getEffectiveRelIdx(chartB, relIdxB);
+            const relPalaceDescA = effRelIdxA !== relIdxA
+                ? `${relPalaceName}（借对宫·${chartA.chartData[effRelIdxA]?.name || ''}）`
+                : relPalaceName;
+            const relPalaceDescB = effRelIdxB !== relIdxB
+                ? `${relPalaceName}（借对宫·${chartB.chartData[effRelIdxB]?.name || ''}）`
+                : relPalaceName;
+            const relationStarsA = formatStars(getMainStars(chartA, [effRelIdxA]));
+            const relationStarsB = formatStars(getMainStars(chartB, [effRelIdxB]));
 
-            const systemInstruction = '你是紫微斗数合盘分析师，回答要具体、务实、可落地。';
+            // 福德宫（消化化忌压力的底气）
+            const fudeIdxA = getPalaceIndex(chartA, '福德');
+            const fudeIdxB = getPalaceIndex(chartB, '福德');
+            const fudeStarsA = formatStars(getMainStars(chartA, [fudeIdxA]));
+            const fudeStarsB = formatStars(getMainStars(chartB, [fudeIdxB]));
+            const fudeQualA = getPalaceQuality(chartA, fudeIdxA).toFixed(1);
+            const fudeQualB = getPalaceQuality(chartB, fudeIdxB).toFixed(1);
+
+            // 四化飞星跨盘交互
+            const crossA2B = getCrossHuaDetails(chartA, chartB);
+            const crossB2A = getCrossHuaDetails(chartB, chartA);
+            const crossA2BStr = crossA2B.details.length ? crossA2B.details.join('、') : '无重要飞化';
+            const crossB2AStr = crossB2A.details.length ? crossB2A.details.join('、') : '无重要飞化';
+
+            // 太岁入卦法
+            const taiSuiA2BDesc = getTaiSuiPositionDesc(chartA, chartB) || '太岁宫位不明';
+            const taiSuiB2ADesc = getTaiSuiPositionDesc(chartB, chartA) || '太岁宫位不明';
+
+            // 化忌黏性提示
+            const jiNexusTip = (scores.jiNexusScore || 0) > 6
+                ? '\n⚠️ 注：双方存在强化忌交织，为深度羁绊型关系，痛苦与黏性并存。' : '';
+
+            // 关系类型专属 systemInstruction
+            const systemInstructions = {
+                lover: '你是一位精通中州学派紫微斗数的合盘分析师，专注恋人与配偶关系。核心分析维度：夫妻宫与福德宫三位一体共振、四化飞星的化忌黏性与宿命纠缠、情感能量供需平衡。输出风格：先用命理意象给出氛围感总定调，再给具体星曜依据，最后给可执行建议。',
+                friend: '你是一位精通中州学派紫微斗数的合盘分析师，专注朋友与平辈关系。核心分析维度：交友宫与兄弟宫的资源流转、四化飞星的利益互换与消耗结构、潜在背叛或支撑的命理信号。输出风格：先用命理意象给出氛围感总定调，再给具体星曜依据，最后给可执行建议。',
+                family: '你是一位精通中州学派紫微斗数的合盘分析师，专注亲人与长辈关系。核心分析维度：父母宫与田宅宫的代际业力传承、化权与化忌映射的代际创伤或庇护结构、家族资源聚散信号。输出风格：先用命理意象给出氛围感总定调，再给具体星曜依据，最后给可执行建议。',
+                partner: '你是一位精通中州学派紫微斗数的合盘分析师，专注事业搭档关系。核心分析维度：官禄宫与财帛宫的权力博弈与利益共同体结构、化权的服从与功高盖主风险、化禄的资源互惠机制。输出风格：先用命理意象给出氛围感总定调，再给具体星曜依据，最后给可执行建议。'
+            };
+            const systemInstruction = systemInstructions[relationType] || systemInstructions.friend;
+
+            // 关系类型专属输出结构
+            const outputStructures = {
+                lover: `请按以下结构用Markdown输出：\n## 星象定调\n（1句话，用命理意象描述这段关系的底色，不超过25字）\n## 化忌·化禄分析\n（若有强化忌：分析是相互消耗还是深度羁绊；若无：分析化禄/化科带来的吸引力来源）\n## 情感相处模式\n（双方在感情中各自扮演的角色；命格强弱对感情主导权的影响）\n## 行动建议\n（3条，具体可立刻执行）`,
+                friend: `请按以下结构用Markdown输出：\n## 星象定调\n（1句话，用命理意象描述这段关系的底色，不超过25字）\n## 资源互补结构\n（双方在社交互动中的给予与获取，是否形成利益闭环）\n## 风险预警\n（若有化忌或太岁凶落，指出具体风险：背叛/消耗/口舌是非）\n## 行动建议\n（3条，具体可立刻执行）`,
+                family: `请按以下结构用Markdown输出：\n## 星象定调\n（1句话，用命理意象描述这段关系的底色，不超过25字）\n## 业力传承分析\n（化权/化忌是否构成代际控制或创伤；化禄是否过度保护导致依赖）\n## 代际沟通屏障\n（哪些宫位或四化组合是沟通难点及其根本原因）\n## 行动建议\n（3条，具体可立刻执行）`,
+                partner: `请按以下结构用Markdown输出：\n## 星象定调\n（1句话，用命理意象描述这段关系的底色，不超过25字）\n## 权力格局\n（谁主导？化权流向是否产生功高盖主风险？强弱失衡如何影响协作）\n## 利益共同体评估\n（化禄互飞是否形成利益闭环；化忌是否侵蚀对方事业宫或财帛宫）\n## 行动建议\n（3条，具体可立刻执行）`
+            };
+            const outputStructure = outputStructures[relationType] || outputStructures.friend;
+
+            const prompt = `【合盘基本信息】
+关系类型：${relationLabel}
+三维度评分：命格共振度 ${scores.coreScore.toFixed(1)} | 关系契合度 ${scores.relationScore.toFixed(1)} | 相处顺畅度 ${scores.supportScore.toFixed(1)}${jiNexusTip}
+
+【双方命格主星（命宫·身宫）】
+A方：${coreStarsA}（命宫力量 ${getPalaceStrength(chartA, mingIdxA).toFixed(1)}）
+B方：${coreStarsB}（命宫力量 ${getPalaceStrength(chartB, mingIdxB).toFixed(1)}）
+
+【关系宫主星（无主星时已借对宫）】
+A方 ${relPalaceDescA}：${relationStarsA}
+B方 ${relPalaceDescB}：${relationStarsB}
+
+【福德宫（消化化忌压力的底气）】
+A方：${fudeStarsA}（质量指数 ${fudeQualA}）
+B方：${fudeStarsB}（质量指数 ${fudeQualB}）
+
+【四化飞星跨盘交互 · 动态因果网络】
+A的${crossA2B.stemName}年天干引动B命盘：${crossA2BStr}
+B的${crossB2A.stemName}年天干引动A命盘：${crossB2AStr}
+
+【太岁入卦法 · 空间定位叠加】
+A生肖落入B命盘：${taiSuiA2BDesc}
+B生肖落入A命盘：${taiSuiB2ADesc}
+
+${outputStructure}`;
+
             const aiText = await callAI(prompt, systemInstruction);
             const finalText = aiText || '星象模糊，暂无法解读。';
             if (resultEl) resultEl.innerHTML = finalText.replace(/\n/g, '<br>');
@@ -5054,7 +5177,7 @@
         
         const PALACE_DESC_MAP = {
             '命宫': '核心人格 · 天赋特质 · 命运总览', '兄弟': '知心好友 · 合作伙伴 · 现金周转', '夫妻': '感情模式 · 伴侣特质 · 婚姻状况', '子女': '亲子关系 · 晚辈缘分 · 合伙事业',
-            '财帛': '赚钱能力 · 收入来源 · 理财观念', '疾厄': '身体健康 · 潜意识 · 情绪压力', '迁移': '对外形象 · 社交机遇 · 出行运势', '仆役': '人际圈子 · 粉丝受众 · 朋友助力',
+            '财帛': '赚钱能力 · 收入来源 · 理财观念', '疾厄': '身体健康 · 潜意识 · 情绪压力', '迁移': '对外形象 · 社交机遇 · 出行运势', '交友': '人际圈子 · 粉丝受众 · 朋友助力',
             '官禄': '事业发展 · 职场表现 · 创业方向', '田宅': '居住环境 · 房产运势 · 家庭氛围', '福德': '精神享受 · 兴趣嗜好 · 财源起伏', '父母': '长辈缘分 · 遗传基因 · 上司关系'
         };
         let subText = PALACE_DESC_MAP[data.name] || '未知领域';
@@ -5792,7 +5915,7 @@
      * - 财运: 财帛宫 + 田宅宫
      * - 感情: 夫妻宫 + 福德宫
      * - 健康: 疾厄宫
-     * - 贵人: 命宫/官禄/迁移/仆役/父母 吉星密度
+     * - 贵人: 命宫/官禄/迁移/交友/父母 吉星密度
      */
     function calcRadarScores(chart) {
         if (!chart || !chart.chartData) return null;
@@ -5869,7 +5992,7 @@
             { name: '命宫',  w: 0.28 },
             { name: '官禄',  w: 0.22 },
             { name: '迁移',  w: 0.18 },
-            { name: '仆役',  w: 0.16 },
+            { name: '交友',  w: 0.16 },
             { name: '父母',  w: 0.10 },
             { name: '兄弟',  w: 0.06 },
         ];
@@ -6016,7 +6139,7 @@
             { key: 'wealth', label: '财运', color: '#fbbf24', desc: '财帛·田宅' },
             { key: 'love',   label: '感情', color: '#f472b6', desc: '夫妻·福德' },
             { key: 'health', label: '健康', color: '#4ade80', desc: '疾厄宫'    },
-            { key: 'guiren', label: '贵人', color: '#a78bfa', desc: '迁移·仆役' },
+            { key: 'guiren', label: '贵人', color: '#a78bfa', desc: '迁移·交友' },
         ];
         // ── 构建宫位按钮 ──
         const palaceConf = [
