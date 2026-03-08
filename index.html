@@ -83,9 +83,9 @@
         body.mobile-lite .floating-window {
             background: rgba(15, 23, 42, 0.97);
         }
-        body.mobile-perf #meteor-canvas {
+        body.mobile-perf #shader-bg {
             display: block !important;
-            opacity: 0.42;
+            opacity: 0.28;
         }
         body.mobile-perf .panel,
         body.mobile-perf .floating-window,
@@ -1259,13 +1259,15 @@
             pointer-events: none;
         }
 
-        /* 低频流星层（叠加在 3D 上，不影响交互） */
-        #meteor-canvas {
+        /* Aurora shader背景层（叠加在 3D 上，不影响交互） */
+        #shader-bg {
             position: fixed;
             inset: 0;
-            z-index: 4;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
             pointer-events: none;
-            opacity: 0.75;
+            opacity: 0.55;
             mix-blend-mode: screen;
         }
 
@@ -1617,8 +1619,8 @@
 <!-- Canvas -->
 <div id="canvas-container"></div>
 
-<!-- Meteors (低频流星，不影响交互) -->
-<canvas id="meteor-canvas" aria-hidden="true"></canvas>
+<!-- Aurora Shader Background -->
+<canvas id="shader-bg" aria-hidden="true"></canvas>
 
 <!-- Visual FX Overlay (不拦截交互) -->
 <div id="vfx-overlay" aria-hidden="true"></div>
@@ -4213,11 +4215,10 @@ ${outputStructure}`;
     let connectionGroup = new THREE.Group(); 
     let coreMesh, coreUniforms, sectorMeshes = []; 
 
-    // --- Meteors (2D overlay) ---
-    let meteorCanvas, meteorCtx;
-    let meteors = [];
-    let meteorLastTs = 0;
-    let nextMeteorAt = 0;
+    // --- Aurora Shader Background ---
+    let shaderBgRenderer = null;
+    let shaderBgMaterial = null;
+    let shaderBgLastTs = 0;
 
     // 固定主题：星图蓝图（仅保留蓝色方案）
     const THEME = {
@@ -4328,163 +4329,87 @@ ${outputStructure}`;
         // Setup new interaction logic
         initCanvasInteraction();
 
-        // Low-frequency meteor overlay：移动端延迟初始化，让 3D 首帧优先渲染
+        // Aurora shader背景：移动端延迟初始化，让 3D 首帧优先渲染
         if (IS_MOBILE_DEVICE) {
-            setTimeout(() => initMeteorLayer(), 1500);
+            setTimeout(() => initShaderBg(), 1200);
         } else {
-            initMeteorLayer();
+            initShaderBg();
         }
 
         animate();
     }
 
-    function initMeteorLayer() {
-        meteorCanvas = document.getElementById('meteor-canvas');
-        if (!meteorCanvas) return;
-        meteorCanvas.style.display = 'block';
-        meteorCanvas.style.opacity = MOBILE_PERF_MODE ? '0.42' : '0.75';
-        meteorCtx = meteorCanvas.getContext('2d');
-        resizeMeteorCanvas();
-        // 中等频率：首次稍微延迟一点出现
-        const now = performance.now();
-        meteors = [];
-        meteorLastTs = now;
-        nextMeteorAt = now + (MOBILE_PERF_MODE ? randRange(2600, 4200) : randRange(1200, 2600));
-    }
+    function initShaderBg() {
+        const canvas = document.getElementById('shader-bg');
+        if (!canvas) return;
+        const pixelRatio = MOBILE_PERF_MODE ? 0.5 : Math.min(window.devicePixelRatio || 1, 1.5);
+        try {
+            shaderBgRenderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: 'low-power' });
+        } catch(e) { console.warn('Shader BG renderer failed:', e); return; }
+        shaderBgRenderer.setPixelRatio(pixelRatio);
+        shaderBgRenderer.setSize(window.innerWidth, window.innerHeight);
 
-    function resizeMeteorCanvas() {
-        if (!meteorCanvas || !meteorCtx) return;
-        const dpr = window.devicePixelRatio || 1;
-        const w = Math.max(1, Math.floor(window.innerWidth));
-        const h = Math.max(1, Math.floor(window.innerHeight));
-        meteorCanvas.width = Math.floor(w * dpr);
-        meteorCanvas.height = Math.floor(h * dpr);
-        meteorCanvas.style.width = w + 'px';
-        meteorCanvas.style.height = h + 'px';
-        meteorCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
+        const bgScene = new THREE.Scene();
+        const bgCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-    function randRange(min, max) {
-        return min + Math.random() * (max - min);
-    }
-
-    function spawnMeteor(now) {
-        if (!meteorCanvas) return;
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        // 从顶部/左侧进入，斜向右下，尽量“擦边”通过，避免遮挡中心
-        const fromTop = Math.random() < 0.55;
-        let x, y;
-        if (fromTop) {
-            x = randRange(-80, w * 0.75);
-            y = randRange(-120, h * 0.25);
-        } else {
-            x = randRange(-160, -60);
-            y = randRange(-40, h * 0.65);
-        }
-
-        const angle = randRange(Math.PI * 0.15, Math.PI * 0.28); // ~27°-50°
-        const dirX = Math.cos(angle);
-        const dirY = Math.sin(angle);
-        const speed = MOBILE_PERF_MODE ? randRange(700, 980) : randRange(820, 1180); // px/s
-        const length = MOBILE_PERF_MODE ? randRange(150, 280) : randRange(200, 360);
-        const width = MOBILE_PERF_MODE ? randRange(1.2, 2.0) : randRange(1.6, 2.8);
-        const ttl = MOBILE_PERF_MODE ? randRange(0.75, 1.35) : randRange(0.85, 1.55);
-        const hueShift = randRange(-8, 10);
-
-        meteors.push({
-            x, y,
-            vx: dirX * speed,
-            vy: dirY * speed,
-            dirX, dirY,
-            length,
-            width,
-            ttl,
-            t: 0,
-            hueShift,
+        shaderBgMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                iTime:       { value: 0 },
+                iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+            },
+            vertexShader: `void main() { gl_Position = vec4(position, 1.0); }`,
+            fragmentShader: `
+                uniform float iTime; uniform vec2 iResolution;
+                #define NUM_OCTAVES 3
+                float rand(vec2 n) { return fract(sin(dot(n, vec2(12.9898,4.1414)))*43758.5453); }
+                float noise(vec2 p) {
+                    vec2 ip=floor(p); vec2 u=fract(p); u=u*u*(3.0-2.0*u);
+                    return mix(mix(rand(ip),rand(ip+vec2(1,0)),u.x),mix(rand(ip+vec2(0,1)),rand(ip+vec2(1,1)),u.x),u.y);
+                }
+                float fbm(vec2 x) {
+                    float v=0.0,a=0.3; vec2 shift=vec2(100);
+                    mat2 rot=mat2(cos(0.5),sin(0.5),-sin(0.5),cos(0.5));
+                    for(int i=0;i<NUM_OCTAVES;++i){v+=a*noise(x);x=rot*x*2.0+shift;a*=0.4;}
+                    return v;
+                }
+                void main() {
+                    vec2 shake=vec2(sin(iTime*1.2)*0.005,cos(iTime*2.1)*0.005);
+                    vec2 p=((gl_FragCoord.xy+shake*iResolution.xy)-iResolution.xy*0.5)/iResolution.y*mat2(6.0,-4.0,4.0,6.0);
+                    vec2 v; vec4 o=vec4(0.0);
+                    float f=2.0+fbm(p+vec2(iTime*5.0,0.0))*0.5;
+                    for(float i=0.0;i<35.0;i++){
+                        v=p+cos(i*i+(iTime+p.x*0.08)*0.025+i*vec2(13.0,11.0))*3.5+vec2(sin(iTime*3.0+i)*0.003,cos(iTime*3.5-i)*0.003);
+                        float tailNoise=fbm(v+vec2(iTime*0.5,i))*0.3*(1.0-(i/35.0));
+                        vec4 auroraColors=vec4(0.1+0.3*sin(i*0.2+iTime*0.4),0.3+0.5*cos(i*0.3+iTime*0.5),0.7+0.3*sin(i*0.4+iTime*0.3),1.0);
+                        vec4 contrib=auroraColors*exp(sin(i*i+iTime*0.8))/length(max(v,vec2(v.x*f*0.015,v.y*1.5)));
+                        float thin=smoothstep(0.0,1.0,i/35.0)*0.6;
+                        o+=contrib*(1.0+tailNoise*0.8)*thin;
+                    }
+                    o=tanh(pow(o/100.0,vec4(1.6)));
+                    gl_FragColor=o*1.5;
+                }
+            `
         });
-
-        // 下一次出现：约 3 秒一次（带少量抖动，避免机械感）
-        nextMeteorAt = now + (MOBILE_PERF_MODE ? randRange(4200, 6200) : randRange(2400, 3600));
+        const bgMesh = new THREE.Mesh(new THREE.PlaneGeometry(2,2), shaderBgMaterial);
+        bgScene.add(bgMesh);
+        shaderBgRenderer._bgScene  = bgScene;
+        shaderBgRenderer._bgCamera = bgCamera;
+        shaderBgLastTs = performance.now();
+        window.addEventListener('resize', () => {
+            if (!shaderBgRenderer) return;
+            shaderBgRenderer.setSize(window.innerWidth, window.innerHeight);
+            shaderBgMaterial.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight);
+        }, { passive: true });
     }
 
-    function updateAndDrawMeteors(now) {
-        if (!meteorCtx || !meteorCanvas) return;
-        const dt = Math.min(0.05, Math.max(0, (now - meteorLastTs) / 1000));
-        meteorLastTs = now;
-
-        const maxMeteors = MOBILE_PERF_MODE ? 1 : 2;
-        if (now >= nextMeteorAt && meteors.length < maxMeteors) {
-            // 控制同时数量，避免干扰星盘
-            spawnMeteor(now);
-        }
-
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        meteorCtx.clearRect(0, 0, w, h);
-        meteorCtx.globalCompositeOperation = 'lighter';
-
-        const alive = [];
-        for (const m of meteors) {
-            m.t += dt;
-            m.x += m.vx * dt;
-            m.y += m.vy * dt;
-
-            const p = Math.min(1, m.t / m.ttl);
-            const fadeIn = Math.min(1, p / 0.12);
-            const fadeOut = 1 - Math.max(0, (p - 0.55) / 0.45);
-            const alphaBase = MOBILE_PERF_MODE ? 0.34 : 0.46;
-            const alpha = alphaBase * fadeIn * fadeOut; // 略更明显，但仍控制遮挡
-
-            const tailX = m.x - m.dirX * m.length;
-            const tailY = m.y - m.dirY * m.length;
-
-            // 颜色：蓝白为主，拖尾渐隐
-            const headCol = `rgba(235, 248, 255, ${alpha})`;
-            const tailCol = `rgba(56, 189, 248, ${alpha * 0.0})`;
-
-            const grad = meteorCtx.createLinearGradient(m.x, m.y, tailX, tailY);
-            grad.addColorStop(0, headCol);
-            grad.addColorStop(0.25, `rgba(147, 197, 253, ${alpha * 0.75})`);
-            grad.addColorStop(0.55, `rgba(96, 165, 250, ${alpha * 0.40})`);
-            grad.addColorStop(1, tailCol);
-
-            // 外发光描边（更明显但不刺眼）
-            meteorCtx.save();
-            meteorCtx.strokeStyle = `rgba(56, 189, 248, ${alpha * 0.28})`;
-            meteorCtx.lineWidth = m.width * 3.2;
-            meteorCtx.lineCap = 'round';
-            meteorCtx.shadowColor = 'rgba(56, 189, 248, 0.45)';
-            meteorCtx.shadowBlur = 10;
-            meteorCtx.beginPath();
-            meteorCtx.moveTo(m.x, m.y);
-            meteorCtx.lineTo(tailX, tailY);
-            meteorCtx.stroke();
-            meteorCtx.restore();
-
-            // 主拖尾
-            meteorCtx.strokeStyle = grad;
-            meteorCtx.lineWidth = m.width;
-            meteorCtx.lineCap = 'round';
-            meteorCtx.beginPath();
-            meteorCtx.moveTo(m.x, m.y);
-            meteorCtx.lineTo(tailX, tailY);
-            meteorCtx.stroke();
-
-            // 头部微光点
-            meteorCtx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.75})`;
-            meteorCtx.beginPath();
-            meteorCtx.arc(m.x, m.y, Math.max(1.4, m.width * 1.6), 0, Math.PI * 2);
-            meteorCtx.fill();
-
-            const outMargin = 260;
-            const isOut = (m.x > w + outMargin) || (m.y > h + outMargin);
-            if (m.t < m.ttl && !isOut) alive.push(m);
-        }
-        meteors = alive;
-        meteorCtx.globalCompositeOperation = 'source-over';
+    function updateShaderBg(now) {
+        if (!shaderBgRenderer || !shaderBgMaterial) return;
+        const dt = Math.min(0.05, (now - shaderBgLastTs) / 1000);
+        shaderBgLastTs = now;
+        shaderBgMaterial.uniforms.iTime.value += dt;
+        shaderBgRenderer.render(shaderBgRenderer._bgScene, shaderBgRenderer._bgCamera);
     }
-    
+
     // --- NEW: Mobile-Friendly Canvas Interaction Logic ---
     function initCanvasInteraction() {
         const canvas = renderer.domElement;
@@ -5146,7 +5071,6 @@ ${outputStructure}`;
     function onWindowResize() {
         camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, getRendererPixelRatioCap()));
-        resizeMeteorCanvas();
         addNearDust();
         
         // --- MOBILE CAMERA ADJUSTMENT ---
@@ -5682,8 +5606,8 @@ ${outputStructure}`;
         // (A) halo breathe + click pulse
         updateHalo(now);
 
-        // 流星层：低频、低成本
-        updateAndDrawMeteors(now);
+        // Aurora shader背景动画
+        updateShaderBg(now);
     }
 
     try { init3D(); } catch (e) { console.error("3D Init Failed", e); setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 1000); }
