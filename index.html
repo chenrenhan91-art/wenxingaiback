@@ -2065,7 +2065,7 @@
             <span class="radar-subtitle">基于紫微斗数宫位星曜组合分析 · 点击宫位探索 AI 解读</span>
         </div>
         <div class="radar-canvas-wrapper">
-            <canvas id="radarCanvas" width="300" height="300"></canvas>
+            <canvas id="radarCanvas" width="600" height="600"></canvas>
         </div>
         <div style="display:flex;justify-content:center;margin:0 0 14px;">
             <button class="save-screenshot-btn radar-save" onclick="saveRadarScreenshot()">📸 保存分享卡片</button>
@@ -5689,12 +5689,15 @@ ${outputStructure}`;
     // 生成精致分享卡片公共方法
     async function _buildShareCard(sourceCanvas, title, subtitle, bg1, bg2, accent) {
         const PAD = 30;
-        const HEADER_H = 80;
-        const FOOTER_H = 96;
-        const cw = sourceCanvas.width;
-        const ch = sourceCanvas.height;
-        const cardW = cw + PAD * 2;
-        const cardH = ch + HEADER_H + FOOTER_H;
+        const HEADER_H = 82;
+        const FOOTER_H = 120;
+        const TARGET_W = 720;          // 固定卡片宽度，保证手机端清晰
+        const contentW = TARGET_W - PAD * 2;  // 660px 内容区
+        const srcW = sourceCanvas.width;
+        const srcH = sourceCanvas.height;
+        const contentH = Math.round(srcH * contentW / srcW);  // 等比高度
+        const cardW = TARGET_W;
+        const cardH = HEADER_H + contentH + FOOTER_H;
 
         const card = document.createElement('canvas');
         card.width = cardW; card.height = cardH;
@@ -5706,66 +5709,71 @@ ${outputStructure}`;
         bgGrad.addColorStop(0.5, bg2);
         bgGrad.addColorStop(1, bg1);
         ctx.fillStyle = bgGrad;
-        _rrect(ctx, 0, 0, cardW, cardH, 18);
-        ctx.fill();
+        _rrect(ctx, 0, 0, cardW, cardH, 18); ctx.fill();
 
-        // 层 2：顶部星云敖散光晕（accent 色）
-        const nebulaGrad = ctx.createRadialGradient(cardW * 0.5, 0, 0, cardW * 0.5, 0, cardW * 0.75);
-        nebulaGrad.addColorStop(0, accent + '30');
-        nebulaGrad.addColorStop(0.45, accent + '0d');
+        // 层 2：顶部星云光晕（accent 色，较饱满）
+        const nebulaGrad = ctx.createRadialGradient(cardW * 0.5, 0, 0, cardW * 0.5, 0, cardW * 0.8);
+        nebulaGrad.addColorStop(0, accent + '55');
+        nebulaGrad.addColorStop(0.4, accent + '1a');
         nebulaGrad.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = nebulaGrad;
-        _rrect(ctx, 0, 0, cardW, cardH, 18);
-        ctx.fill();
+        _rrect(ctx, 0, 0, cardW, cardH, 18); ctx.fill();
 
         // 层 3：底部暗角收边
-        const vigGrad = ctx.createRadialGradient(cardW / 2, cardH, cardH * 0.08, cardW / 2, cardH, cardH * 0.9);
+        const vigGrad = ctx.createRadialGradient(cardW / 2, cardH, cardH * 0.05, cardW / 2, cardH, cardH * 0.85);
         vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
-        vigGrad.addColorStop(1, 'rgba(0,0,0,0.5)');
+        vigGrad.addColorStop(1, 'rgba(0,0,0,0.55)');
         ctx.fillStyle = vigGrad;
-        _rrect(ctx, 0, 0, cardW, cardH, 18);
-        ctx.fill();
+        _rrect(ctx, 0, 0, cardW, cardH, 18); ctx.fill();
 
         // 内边框
-        ctx.strokeStyle = accent + '55'; ctx.lineWidth = 1.5;
+        ctx.strokeStyle = accent + '66'; ctx.lineWidth = 1.5;
         _rrectStroke(ctx, 1, 1, cardW - 2, cardH - 2, 17);
 
         // 头部光晕条
         const headerGrad = ctx.createLinearGradient(0, 0, cardW, 0);
-        headerGrad.addColorStop(0, accent + '22');
-        headerGrad.addColorStop(0.5, accent + '0a');
-        headerGrad.addColorStop(1, accent + '22');
+        headerGrad.addColorStop(0, accent + '33');
+        headerGrad.addColorStop(0.5, accent + '0f');
+        headerGrad.addColorStop(1, accent + '33');
         ctx.fillStyle = headerGrad;
-        _rrect(ctx, 0, 0, cardW, HEADER_H, 18, 18, 0, 0);
-        ctx.fill();
+        _rrect(ctx, 0, 0, cardW, HEADER_H, 18, 18, 0, 0); ctx.fill();
 
         // 标题
-        ctx.textAlign = 'center'; ctx.shadowColor = accent; ctx.shadowBlur = 16;
+        ctx.textAlign = 'center'; ctx.shadowColor = accent; ctx.shadowBlur = 18;
         ctx.fillStyle = '#f1f5f9'; ctx.font = 'Bold 20px "Noto Sans SC", sans-serif';
         ctx.fillText(title, cardW / 2, 34);
         ctx.shadowBlur = 0;
-        ctx.fillStyle = '#64748b'; ctx.font = '12px "Noto Sans SC", sans-serif';
-        ctx.fillText(subtitle, cardW / 2, 56);
+        ctx.fillStyle = '#94a3b8'; ctx.font = '12px "Noto Sans SC", sans-serif';
+        ctx.fillText(subtitle, cardW / 2, 57);
 
         // 分隔线
         ctx.strokeStyle = accent + '40'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(PAD, HEADER_H - 2); ctx.lineTo(cardW - PAD, HEADER_H - 2); ctx.stroke();
 
-        // 主图
-        ctx.drawImage(sourceCanvas, PAD, HEADER_H);
+        // 主图（固定宽度、等比缩放，保持清晰度）
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(sourceCanvas, PAD, HEADER_H, contentW, contentH);
 
         // 底部分隔线
-        ctx.beginPath(); ctx.moveTo(PAD, HEADER_H + ch + 10); ctx.lineTo(cardW - PAD, HEADER_H + ch + 10); ctx.stroke();
+        const divY = HEADER_H + contentH + 10;
+        ctx.beginPath(); ctx.moveTo(PAD, divY); ctx.lineTo(cardW - PAD, divY); ctx.stroke();
 
-        // 底部左：品牌信息
-        const fy = HEADER_H + ch + 14;
+        // ── 底部区域 ──
+        const fy = HEADER_H + contentH + 14;
+        const QR = 88;
+        const qrX = cardW - PAD - QR;
+        const qrY = fy + Math.round((FOOTER_H - 14 - QR) / 2);
+
+        // 左：品牌名 + 文案
         ctx.textAlign = 'left';
-        ctx.fillStyle = '#94a3b8'; ctx.font = '12px "Noto Sans SC", sans-serif'; ctx.shadowBlur = 0;
-        ctx.fillText('扫码体验问星AI，解锁更多人生剧本', PAD, fy + 36);
+        ctx.fillStyle = accent; ctx.font = 'Bold 16px "Noto Sans SC", sans-serif';
+        ctx.shadowColor = accent; ctx.shadowBlur = 10;
+        ctx.fillText('问星AI', PAD, fy + 30); ctx.shadowBlur = 0;
+        ctx.fillStyle = '#64748b'; ctx.font = '11px "Noto Sans SC", sans-serif';
+        ctx.fillText('扫码体验问星AI，解锁更多人生剧本', PAD, fy + 50);
 
-        // 底部右：二维码（本地 share.jpg）
-        const QR = 68;
-        const qrX = cardW - PAD - QR; const qrY = fy + 6;
+        // 右：二维码（本地 share.jpg）
         try {
             const qrImg = await fetch('./share.jpg')
                 .then(r => r.blob())
@@ -5776,13 +5784,13 @@ ${outputStructure}`;
                     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img load fail')); };
                     img.src = url;
                 }));
-            ctx.fillStyle = '#04040f'; _rrect(ctx, qrX - 3, qrY - 3, QR + 6, QR + 6, 8); ctx.fill();
-            ctx.strokeStyle = accent + '55'; ctx.lineWidth = 1; _rrectStroke(ctx, qrX - 3, qrY - 3, QR + 6, QR + 6, 8);
+            ctx.fillStyle = '#04040f'; _rrect(ctx, qrX - 4, qrY - 4, QR + 8, QR + 8, 10); ctx.fill();
+            ctx.strokeStyle = accent + '66'; ctx.lineWidth = 1.5; _rrectStroke(ctx, qrX - 4, qrY - 4, QR + 8, QR + 8, 10);
             ctx.drawImage(qrImg, qrX, qrY, QR, QR);
         } catch(e) {
-            ctx.fillStyle = '#1e293b'; _rrect(ctx, qrX, qrY, QR, QR, 8); ctx.fill();
-            ctx.fillStyle = '#475569'; ctx.textAlign = 'center'; ctx.font = '10px sans-serif';
-            ctx.fillText('扫码', qrX + QR / 2, qrY + QR / 2);
+            ctx.fillStyle = '#1e293b'; _rrect(ctx, qrX, qrY, QR, QR, 10); ctx.fill();
+            ctx.fillStyle = '#475569'; ctx.textAlign = 'center'; ctx.font = '11px sans-serif';
+            ctx.fillText('扫码', qrX + QR / 2, qrY + QR / 2 + 4);
         }
 
         return card;
