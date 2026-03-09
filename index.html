@@ -2489,12 +2489,12 @@
         '天机': ['庙', '陷', '得', '旺', '利', '平', '庙', '陷', '得', '旺', '利', '平'],
         '太阳': ['陷', '陷', '旺', '庙', '旺', '旺', '庙', '得', '得', '平', '陷', '陷'],
         '武曲': ['旺', '庙', '得', '陷', '庙', '平', '旺', '庙', '得', '陷', '庙', '平'],
-        '天同': ['旺', '陷', '平', '庙', '平', '庙', '陷', '陷', '旺', '平', '平', '庙'],
+        '天同': ['旺', '陷', '平', '庙', '平', '庙', '陷', '旺', '旺', '平', '平', '庙'],
         '廉贞': ['平', '利', '庙', '平', '利', '陷', '平', '利', '庙', '平', '利', '陷'],
         '天府': ['庙', '庙', '庙', '平', '庙', '得', '旺', '庙', '得', '平', '庙', '得'],
         '太阴': ['庙', '庙', '陷', '陷', '陷', '陷', '陷', '平', '利', '旺', '旺', '庙'],
         '贪狼': ['旺', '庙', '平', '平', '庙', '陷', '旺', '庙', '平', '平', '庙', '陷'],
-        '巨门': ['旺', '旺', '庙', '庙', '陷', '陷', '旺', '陷', '庙', '庙', '陷', '旺'], 
+        '巨门': ['旺', '旺', '庙', '庙', '陷', '陷', '旺', '旺', '庙', '庙', '陷', '旺'],
         '天相': ['庙', '庙', '庙', '陷', '旺', '平', '庙', '得', '庙', '陷', '旺', '平'],
         '天梁': ['庙', '旺', '庙', '庙', '旺', '陷', '庙', '旺', '陷', '得', '旺', '陷'],
         '七杀': ['旺', '庙', '庙', '旺', '庙', '平', '旺', '庙', '庙', '旺', '旺', '平'],
@@ -2617,6 +2617,26 @@
                 this.addStar((luCunPos + 1) % 12, '擎羊', 'bad');
                 this.addStar((luCunPos - 1 + 12) % 12, '陀罗', 'bad');
             }
+
+            // 火星、铃星（年支四局×时支顺布）
+            const yb = this.yearBranchIdx;
+            let fireStart, lingStart;
+            if      ([2,6,10].includes(yb)) { fireStart = 1;  lingStart = 3;  } // 寅午戌
+            else if ([8,0,4].includes(yb))  { fireStart = 3;  lingStart = 10; } // 申子辰
+            else if ([5,9,1].includes(yb))  { fireStart = 9;  lingStart = 10; } // 巳酉丑
+            else                            { fireStart = 11; lingStart = 10; } // 亥卯未
+            this.addStar((fireStart + this.lunarHourIdx) % 12, '火星', 'bad');
+            this.addStar((lingStart + this.lunarHourIdx) % 12, '铃星', 'bad');
+
+            // 天魁、天钺（年干安·固定宫支对照表）
+            const KUI_BRANCH = [1,0,11,11,1,0,1,2,3,3]; // 甲乙丙丁戊己庚辛壬癸
+            const YUE_BRANCH = [7,8,9,9,7,8,7,5,5,5];
+            this.addStar(KUI_BRANCH[this.yearStemIdx], '天魁', 'lucky');
+            this.addStar(YUE_BRANCH[this.yearStemIdx], '天钺', 'lucky');
+
+            // 地劫（时支顺数·从亥起）、地空（时支逆数·从亥起）
+            this.addStar((11 + this.lunarHourIdx) % 12, '地劫', 'bad');
+            this.addStar((11 - this.lunarHourIdx + 12) % 12, '地空', 'bad');
         }
         
         addStar(idx, name, category) {
@@ -3274,7 +3294,7 @@
     const RELATION_PROFILES = {
         lover: { relationPalaces: ['夫妻', '福德'], supportPalaces: ['夫妻', '福德', '命宫'], taiSuiFocus: ['夫妻', '命宫', '福德'], coreBias: 1.1 },
         friend: { relationPalaces: ['交友', '兄弟', '财帛'], supportPalaces: ['交友', '兄弟', '命宫'], taiSuiFocus: ['交友', '兄弟', '财帛'], coreBias: 0.9 },
-        family: { relationPalaces: ['父母', '田宅', '命宫'], supportPalaces: ['父母', '田宅', '福德'], taiSuiFocus: ['父母', '田宅', '命宫'], coreBias: 1.0 },
+        family: { relationPalaces: ['父母', '田宅', '命宫', '子女'], supportPalaces: ['父母', '田宅', '福德', '子女'], taiSuiFocus: ['父母', '田宅', '命宫'], coreBias: 1.0 },
         partner: { relationPalaces: ['官禄', '财帛', '父母'], supportPalaces: ['官禄', '财帛', '命宫'], taiSuiFocus: ['官禄', '财帛', '父母'], coreBias: 0.95 }
     };
 
@@ -3406,6 +3426,18 @@
         return total;
     }
 
+    // 返回星集中数量最多的星系类型（authority/breaker/mind/express）
+    function getDominantStarGroup(stars) {
+        const counts = {};
+        stars.forEach(s => {
+            const g = STAR_GROUP_MAP[s.name];
+            if (g) counts[g] = (counts[g] || 0) + 1;
+        });
+        let maxG = null, maxC = 0;
+        Object.entries(counts).forEach(([g, c]) => { if (c > maxC) { maxG = g; maxC = c; } });
+        return maxG;
+    }
+
     function getAvgBrightness(stars) {
         if (stars.length === 0) return 3;
         let sum = 0;
@@ -3466,6 +3498,24 @@
         return quality * focusWeight;
     }
 
+    // 检测双方是否存在互化忌（A化忌落入B某宫 且 B化忌落入A某宫）
+    function detectMutualJi(chartA, chartB) {
+        const rulesA = SI_HUA_RULES[chartA.yearStemIdx];
+        const rulesB = SI_HUA_RULES[chartB.yearStemIdx];
+        if (!rulesA || !rulesB) return { hasMutual: false };
+        const jiStarA = rulesA.Ji;
+        const jiStarB = rulesB.Ji;
+        let jiPalaceA2B = null;
+        let jiPalaceB2A = null;
+        chartB.chartData.forEach(palace => {
+            if (palace.stars.some(s => s.name === jiStarA)) jiPalaceA2B = palace.name;
+        });
+        chartA.chartData.forEach(palace => {
+            if (palace.stars.some(s => s.name === jiStarB)) jiPalaceB2A = palace.name;
+        });
+        return { hasMutual: !!(jiPalaceA2B && jiPalaceB2A), jiStarA, jiStarB, jiPalaceA2B, jiPalaceB2A };
+    }
+
     function buildRelationIndexSet(chart, relationType, relIdx, mingIdx, shenIdx) {
         const profile = RELATION_PROFILES[relationType] || RELATION_PROFILES.friend;
         const safeShen = shenIdx === -1 ? mingIdx : shenIdx;
@@ -3518,6 +3568,22 @@
         const coreSynergyPerPair = coreSynergy / corePairCount;
         const coreGroupPerPair = coreGroupFit / corePairCount;
 
+        // B2: 命格互补加成——权势/杀破狼配机月同梁/巨日系是经典互补结构
+        const dominantA = getDominantStarGroup(coreStarsA);
+        const dominantB = getDominantStarGroup(coreStarsB);
+        let complementBonus = 0;
+        if (dominantA && dominantB && dominantA !== dominantB) {
+            const cpair = [dominantA, dominantB].sort().join('|');
+            if      (cpair === 'authority|mind')    complementBonus =  7;
+            else if (cpair === 'breaker|mind')      complementBonus =  5;
+            else if (cpair === 'authority|express') complementBonus =  4;
+            else if (cpair === 'mind|express')      complementBonus =  3;
+            else if (cpair === 'authority|breaker') complementBonus = -4;
+            else if (cpair === 'breaker|express')   complementBonus = -2;
+        }
+        // 互补时强弱差距是优势，大幅减轻差距惩罚
+        const strGapFactor = complementBonus > 0 ? 0.05 : 0.16;
+
         const coreQualityA = idxSetA.coreIndices.reduce((sum, idx) => sum + getPalaceQuality(chartA, idx), 0);
         const coreQualityB = idxSetB.coreIndices.reduce((sum, idx) => sum + getPalaceQuality(chartB, idx), 0);
         const coreAxisCount = Math.max(1, idxSetA.coreIndices.length + idxSetB.coreIndices.length);
@@ -3544,10 +3610,11 @@
             + coreCrossPositive * 1.15
             - coreCrossNegative * 1.35
             - coreBrightDiff * 2.2
-            - coreStrengthGap * 0.16
+            - coreStrengthGap * strGapFactor
             - coreQualityGap * 0.28
             - coreRiskPenalty
-            - coreCrossDirectionalGap * 0.6;
+            - coreCrossDirectionalGap * 0.6
+            + complementBonus;
 
         // 高分压缩：保留区分度，同时避免过度顶格。
         if (coreRaw > 88) coreRaw = 88 + (coreRaw - 88) * 0.62;
@@ -3668,12 +3735,14 @@
         // 化忌黏性系数：跨盘化忌交织强度减去福德宫韧性，衡量深度纠缠程度
         const totalCrossNeg = coreCrossNegative + relationCrossNegative + supportCrossNegative;
         const jiNexusScore = Math.max(0, totalCrossNeg - fudeResilience * 0.4);
+        const mutualJi = detectMutualJi(chartA, chartB);
 
         return {
             coreScore,
             relationScore,
             supportScore,
             jiNexusScore,
+            mutualJi,
             relPalaceName,
             relIdxA,
             relIdxB,
@@ -3692,13 +3761,17 @@
             { title: '关系契合度', score: scores.relationScore, desc: `以${scores.relPalaceName}为主轴，叠加太岁入卦与四化互飞，评估双方在该关系中的互动质量与成长空间。` },
             { title: '相处顺畅度', score: scores.supportScore, desc: '结合吉凶结构、化忌压力与强弱失衡，分数越高代表磨合成本更低、长期关系更稳。' }
         ];
+        const mutualJi = scores.mutualJi;
+        const mutualJiNote = mutualJi?.hasMutual
+            ? `<div style="margin-top:10px;padding:9px 13px;background:rgba(220,38,38,0.12);border:1px solid rgba(220,38,38,0.4);border-radius:8px;font-size:0.78rem;color:#fca5a5;line-height:1.55;">🔗 <strong>互化忌 · 相爱相杀结构</strong>：A的${mutualJi.jiStarA}化忌落入B的<strong>${mutualJi.jiPalaceA2B}</strong>，B的${mutualJi.jiStarB}化忌落入A的<strong>${mutualJi.jiPalaceB2A}</strong>。双向化忌是最深的业力连结，痛苦与黏性并存，关系难以轻易割舍。</div>`
+            : '';
         resultEl.innerHTML = cards.map(c => `
             <div class="syn-result-card">
                 <div class="score-row"><span>${c.title}</span><span>${Math.round(c.score)}%</span></div>
                 <div class="score-bar"><span style="width:${Math.round(c.score)}%"></span></div>
                 <div class="score-desc">${c.desc}</div>
             </div>
-        `).join('');
+        `).join('') + mutualJiNote;
     }
     
     function toggleSynastryPanel() {
@@ -3815,9 +3888,30 @@
                 }).join('、');
             };
 
-            // 命/身主星
-            const coreStarsA = formatStars(getMainStars(chartA, [mingIdxA, safeShenA]));
-            const coreStarsB = formatStars(getMainStars(chartB, [mingIdxB, safeShenB]));
+            // 命/身主星（同时保留原始数组用于星系格局分析）
+            const rawCoreStarsA = getMainStars(chartA, [mingIdxA, safeShenA]);
+            const rawCoreStarsB = getMainStars(chartB, [mingIdxB, safeShenB]);
+            const coreStarsA = formatStars(rawCoreStarsA);
+            const coreStarsB = formatStars(rawCoreStarsB);
+            // C1: 星系格局分析
+            const dominantGroupA = getDominantStarGroup(rawCoreStarsA);
+            const dominantGroupB = getDominantStarGroup(rawCoreStarsB);
+            const groupNameMap = { authority: '权势系（紫府廉武相）', breaker: '杀破狼系', mind: '机月同梁系', express: '巨日系' };
+            const groupLabelA = groupNameMap[dominantGroupA] || '混合星系';
+            const groupLabelB = groupNameMap[dominantGroupB] || '混合星系';
+            const gCpair = dominantGroupA && dominantGroupB ? [dominantGroupA, dominantGroupB].sort().join('|') : null;
+            const groupAnalysis = gCpair ? ({
+                'authority|mind':     '权势系×机月同梁：经典互补，刚柔相济',
+                'breaker|mind':       '杀破狼×机月同梁：突破力与细腻感互补',
+                'authority|express':  '权势系×巨日系：领导力与表达力结合',
+                'mind|express':       '机月同梁×巨日系：策略与传播协同',
+                'authority|breaker':  '权势系×杀破狼：两强相争，权力博弈激烈',
+                'breaker|express':    '杀破狼×巨日系：冲动与言辞易产生摩擦',
+                'authority|authority':'同属权势系：内部权力竞争风险',
+                'breaker|breaker':    '同属杀破狼：关系极度动荡',
+                'mind|mind':          '同属机月同梁：高度情绪共鸣但易过度敏感',
+                'express|express':    '同属巨日系：沟通过载与口舌风险',
+            }[gCpair] || '星系组合') : '星系数据不足';
 
             // 关系宫：无主星时借对宫（六合宫），避免空宫误导
             const effRelIdxA = getEffectiveRelIdx(chartA, relIdxA);
@@ -3849,9 +3943,13 @@
             const taiSuiA2BDesc = getTaiSuiPositionDesc(chartA, chartB) || '太岁宫位不明';
             const taiSuiB2ADesc = getTaiSuiPositionDesc(chartB, chartA) || '太岁宫位不明';
 
-            // 化忌黏性提示
-            const jiNexusTip = (scores.jiNexusScore || 0) > 6
-                ? '\n⚠️ 注：双方存在强化忌交织，为深度羁绊型关系，痛苦与黏性并存。' : '';
+            // 化忌黏性提示 + 互化忌结构（C2）
+            const mutualJiAI = scores.mutualJi;
+            const mutualJiTip = mutualJiAI?.hasMutual
+                ? `\n🔗 互化忌：A的${mutualJiAI.jiStarA}化忌→B的${mutualJiAI.jiPalaceA2B}，B的${mutualJiAI.jiStarB}化忌→A的${mutualJiAI.jiPalaceB2A}（相爱相杀双向业力连结）`
+                : '';
+            const jiNexusTip = ((scores.jiNexusScore || 0) > 6
+                ? '\n⚠️ 注：双方存在强化忌交织，为深度羁绊型关系，痛苦与黏性并存。' : '') + mutualJiTip;
 
             // 关系类型专属 systemInstruction
             const systemInstructions = {
@@ -3878,6 +3976,11 @@
 【双方命格主星（命宫·身宫）】
 A方：${coreStarsA}（命宫力量 ${getPalaceStrength(chartA, mingIdxA).toFixed(1)}）
 B方：${coreStarsB}（命宫力量 ${getPalaceStrength(chartB, mingIdxB).toFixed(1)}）
+
+【星系类型与格局碰撞（C1）】
+A方主导星系：${groupLabelA}
+B方主导星系：${groupLabelB}
+星系碰撞解读：${groupAnalysis}
 
 【关系宫主星（无主星时已借对宫）】
 A方 ${relPalaceDescA}：${relationStarsA}
