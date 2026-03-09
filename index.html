@@ -5689,8 +5689,8 @@ ${outputStructure}`;
     // 生成精致分享卡片公共方法
     async function _buildShareCard(sourceCanvas, title, subtitle, bg1, bg2, accent) {
         const PAD = 30;
-        const HEADER_H = 82;
-        const FOOTER_H = 120;
+        const HEADER_H = 96;
+        const FOOTER_H = 130;
         const TARGET_W = 720;          // 固定卡片宽度，保证手机端清晰
         const contentW = TARGET_W - PAD * 2;  // 660px 内容区
         const srcW = sourceCanvas.width;
@@ -5740,11 +5740,11 @@ ${outputStructure}`;
 
         // 标题
         ctx.textAlign = 'center'; ctx.shadowColor = accent; ctx.shadowBlur = 18;
-        ctx.fillStyle = '#f1f5f9'; ctx.font = 'Bold 20px "Noto Sans SC", sans-serif';
-        ctx.fillText(title, cardW / 2, 34);
+        ctx.fillStyle = '#f1f5f9'; ctx.font = 'Bold 24px "Noto Sans SC", sans-serif';
+        ctx.fillText(title, cardW / 2, 38);
         ctx.shadowBlur = 0;
-        ctx.fillStyle = '#94a3b8'; ctx.font = '12px "Noto Sans SC", sans-serif';
-        ctx.fillText(subtitle, cardW / 2, 57);
+        ctx.fillStyle = '#94a3b8'; ctx.font = '14px "Noto Sans SC", sans-serif';
+        ctx.fillText(subtitle, cardW / 2, 66);
 
         // 分隔线
         ctx.strokeStyle = accent + '40'; ctx.lineWidth = 1;
@@ -5761,17 +5761,17 @@ ${outputStructure}`;
 
         // ── 底部区域 ──
         const fy = HEADER_H + contentH + 14;
-        const QR = 88;
+        const QR = 100;
         const qrX = cardW - PAD - QR;
         const qrY = fy + Math.round((FOOTER_H - 14 - QR) / 2);
 
         // 左：品牌名 + 文案
         ctx.textAlign = 'left';
-        ctx.fillStyle = accent; ctx.font = 'Bold 16px "Noto Sans SC", sans-serif';
+        ctx.fillStyle = accent; ctx.font = 'Bold 19px "Noto Sans SC", sans-serif';
         ctx.shadowColor = accent; ctx.shadowBlur = 10;
-        ctx.fillText('问星AI', PAD, fy + 30); ctx.shadowBlur = 0;
-        ctx.fillStyle = '#64748b'; ctx.font = '11px "Noto Sans SC", sans-serif';
-        ctx.fillText('扫码体验问星AI，解锁更多人生剧本', PAD, fy + 50);
+        ctx.fillText('问星AI', PAD, fy + 34); ctx.shadowBlur = 0;
+        ctx.fillStyle = '#64748b'; ctx.font = '13px "Noto Sans SC", sans-serif';
+        ctx.fillText('扫码体验问星AI，解锁更专业理性视角的人生剧本内容', PAD, fy + 56);
 
         // 右：二维码（本地 share.jpg）
         try {
@@ -5809,8 +5809,13 @@ ${outputStructure}`;
         let ov = document.getElementById('wxShareOverlay');
         if (!ov) {
             ov = document.createElement('div'); ov.id = 'wxShareOverlay';
-            ov.innerHTML = '<img id="wxShareImg" src="" alt="分享卡片"><p class="wx-hint">👆 <strong>长按图片</strong> 保存到手机</p><button class="wx-close" onclick="document.getElementById(\"wxShareOverlay\").classList.remove(\"active\")">  关闭</button>';
-            ov.addEventListener('click', function(e){ if(e.target===ov) ov.classList.remove('active'); });
+            const img = document.createElement('img'); img.id = 'wxShareImg'; img.alt = '分享卡片';
+            const hint = document.createElement('p'); hint.className = 'wx-hint';
+            hint.innerHTML = '👆 <strong>长按图片</strong> 保存到手机';
+            const closeBtn = document.createElement('button'); closeBtn.className = 'wx-close'; closeBtn.textContent = '关闭';
+            closeBtn.addEventListener('click', function() { ov.classList.remove('active'); });
+            ov.appendChild(img); ov.appendChild(hint); ov.appendChild(closeBtn);
+            ov.addEventListener('click', function(e) { if (e.target === ov) ov.classList.remove('active'); });
             document.body.appendChild(ov);
         }
         document.getElementById('wxShareImg').src = dataUrl;
