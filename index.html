@@ -839,6 +839,13 @@
         .save-screenshot-btn:hover { background: rgba(167,139,250,0.25); box-shadow: 0 0 10px rgba(167,139,250,0.25); }
         .save-screenshot-btn.radar-save { border-color: rgba(56,189,248,0.35); background: rgba(56,189,248,0.10); color: #7dd3fc; }
         .save-screenshot-btn.radar-save:hover { background: rgba(56,189,248,0.22); box-shadow: 0 0 10px rgba(56,189,248,0.25); }
+        /* 微信分享卡片预览遗罩层 */
+        #wxShareOverlay { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.88); flex-direction:column; align-items:center; justify-content:center; }
+        #wxShareOverlay.active { display:flex; }
+        #wxShareOverlay img { max-width:92vw; max-height:72vh; border-radius:14px; box-shadow:0 0 40px rgba(0,0,0,0.8); display:block; }
+        #wxShareOverlay .wx-hint { margin-top:18px; color:#94a3b8; font-size:14px; letter-spacing:0.5px; }
+        #wxShareOverlay .wx-hint strong { color:#e2e8f0; }
+        #wxShareOverlay .wx-close { margin-top:20px; padding:8px 28px; border-radius:20px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.08); color:#cbd5e1; font-size:13px; cursor:pointer; }
 
         .liu-yao-panel { bottom: 110px; right: 30px; width: 340px; max-height: calc(100vh - 140px); border: 1px solid rgba(45,212,191,0.28); overflow: hidden; }
         .liu-yao-header { padding: 15px 18px; background: linear-gradient(90deg, rgba(2,14,14,0.98), rgba(3,24,22,0.97)); border-bottom: 1px solid rgba(45,212,191,0.18); border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; box-shadow: inset 0 1px 0 rgba(45,212,191,0.5); }
@@ -4900,11 +4907,6 @@ ${outputStructure}`;
         const material = new THREE.MeshPhysicalMaterial({ color: baseColor, transparent: true, opacity: opacityVal, metalness: 0.8, roughness: 0.2, clearcoat: 1.0, clearcoatRoughness: 0.1, emissive: emissiveColor, emissiveIntensity: 0.5, side: THREE.DoubleSide });
         const mesh = new THREE.Mesh(geometry, material); mesh.userData = { id: index, data: data, originalColor: baseColor, originalEmissive: emissiveColor }; 
         
-        // C: 扇形描边线框（蓝图科技感）
-        const edgesGeo = new THREE.EdgesGeometry(geometry, 15);
-        const edgesMat = new THREE.LineBasicMaterial({ color: 0x1e4a7a, transparent: true, opacity: 0.55, depthWrite: false });
-        const edgesMesh = new THREE.LineSegments(edgesGeo, edgesMat);
-        mesh.add(edgesMesh);
         let labelName = data.name;
         if (data.isShen) {
             labelName += "(身宫)";
@@ -5698,10 +5700,29 @@ ${outputStructure}`;
         card.width = cardW; card.height = cardH;
         const ctx = card.getContext('2d');
 
-        // 背景渐变
+        // 层 1：基础对角渐变（三段）
         const bgGrad = ctx.createLinearGradient(0, 0, cardW, cardH);
-        bgGrad.addColorStop(0, bg1); bgGrad.addColorStop(1, bg2);
+        bgGrad.addColorStop(0, bg1);
+        bgGrad.addColorStop(0.5, bg2);
+        bgGrad.addColorStop(1, bg1);
         ctx.fillStyle = bgGrad;
+        _rrect(ctx, 0, 0, cardW, cardH, 18);
+        ctx.fill();
+
+        // 层 2：顶部星云敖散光晕（accent 色）
+        const nebulaGrad = ctx.createRadialGradient(cardW * 0.5, 0, 0, cardW * 0.5, 0, cardW * 0.75);
+        nebulaGrad.addColorStop(0, accent + '30');
+        nebulaGrad.addColorStop(0.45, accent + '0d');
+        nebulaGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = nebulaGrad;
+        _rrect(ctx, 0, 0, cardW, cardH, 18);
+        ctx.fill();
+
+        // 层 3：底部暗角收边
+        const vigGrad = ctx.createRadialGradient(cardW / 2, cardH, cardH * 0.08, cardW / 2, cardH, cardH * 0.9);
+        vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
+        vigGrad.addColorStop(1, 'rgba(0,0,0,0.5)');
+        ctx.fillStyle = vigGrad;
         _rrect(ctx, 0, 0, cardW, cardH, 18);
         ctx.fill();
 
@@ -5775,6 +5796,18 @@ ${outputStructure}`;
     }
     function _rrectStroke(ctx, x, y, w, h, r) { _rrect(ctx,x,y,w,h,r); ctx.stroke(); }
 
+    function _isWeChat() { return /MicroMessenger/i.test(navigator.userAgent); }
+    function _showCardInOverlay(dataUrl) {
+        let ov = document.getElementById('wxShareOverlay');
+        if (!ov) {
+            ov = document.createElement('div'); ov.id = 'wxShareOverlay';
+            ov.innerHTML = '<img id="wxShareImg" src="" alt="分享卡片"><p class="wx-hint">👆 <strong>长按图片</strong> 保存到手机</p><button class="wx-close" onclick="document.getElementById(\"wxShareOverlay\").classList.remove(\"active\")">  关闭</button>';
+            ov.addEventListener('click', function(e){ if(e.target===ov) ov.classList.remove('active'); });
+            document.body.appendChild(ov);
+        }
+        document.getElementById('wxShareImg').src = dataUrl;
+        ov.classList.add('active');
+    }
     async function saveLifeChartScreenshot() {
         const canvas = document.getElementById('lifeChart');
         if (!canvas || !canvas.width) { showToast('请先生成星盘', 'warn'); return; }
@@ -5783,11 +5816,16 @@ ${outputStructure}`;
         }
         showToast('正在生成分享卡片...', 'info', 2000);
         try {
-            const card = await _buildShareCard(canvas, '🌠 人生大运K线', '问星AI 人生大运K线推演', '#03030e', '#08041a', '#c4b5fd');
-            const link = document.createElement('a');
-            link.download = '人生大运K线.png'; link.href = card.toDataURL('image/png'); link.click();
-            showToast('已保存 ✓', 'ok', 2000);
-        } catch(e) { showToast('保存失败', 'warn'); }
+            const card = await _buildShareCard(canvas, '🌠 人生大运K线', '问星AI 人生大运K线推演', '#04011a', '#0f052e', '#c4b5fd');
+            const dataUrl = card.toDataURL('image/png');
+            if (_isWeChat()) {
+                _showCardInOverlay(dataUrl);
+            } else {
+                const link = document.createElement('a');
+                link.download = '人生大运K线.png'; link.href = dataUrl; link.click();
+                showToast('已保存 ✓', 'ok', 2000);
+            }
+        } catch(e) { showToast('保存失败', 'warn'); console.error(e); }
     }
 
     async function saveRadarScreenshot() {
@@ -5795,11 +5833,16 @@ ${outputStructure}`;
         if (!canvas || !canvas.width) { showToast('请先生成星盘', 'warn'); return; }
         showToast('正在生成分享卡片...', 'info', 2000);
         try {
-            const card = await _buildShareCard(canvas, '✨ 命盘五维运势', '问星AI 宫位星耀组合分析', '#060d18', '#0d1828', '#38bdf8');
-            const link = document.createElement('a');
-            link.download = '命盘五维运势.png'; link.href = card.toDataURL('image/png'); link.click();
-            showToast('已保存 ✓', 'ok', 2000);
-        } catch(e) { showToast('保存失败', 'warn'); }
+            const card = await _buildShareCard(canvas, '✨ 命盘五维运势', '问星AI 宫位星耀组合分析', '#010c1c', '#04203e', '#38bdf8');
+            const dataUrl = card.toDataURL('image/png');
+            if (_isWeChat()) {
+                _showCardInOverlay(dataUrl);
+            } else {
+                const link = document.createElement('a');
+                link.download = '命盘五维运势.png'; link.href = dataUrl; link.click();
+                showToast('已保存 ✓', 'ok', 2000);
+            }
+        } catch(e) { showToast('保存失败', 'warn'); console.error(e); }
     }
     function toggleChat() { const win = document.getElementById('chatWindow'); closeAllFloatingWindows(win); win.style.display = win.style.display === 'flex' ? 'none' : 'flex'; }
     function toggleHelpPanel() {
