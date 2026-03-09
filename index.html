@@ -835,6 +835,10 @@
         .life-chart-container { flex: 1; position: relative; padding: 15px; background: rgba(4,4,16,0.95); overflow: hidden; cursor: crosshair; }
         .life-analysis { height: 120px; padding: 14px; border-top: 1px solid rgba(167,139,250,0.12); overflow-y: auto; background: rgba(8,4,20,0.5); font-size: 0.8rem; color: #a78bfa; }
         canvas#lifeChart { width: 100%; height: 100%; }
+        .save-screenshot-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; font-size: 0.73rem; font-weight: 700; border-radius: 20px; border: 1px solid rgba(196,181,253,0.35); background: rgba(167,139,250,0.12); color: #c4b5fd; cursor: pointer; transition: background 0.18s, box-shadow 0.18s; letter-spacing: 0.3px; user-select: none; flex-shrink: 0; }
+        .save-screenshot-btn:hover { background: rgba(167,139,250,0.25); box-shadow: 0 0 10px rgba(167,139,250,0.25); }
+        .save-screenshot-btn.radar-save { border-color: rgba(56,189,248,0.35); background: rgba(56,189,248,0.10); color: #7dd3fc; }
+        .save-screenshot-btn.radar-save:hover { background: rgba(56,189,248,0.22); box-shadow: 0 0 10px rgba(56,189,248,0.25); }
 
         .liu-yao-panel { bottom: 110px; right: 30px; width: 340px; max-height: calc(100vh - 140px); border: 1px solid rgba(45,212,191,0.28); overflow: hidden; }
         .liu-yao-header { padding: 15px 18px; background: linear-gradient(90deg, rgba(2,14,14,0.98), rgba(3,24,22,0.97)); border-bottom: 1px solid rgba(45,212,191,0.18); border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; box-shadow: inset 0 1px 0 rgba(45,212,191,0.5); }
@@ -1825,8 +1829,11 @@
 <div class="floating-window life-panel" id="lifePanel">
     <div class="handle-bar"></div>
     <div class="life-header">
-        <div class="life-title">🌠 人生大运轨迹</div>
-        <span class="cursor-pointer text-gray-400 hover:text-white" style="color:#c4b5fd;" onclick="toggleLifePanel()">✕</span>
+        <div class="life-title">🌠 人生大运K线</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <button class="save-screenshot-btn" onclick="saveLifeChartScreenshot()" title="保存K线截图">📸 保存截图</button>
+            <span class="cursor-pointer text-gray-400 hover:text-white" style="color:#c4b5fd;" onclick="toggleLifePanel()">✕</span>
+        </div>
     </div>
     <div class="life-chart-container">
         <canvas id="lifeChart"></canvas>
@@ -2052,6 +2059,9 @@
         </div>
         <div class="radar-canvas-wrapper">
             <canvas id="radarCanvas" width="300" height="300"></canvas>
+        </div>
+        <div style="display:flex;justify-content:center;margin:0 0 14px;">
+            <button class="save-screenshot-btn radar-save" onclick="saveRadarScreenshot()">📸 保存分享卡片</button>
         </div>
         <!-- H: 五维评分行 (JS populated) -->
         <div class="radar-explore-section">
@@ -4333,6 +4343,11 @@ ${outputStructure}`;
             emissiveNormal: 0x000000,
             emissiveMing: 0x001e3a,
             emissiveShen: 0x00162b,
+            // A: 宫格属性分组微染
+            emissiveWealth: 0x0f0c00,   // 财帛/田宅：金调
+            emissiveLove:   0x0f0206,   // 夫妻/子女：桃调
+            emissiveCareer: 0x06020f,   // 官禄/交友：紫调
+            emissiveTravel: 0x00100f,   // 疾厄/迁移：青调
         },
         label: { normal: 0x93c5fd, ming: 0xe0f2fe, shen: 0xbfdbfe }
     };
@@ -4869,6 +4884,13 @@ ${outputStructure}`;
         const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
         let baseColor = data.isMing ? THEME.sectors.ming : THEME.sectors.normal;
         let emissiveColor = data.isMing ? THEME.sectors.emissiveMing : THEME.sectors.emissiveNormal;
+        // A: 按宫位属性叠加微染色
+        if (!data.isMing && !data.isShen) {
+            if (data.name === '财帛' || data.name === '田宅') emissiveColor = THEME.sectors.emissiveWealth;
+            else if (data.name === '夫妻' || data.name === '子女') emissiveColor = THEME.sectors.emissiveLove;
+            else if (data.name === '官禄' || data.name === '交友') emissiveColor = THEME.sectors.emissiveCareer;
+            else if (data.name === '疾厄' || data.name === '迁移') emissiveColor = THEME.sectors.emissiveTravel;
+        }
         let opacityVal = 0.6;
         if (data.isShen) {
             baseColor = THEME.sectors.shen;
@@ -4878,7 +4900,11 @@ ${outputStructure}`;
         const material = new THREE.MeshPhysicalMaterial({ color: baseColor, transparent: true, opacity: opacityVal, metalness: 0.8, roughness: 0.2, clearcoat: 1.0, clearcoatRoughness: 0.1, emissive: emissiveColor, emissiveIntensity: 0.5, side: THREE.DoubleSide });
         const mesh = new THREE.Mesh(geometry, material); mesh.userData = { id: index, data: data, originalColor: baseColor, originalEmissive: emissiveColor }; 
         
-        // --- UPDATED LABEL GENERATION ---
+        // C: 扇形描边线框（蓝图科技感）
+        const edgesGeo = new THREE.EdgesGeometry(geometry, 15);
+        const edgesMat = new THREE.LineBasicMaterial({ color: 0x1e4a7a, transparent: true, opacity: 0.55, depthWrite: false });
+        const edgesMesh = new THREE.LineSegments(edgesGeo, edgesMat);
+        mesh.add(edgesMesh);
         let labelName = data.name;
         if (data.isShen) {
             labelName += "(身宫)";
@@ -4984,7 +5010,6 @@ ${outputStructure}`;
             parentMesh.add(starMesh);
             parentMesh.add(glow);
 
-            // 四化：双层光环 + 匹配色调晕染（无文字，纯视觉）
             if (star.sihua) {
                 let ringColor;
                 if      (star.sihua === '禄') ringColor = 0x4dd0e1; // 天青
@@ -5001,6 +5026,7 @@ ${outputStructure}`;
                 const ringA = new THREE.Mesh(rGeoA, rMatA);
                 ringA.position.set(px, py, pz);
                 ringA.lookAt(0, 0, 100);
+                ringA.userData.sihuaAnim = { type: star.sihua, isInner: true };
                 parentMesh.add(ringA);
 
                 // 外晕环：宽而透明，营造星力溢出感
@@ -5012,6 +5038,7 @@ ${outputStructure}`;
                 const ringB = new THREE.Mesh(rGeoB, rMatB);
                 ringB.position.set(px, py, pz - 0.2);
                 ringB.lookAt(0, 0, 100);
+                ringB.userData.sihuaAnim = { type: star.sihua, isInner: false };
                 parentMesh.add(ringB);
 
                 // 四化专属色调光晕，叠在星体上
@@ -5656,6 +5683,124 @@ ${outputStructure}`;
     }
 
     function closeAiModal() { document.getElementById('ai-modal').style.display = 'none'; }
+
+    // 生成精致分享卡片公共方法
+    async function _buildShareCard(sourceCanvas, title, subtitle, bg1, bg2, accent) {
+        const PAD = 30;
+        const HEADER_H = 80;
+        const FOOTER_H = 96;
+        const cw = sourceCanvas.width;
+        const ch = sourceCanvas.height;
+        const cardW = cw + PAD * 2;
+        const cardH = ch + HEADER_H + FOOTER_H;
+
+        const card = document.createElement('canvas');
+        card.width = cardW; card.height = cardH;
+        const ctx = card.getContext('2d');
+
+        // 背景渐变
+        const bgGrad = ctx.createLinearGradient(0, 0, cardW, cardH);
+        bgGrad.addColorStop(0, bg1); bgGrad.addColorStop(1, bg2);
+        ctx.fillStyle = bgGrad;
+        _rrect(ctx, 0, 0, cardW, cardH, 18);
+        ctx.fill();
+
+        // 内边框
+        ctx.strokeStyle = accent + '55'; ctx.lineWidth = 1.5;
+        _rrectStroke(ctx, 1, 1, cardW - 2, cardH - 2, 17);
+
+        // 头部光晕条
+        const headerGrad = ctx.createLinearGradient(0, 0, cardW, 0);
+        headerGrad.addColorStop(0, accent + '22');
+        headerGrad.addColorStop(0.5, accent + '0a');
+        headerGrad.addColorStop(1, accent + '22');
+        ctx.fillStyle = headerGrad;
+        _rrect(ctx, 0, 0, cardW, HEADER_H, 18, 18, 0, 0);
+        ctx.fill();
+
+        // 标题
+        ctx.textAlign = 'center'; ctx.shadowColor = accent; ctx.shadowBlur = 16;
+        ctx.fillStyle = '#f1f5f9'; ctx.font = 'Bold 20px "Noto Sans SC", sans-serif';
+        ctx.fillText(title, cardW / 2, 34);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#64748b'; ctx.font = '12px "Noto Sans SC", sans-serif';
+        ctx.fillText(subtitle, cardW / 2, 56);
+
+        // 分隔线
+        ctx.strokeStyle = accent + '40'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(PAD, HEADER_H - 2); ctx.lineTo(cardW - PAD, HEADER_H - 2); ctx.stroke();
+
+        // 主图
+        ctx.drawImage(sourceCanvas, PAD, HEADER_H);
+
+        // 底部分隔线
+        ctx.beginPath(); ctx.moveTo(PAD, HEADER_H + ch + 10); ctx.lineTo(cardW - PAD, HEADER_H + ch + 10); ctx.stroke();
+
+        // 底部左：品牌信息
+        const fy = HEADER_H + ch + 14;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#94a3b8'; ctx.font = '12px "Noto Sans SC", sans-serif'; ctx.shadowBlur = 0;
+        ctx.fillText('扫码体验问星AI，解锁更多人生剧本', PAD, fy + 36);
+
+        // 底部右：二维码（本地 share.jpg）
+        const QR = 68;
+        const qrX = cardW - PAD - QR; const qrY = fy + 6;
+        try {
+            const qrImg = await fetch('./share.jpg')
+                .then(r => r.blob())
+                .then(blob => new Promise((resolve, reject) => {
+                    const url = URL.createObjectURL(blob);
+                    const img = new Image();
+                    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+                    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img load fail')); };
+                    img.src = url;
+                }));
+            ctx.fillStyle = '#04040f'; _rrect(ctx, qrX - 3, qrY - 3, QR + 6, QR + 6, 8); ctx.fill();
+            ctx.strokeStyle = accent + '55'; ctx.lineWidth = 1; _rrectStroke(ctx, qrX - 3, qrY - 3, QR + 6, QR + 6, 8);
+            ctx.drawImage(qrImg, qrX, qrY, QR, QR);
+        } catch(e) {
+            ctx.fillStyle = '#1e293b'; _rrect(ctx, qrX, qrY, QR, QR, 8); ctx.fill();
+            ctx.fillStyle = '#475569'; ctx.textAlign = 'center'; ctx.font = '10px sans-serif';
+            ctx.fillText('扫码', qrX + QR / 2, qrY + QR / 2);
+        }
+
+        return card;
+    }
+    function _rrect(ctx, x, y, w, h, tl, tr, br, bl) {
+        tl = tl||0; tr = tr!==undefined?tr:tl; br = br!==undefined?br:tl; bl = bl!==undefined?bl:tl;
+        ctx.beginPath(); ctx.moveTo(x+tl,y); ctx.lineTo(x+w-tr,y); ctx.quadraticCurveTo(x+w,y,x+w,y+tr);
+        ctx.lineTo(x+w,y+h-br); ctx.quadraticCurveTo(x+w,y+h,x+w-br,y+h);
+        ctx.lineTo(x+bl,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-bl);
+        ctx.lineTo(x,y+tl); ctx.quadraticCurveTo(x,y,x+tl,y); ctx.closePath();
+    }
+    function _rrectStroke(ctx, x, y, w, h, r) { _rrect(ctx,x,y,w,h,r); ctx.stroke(); }
+
+    async function saveLifeChartScreenshot() {
+        const canvas = document.getElementById('lifeChart');
+        if (!canvas || !canvas.width) { showToast('请先生成星盘', 'warn'); return; }
+        if (!latestLifeData || latestLifeData.length === 0 || currentDrawLimit < latestLifeData.length) {
+            showToast('请等待K线生成完毕后再截图', 'warn'); return;
+        }
+        showToast('正在生成分享卡片...', 'info', 2000);
+        try {
+            const card = await _buildShareCard(canvas, '🌠 人生大运K线', '问星AI 人生大运K线推演', '#03030e', '#08041a', '#c4b5fd');
+            const link = document.createElement('a');
+            link.download = '人生大运K线.png'; link.href = card.toDataURL('image/png'); link.click();
+            showToast('已保存 ✓', 'ok', 2000);
+        } catch(e) { showToast('保存失败', 'warn'); }
+    }
+
+    async function saveRadarScreenshot() {
+        const canvas = document.getElementById('radarCanvas');
+        if (!canvas || !canvas.width) { showToast('请先生成星盘', 'warn'); return; }
+        showToast('正在生成分享卡片...', 'info', 2000);
+        try {
+            const card = await _buildShareCard(canvas, '✨ 命盘五维运势', '问星AI 宫位星耀组合分析', '#060d18', '#0d1828', '#38bdf8');
+            const link = document.createElement('a');
+            link.download = '命盘五维运势.png'; link.href = card.toDataURL('image/png'); link.click();
+            showToast('已保存 ✓', 'ok', 2000);
+        } catch(e) { showToast('保存失败', 'warn'); }
+    }
     function toggleChat() { const win = document.getElementById('chatWindow'); closeAllFloatingWindows(win); win.style.display = win.style.display === 'flex' ? 'none' : 'flex'; }
     function toggleHelpPanel() {
         const panel = document.getElementById('helpPanel');
@@ -5701,6 +5846,30 @@ ${outputStructure}`;
 
         // (A) halo breathe + click pulse
         updateHalo(now);
+
+        // D: 四化光环呼吸/旋转动画
+        const t = now * 0.001;
+        chartObj.traverse(obj => {
+            if (!obj.userData.sihuaAnim) return;
+            const sa = obj.userData.sihuaAnim;
+            if (sa.type === '禄') {
+                // 慢速膨胀呼吸（周期4s）
+                const breath = 0.5 + 0.5 * Math.sin(t * 1.57);
+                obj.material.opacity = sa.isInner ? 0.7 + breath * 0.26 : 0.08 + breath * 0.10;
+            } else if (sa.type === '权') {
+                // 中速旋转
+                obj.rotation.z += 0.012;
+                obj.material.opacity = sa.isInner ? 0.9 : 0.14;
+            } else if (sa.type === '科') {
+                // 轻微闪烁（周期2.5s）
+                const flicker = 0.5 + 0.5 * Math.sin(t * 2.51);
+                obj.material.opacity = sa.isInner ? 0.75 + flicker * 0.21 : 0.09 + flicker * 0.08;
+            } else if (sa.type === '忌') {
+                // 快速脉冲（周期1.5s）
+                const pulse = 0.5 + 0.5 * Math.sin(t * 4.19);
+                obj.material.opacity = sa.isInner ? 0.6 + pulse * 0.36 : 0.06 + pulse * 0.14;
+            }
+        });
 
         // Aurora shader背景动画
         updateShaderBg(now);
