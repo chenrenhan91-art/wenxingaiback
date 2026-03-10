@@ -2131,27 +2131,25 @@
 
     // === Copy AI Result ===
     function copyAiResult() {
-        const el = document.getElementById('ai-result-text');
+        const el = document.getElementById('aiContent');
         if (!el) return;
         const text = el.innerText || el.textContent;
         if (!text || text.includes('星辰连结中')) { showToast('暂无内容可复制', 'warn'); return; }
         navigator.clipboard.writeText(text).then(() => {
             showToast('✅ 已复制到剪贴板', 'success');
         }).catch(() => {
-            // Fallback
             const ta = document.createElement('textarea');
             ta.value = text; document.body.appendChild(ta); ta.select();
-            document.execCommand('copy'); document.body.removeChild(ta);
+            document.execCommand('copy');
+            document.body.removeChild(ta);
             showToast('✅ 已复制到剪贴板', 'success');
         });
     }
 
-    // === Onboarding ===
     function showOnboarding() {
         if (localStorage.getItem('wx_onboarding_done')) return;
         // 微信/低配移动端默认不阻塞首屏，提升打开流畅度
         if (MOBILE_PERF_MODE) {
-            localStorage.setItem('wx_onboarding_done', '1');
             return;
         }
         const overlay = document.getElementById('onboarding-overlay');
@@ -2164,9 +2162,9 @@
     }
 
     // === Backend API (本地后端接管：登录/额度/AI 调用) ===
+    let currentUser = null;
     const API_BASE = '';
     const AUTH_TOKEN_KEY = 'wx_auth_token';
-    let currentUser = null;
 
     // === Device Performance Profile (微信/移动端优化) ===
     const USER_AGENT = navigator.userAgent || '';
@@ -2176,7 +2174,6 @@
     const LOW_MEMORY = (typeof navigator.deviceMemory === 'number') ? navigator.deviceMemory <= 4 : false;
     const MOBILE_LITE_MODE = IS_MOBILE_DEVICE || IS_WECHAT;
     const MOBILE_PERF_MODE = IS_WECHAT || (IS_MOBILE_DEVICE && (LOW_CPU || LOW_MEMORY));
-
     if (MOBILE_LITE_MODE) document.body.classList.add('mobile-lite');
     if (MOBILE_PERF_MODE) document.body.classList.add('mobile-perf');
 
@@ -4378,6 +4375,8 @@ ${outputStructure}`;
     })();
 
     function getRendererPixelRatioCap() {
+        if (MOBILE_PERF_MODE) return 1.1;
+        if (IS_MOBILE_DEVICE) return 1.35;
         return 2;
     }
 
@@ -4957,36 +4956,62 @@ ${outputStructure}`;
 
     function addStarsToSector(parentMesh, stars, angle, radius) {
         const isMobile = window.innerWidth < 768;
-        const sphereSegs = isMobile ? 6 : 8; // 原 32×32，减少 ~93% 三角面
+        const sphereSegs = MOBILE_PERF_MODE ? 10 : (isMobile ? 12 : 18); // 移动端适度收敛几何细分
+        const glowScaleFactor = MOBILE_PERF_MODE ? 0.78 : (isMobile ? 0.88 : 1);
+        const ringSegs = MOBILE_PERF_MODE ? 20 : (isMobile ? 24 : 32);
+        const mobileDenseCount = isMobile ? Math.max(stars.length - 3, 0) : 0;
+        const mobileSizeFactor = isMobile ? Math.max(0.8, 1 - mobileDenseCount * 0.04) : 1;
+        const mobileGlowFactor = isMobile ? Math.max(0.72, 1 - mobileDenseCount * 0.05) : 1;
+        const mobileAngleSpread = isMobile ? 1 + Math.min(mobileDenseCount, 4) * 0.2 : 1;
+        const mobileRadiusSpread = isMobile ? 1 + Math.min(mobileDenseCount, 4) * 0.15 : 1;
+        const mobileLayerStep = MOBILE_PERF_MODE ? 1.15 : 1.45;
 
         stars.forEach((star, i) => {
             let size = 0.4; let color = 0xffffff; let intensity = 1.0;
+            let glowMult = 5.5;
+            let coreScale = 0.42;
+            let coreOpacity = 0.82;
             if (star.category === 'main') {
                 size = 1.0;
                 color = MAIN_STARS_INFO[star.name] ? MAIN_STARS_INFO[star.name].color : 0xffffff;
                 intensity = 1.5;
                 switch (star.brightness) {
-                    case '庙': size = 1.7; intensity = 4.5; break;
-                    case '旺': size = 1.4; intensity = 2.8; break;
-                    case '得': case '利': size = 1.1; intensity = 1.8; break;
-                    case '平': size = 0.9; intensity = 1.0; break;
+                    case '庙':
+                        size = 1.7; intensity = 5.4; glowMult = 10.5; coreScale = 0.48; coreOpacity = 0.98;
+                        break;
+                    case '旺':
+                        size = 1.4; intensity = 3.4; glowMult = 8.2; coreScale = 0.45; coreOpacity = 0.92;
+                        break;
+                    case '得':
+                    case '利':
+                        size = 1.1; intensity = 2.1; glowMult = 6.3; coreScale = 0.4; coreOpacity = 0.84;
+                        break;
+                    case '平':
+                        size = 0.9; intensity = 1.15; glowMult = 4.8; coreScale = 0.36; coreOpacity = 0.72;
+                        break;
                     case '陷': case '闲':
-                        size = 0.6; intensity = 0.35;
+                        size = 0.6; intensity = 0.28; glowMult = 2.8; coreScale = 0.3; coreOpacity = 0.5;
                         const c = new THREE.Color(color); c.lerp(new THREE.Color(0x333333), 0.55);
                         color = c.getHex();
                         break;
-                    default: size = 1.0; intensity = 1.0;
+                    default:
+                        size = 1.0; intensity = 1.2; glowMult = 5.5; coreScale = 0.4; coreOpacity = 0.8;
                 }
             } else if (star.category === 'bad') {
-                color = 0xff4444; size = 0.55;
+                color = 0xff4444; size = 0.55; glowMult = 4.2; coreScale = 0.34; coreOpacity = 0.7;
             } else if (star.category === 'lucky') {
-                color = 0x44ff88; size = 0.55;
+                color = 0x44ff88; size = 0.55; glowMult = 4.6; coreScale = 0.36; coreOpacity = 0.76;
             }
 
+            size *= mobileSizeFactor;
+            glowMult *= mobileGlowFactor;
+
             // 确定性位置（替换 Math.random，星位固定）
-            const rOffset = (_starSeedFrac(star.name, i, 0) - 0.5) * 6;
-            const hOffset = 4   + _starSeedFrac(star.name, i, 1) * 4;
-            const aOffset = (_starSeedFrac(star.name, i, 2) - 0.5) * 0.15;
+            const rOffset = (_starSeedFrac(star.name, i, 0) - 0.5) * 6 * mobileRadiusSpread;
+            const hBase = 4 + _starSeedFrac(star.name, i, 1) * 4;
+            const hLayer = isMobile ? (i % 3) * mobileLayerStep : 0;
+            const hOffset = hBase + hLayer;
+            const aOffset = (_starSeedFrac(star.name, i, 2) - 0.5) * 0.15 * mobileAngleSpread;
             const finalR = radius + rOffset;
             const finalA = angle  + aOffset;
             const px = finalR * Math.cos(finalA);
@@ -4995,23 +5020,28 @@ ${outputStructure}`;
 
             const geometry = new THREE.SphereGeometry(size, sphereSegs, sphereSegs);
             const material = new THREE.MeshStandardMaterial({
-                color, emissive: color, emissiveIntensity: intensity, roughness: 0.1
+                color,
+                emissive: color,
+                emissiveIntensity: intensity,
+                roughness: 0.16,
+                metalness: 0.0
             });
             const starMesh = new THREE.Mesh(geometry, material);
             starMesh.position.set(px, py, pz);
 
-            // 光晕按亮度分级：庙 > 旺 > 其他 > bad/lucky
-            let glowMult = 5.5;
-            if (star.category === 'main') {
-                if (star.brightness === '庙') glowMult = 9;
-                else if (star.brightness === '旺') glowMult = 7.5;
-                else if (star.brightness === '陷' || star.brightness === '闲') glowMult = 3;
-            } else {
-                glowMult = 4;
-            }
-            const glow = createGlowSprite(color, size * glowMult);
+            const coreGeometry = new THREE.SphereGeometry(size * coreScale, Math.max(8, sphereSegs - 4), Math.max(8, sphereSegs - 4));
+            const coreMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: coreOpacity
+            });
+            const coreMesh = new THREE.Mesh(coreGeometry, coreMaterial);
+            coreMesh.position.set(px, py, pz);
+
+            const glow = createGlowSprite(color, size * glowMult * glowScaleFactor);
             glow.position.set(px, py, pz);
             parentMesh.add(starMesh);
+            parentMesh.add(coreMesh);
             parentMesh.add(glow);
 
             if (star.sihua) {
@@ -5022,7 +5052,7 @@ ${outputStructure}`;
                 else                          ringColor = 0xff1744; // 煞红
 
                 // 内环：细亮边
-                const rGeoA = new THREE.RingGeometry(size * 1.55, size * 1.78, 32);
+                const rGeoA = new THREE.RingGeometry(size * 1.55, size * 1.78, ringSegs);
                 const rMatA = new THREE.MeshBasicMaterial({
                     color: ringColor, side: THREE.DoubleSide,
                     transparent: true, opacity: 0.96, depthWrite: false
@@ -5034,7 +5064,7 @@ ${outputStructure}`;
                 parentMesh.add(ringA);
 
                 // 外晕环：宽而透明，营造星力溢出感
-                const rGeoB = new THREE.RingGeometry(size * 2.1, size * 3.4, 32);
+                const rGeoB = new THREE.RingGeometry(size * 2.1, size * 3.4, ringSegs);
                 const rMatB = new THREE.MeshBasicMaterial({
                     color: ringColor, side: THREE.DoubleSide,
                     transparent: true, opacity: 0.16, depthWrite: false
@@ -5046,8 +5076,8 @@ ${outputStructure}`;
                 parentMesh.add(ringB);
 
                 // 四化专属色调光晕，叠在星体上
-                const sihuaGlow = createGlowSprite(ringColor, size * 12);
-                sihuaGlow.material.opacity = 0.42;
+                const sihuaGlow = createGlowSprite(ringColor, size * (isMobile ? 8.2 : 12));
+                sihuaGlow.material.opacity = isMobile ? 0.24 : 0.42;
                 sihuaGlow.position.set(px, py, pz);
                 parentMesh.add(sihuaGlow);
             }
@@ -5108,20 +5138,45 @@ ${outputStructure}`;
     }
 
     function createGlowSprite(color, scale) {
-        // 128px 高清光晕：白色高温核心 → 星色 → 柔和扩散消散
-        const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128;
+        // 双层柔边辉光：高温核心 + 彩色内晕 + 超软外扩，更接近真实天体
+        const texSize = MOBILE_PERF_MODE ? 96 : (IS_MOBILE_DEVICE ? 128 : 160);
+        const canvas = document.createElement('canvas'); canvas.width = texSize; canvas.height = texSize;
         const ctx = canvas.getContext('2d');
         const c = new THREE.Color(color);
         const r = Math.floor(c.r * 255), g = Math.floor(c.g * 255), b = Math.floor(c.b * 255);
-        ctx.clearRect(0, 0, 128, 128);
-        const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-        grad.addColorStop(0,    `rgba(255,255,255,1)`);        // 白热核心
-        grad.addColorStop(0.07, `rgba(${r},${g},${b},0.92)`);  // 星色过渡
-        grad.addColorStop(0.28, `rgba(${r},${g},${b},0.55)`);  // 辉光层
-        grad.addColorStop(0.6,  `rgba(${r},${g},${b},0.18)`);
-        grad.addColorStop(1,    `rgba(${r},${g},${b},0)`);
-        ctx.fillStyle = grad; ctx.fillRect(0, 0, 128, 128);
+        const center = texSize / 2;
+        const outerRadius = texSize / 2;
+        const innerRadius = texSize * 0.35;
+        const crownRadius = texSize * 0.2125;
+        ctx.clearRect(0, 0, texSize, texSize);
+
+        const outerGrad = ctx.createRadialGradient(center, center, 0, center, center, outerRadius);
+        outerGrad.addColorStop(0, `rgba(${r},${g},${b},0.32)`);
+        outerGrad.addColorStop(0.18, `rgba(${r},${g},${b},0.22)`);
+        outerGrad.addColorStop(0.45, `rgba(${r},${g},${b},0.11)`);
+        outerGrad.addColorStop(0.78, `rgba(${r},${g},${b},0.035)`);
+        outerGrad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.fillStyle = outerGrad;
+        ctx.fillRect(0, 0, texSize, texSize);
+
+        const innerGrad = ctx.createRadialGradient(center, center, 0, center, center, innerRadius);
+        innerGrad.addColorStop(0, `rgba(255,255,255,1)`);
+        innerGrad.addColorStop(0.05, `rgba(255,255,255,0.98)`);
+        innerGrad.addColorStop(0.12, `rgba(${r},${g},${b},0.95)`);
+        innerGrad.addColorStop(0.3, `rgba(${r},${g},${b},0.62)`);
+        innerGrad.addColorStop(0.58, `rgba(${r},${g},${b},0.2)`);
+        innerGrad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.fillStyle = innerGrad;
+        ctx.fillRect(0, 0, texSize, texSize);
+
+        ctx.strokeStyle = `rgba(255,255,255,0.06)`;
+        ctx.lineWidth = 1.25;
+        ctx.beginPath();
+        ctx.arc(center, center, crownRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
         const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
         const mat = new THREE.SpriteMaterial({ map: texture, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
         const sprite = new THREE.Sprite(mat); sprite.scale.set(scale, scale, 1); return sprite;
     }
@@ -6252,13 +6307,6 @@ ${outputStructure}`;
         return { career, wealth, love, health, guiren };
     }
 
-    // 维度标签等级
-    function getScoreLevel(v) {
-        if (v >= 80) return { label: '旺', cls: 'radar-dim-high' };
-        if (v >= 60) return { label: '中', cls: 'radar-dim-mid' };
-        return { label: '弱', cls: 'radar-dim-low' };
-    }
-
     // 雷达图绘制（progress: 0→1 动画）
     function drawRadarChart(canvas, scores, progress) {
         const ctx = canvas.getContext('2d');
@@ -6411,7 +6459,6 @@ ${outputStructure}`;
         const canvas = document.getElementById('radarCanvas');
         if (canvas) {
             let progress = 0;
-            const FPS60 = 1000 / 60;
             let lastT = 0;
             function animateRadar(now) {
                 if (now - lastT < 10) { requestAnimationFrame(animateRadar); return; }
