@@ -1374,6 +1374,8 @@
         #radarCanvas {
             display: block;
             border-radius: 12px;
+            width: 360px;
+            height: 360px;
         }
         .radar-scores-grid {
             display: flex;
@@ -3182,7 +3184,7 @@
 
     function startLifeChartAnimation(data) {
         if (lifeAnimFrameId) cancelAnimationFrame(lifeAnimFrameId);
-        const duration = 2000; const startTime = performance.now(); currentDrawLimit = 0;
+        const duration = 1500; const startTime = performance.now(); currentDrawLimit = 0;
         function loop(now) {
             const elapsed = now - startTime; const progress = Math.min(elapsed / duration, 1);
             currentDrawLimit = Math.floor(data.length * progress);
@@ -4092,11 +4094,11 @@ ${outputStructure}`;
         // 预先决定结果（确保结果与落地动画无关）
         const results = coins.map(() => Math.random() > 0.5);
 
-        const DURATION = 1450; // 总时长ms
+        const DURATION = 1088; // 总时长ms
 
         // 每枚铜钱的随机物理参数
         const params = coins.map((_, i) => ({
-            delay:    i * 65,                            // 依次错开 65ms
+            delay:    i * 49,                            // 依次错开 49ms
             peakH:    230 + Math.random() * 110,         // 抛高 230-340px
             dx:       (Math.random() - 0.5) * 78,        // 水平散开 ±39px
             spins:    3 + Math.floor(Math.random() * 3), // X轴翻转 3-5圈
@@ -4173,7 +4175,7 @@ ${outputStructure}`;
                     const ring = document.createElement('div');
                     ring.className = 'coin-land-ring';
                     coin.appendChild(ring);
-                    setTimeout(() => ring.remove(), 480);
+                    setTimeout(() => ring.remove(), 360);
                 }
             });
 
@@ -5690,7 +5692,7 @@ ${outputStructure}`;
     async function _buildShareCard(sourceCanvas, title, subtitle, bg1, bg2, accent) {
         const PAD = 30;
         const HEADER_H = 96;
-        const FOOTER_H = 130;
+        const FOOTER_H = 152;
         const TARGET_W = 720;          // 固定卡片宽度，保证手机端清晰
         const contentW = TARGET_W - PAD * 2;  // 660px 内容区
         const srcW = sourceCanvas.width;
@@ -5761,17 +5763,17 @@ ${outputStructure}`;
 
         // ── 底部区域 ──
         const fy = HEADER_H + contentH + 14;
-        const QR = 100;
+        const QR = 120;
         const qrX = cardW - PAD - QR;
         const qrY = fy + Math.round((FOOTER_H - 14 - QR) / 2);
 
         // 左：品牌名 + 文案
         ctx.textAlign = 'left';
-        ctx.fillStyle = accent; ctx.font = 'Bold 19px "Noto Sans SC", sans-serif';
+        ctx.fillStyle = accent; ctx.font = 'Bold 22px "Noto Sans SC", sans-serif';
         ctx.shadowColor = accent; ctx.shadowBlur = 10;
-        ctx.fillText('问星AI', PAD, fy + 34); ctx.shadowBlur = 0;
-        ctx.fillStyle = '#64748b'; ctx.font = '13px "Noto Sans SC", sans-serif';
-        ctx.fillText('扫码体验问星AI，解锁更专业理性视角的人生剧本内容', PAD, fy + 56);
+        ctx.fillText('问星AI', PAD, fy + 40); ctx.shadowBlur = 0;
+        ctx.fillStyle = '#64748b'; ctx.font = '15px "Noto Sans SC", sans-serif';
+        ctx.fillText('扫码体验问星AI，解锁更专业理性视角的人生剧本内容', PAD, fy + 65);
 
         // 右：二维码（本地 share.jpg）
         try {
