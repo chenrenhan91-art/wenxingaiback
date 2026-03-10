@@ -3181,7 +3181,7 @@
 
     function startLifeChartAnimation(data) {
         if (lifeAnimFrameId) cancelAnimationFrame(lifeAnimFrameId);
-        const duration = 1500; const startTime = performance.now(); currentDrawLimit = 0;
+        const duration = 1125; const startTime = performance.now(); currentDrawLimit = 0;
         function loop(now) {
             const elapsed = now - startTime; const progress = Math.min(elapsed / duration, 1);
             currentDrawLimit = Math.floor(data.length * progress);
@@ -4091,11 +4091,11 @@ ${outputStructure}`;
         // 预先决定结果（确保结果与落地动画无关）
         const results = coins.map(() => Math.random() > 0.5);
 
-        const DURATION = 1088; // 总时长ms
+        const DURATION = 816; // 总时长ms
 
         // 每枚铜钱的随机物理参数
         const params = coins.map((_, i) => ({
-            delay:    i * 49,                            // 依次错开 49ms
+            delay:    i * 37,                            // 依次错开 37ms
             peakH:    230 + Math.random() * 110,         // 抛高 230-340px
             dx:       (Math.random() - 0.5) * 78,        // 水平散开 ±39px
             spins:    3 + Math.floor(Math.random() * 3), // X轴翻转 3-5圈
@@ -4172,7 +4172,7 @@ ${outputStructure}`;
                     const ring = document.createElement('div');
                     ring.className = 'coin-land-ring';
                     coin.appendChild(ring);
-                    setTimeout(() => ring.remove(), 360);
+                    setTimeout(() => ring.remove(), 270);
                 }
             });
 
@@ -4375,8 +4375,8 @@ ${outputStructure}`;
     })();
 
     function getRendererPixelRatioCap() {
-        if (MOBILE_PERF_MODE) return 1.1;
-        if (IS_MOBILE_DEVICE) return 1.35;
+        if (MOBILE_PERF_MODE) return 2.05;
+        if (IS_MOBILE_DEVICE) return 2.5;
         return 2;
     }
 
@@ -4461,7 +4461,9 @@ ${outputStructure}`;
     function initShaderBg() {
         const canvas = document.getElementById('shader-bg');
         if (!canvas) return;
-        const pixelRatio = MOBILE_PERF_MODE ? 0.5 : Math.min(window.devicePixelRatio || 1, 1.5);
+        const pixelRatio = MOBILE_PERF_MODE
+            ? 0.96
+            : (IS_MOBILE_DEVICE ? Math.min(window.devicePixelRatio || 1, 2.28) : Math.min(window.devicePixelRatio || 1, 1.5));
         try {
             shaderBgRenderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: 'low-power' });
         } catch(e) { console.warn('Shader BG renderer failed:', e); return; }
@@ -5085,7 +5087,9 @@ ${outputStructure}`;
     }
 
     function createTextSprite(message, color, highlightType = 0) {
-        const canvas = document.createElement('canvas'); const context = canvas.getContext('2d'); canvas.width = 512; canvas.height = 256;
+        const textTexScale = MOBILE_PERF_MODE ? 1.8 : (IS_MOBILE_DEVICE ? 2.4 : 1);
+        const canvas = document.createElement('canvas'); const context = canvas.getContext('2d'); canvas.width = Math.round(512 * textTexScale); canvas.height = Math.round(256 * textTexScale);
+        context.scale(textTexScale, textTexScale);
         context.clearRect(0, 0, canvas.width, canvas.height); 
         context.textAlign = "center"; context.textBaseline = "middle"; context.lineWidth = 4;
         
@@ -5131,7 +5135,11 @@ ${outputStructure}`;
                 context.fillText(line, 256, 170); 
             } 
         });
-        const texture = new THREE.CanvasTexture(canvas); const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+        const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
         // Scale adjustment: Only Ming gets bigger scale
         const scale = (highlightType === 1) ? 10 : 8; 
         const sprite = new THREE.Sprite(spriteMaterial); sprite.scale.set(scale, scale * 0.5, 1); return sprite;
@@ -5139,7 +5147,7 @@ ${outputStructure}`;
 
     function createGlowSprite(color, scale) {
         // 双层柔边辉光：高温核心 + 彩色内晕 + 超软外扩，更接近真实天体
-        const texSize = MOBILE_PERF_MODE ? 96 : (IS_MOBILE_DEVICE ? 128 : 160);
+        const texSize = MOBILE_PERF_MODE ? 176 : (IS_MOBILE_DEVICE ? 232 : 160);
         const canvas = document.createElement('canvas'); canvas.width = texSize; canvas.height = texSize;
         const ctx = canvas.getContext('2d');
         const c = new THREE.Color(color);
@@ -5258,8 +5266,8 @@ ${outputStructure}`;
         // --- MOBILE CAMERA ADJUSTMENT ---
         if (window.innerWidth < 768) {
             // Portrait/Mobile: Move camera back/up to fit the chart
-            // Adjusted for better visibility of 3D tilt
-            camera.position.set(0, -90, 80); // Adjusted for better viewing angle on mobile
+            // 在提升分辨率后略微拉近，增强首屏聚焦感
+            camera.position.set(0, -84, 74);
         } else {
             // Desktop
             camera.position.set(0, -60, 45);
