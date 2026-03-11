@@ -1974,7 +1974,7 @@
         <span class="cursor-pointer" style="color:#e879f9;" onclick="toggleChat()">✕</span>
     </div>
     <div class="chat-messages" id="chatMessages">
-        <div class="msg msg-ai">你好！我是你的 AI 命理助手，已读取你的完整命盘数据。<br><br>✨ <strong>本次更新 · 核心新能力</strong><br><br>🔍 <strong>验证过去</strong> — 告诉我你某年发生的事，我将从「本命·大限·流年」三层星象还原其因果，解析为何发生、谁是关键人物、深层心理动机是什么。<br><br>🔮 <strong>推导未来</strong> — 告诉我你关注的年份，我将运用「叠宫·四化飞星·应期定位」系统推演可能发生的事件类型、高风险月份与主动应对策略。<br><br>📌 <strong>示例提问：</strong><br>「我2022年为何工作突然变动？」<br>「2026年我的感情/财运可能发生什么？」<br>「我人生中最大的财务危机是哪年造成的？」</div>
+        <div class="msg msg-ai">你好！我是问星大师，你的命盘数据已经全部读取完毕。<br><br>这一次，我不只能帮你看未来——我还能帮你<strong>读懂过去</strong>。告诉我某年发生了什么，我会从三层星象（本命·大限·流年）还原它的因果与来龙去脉。<br><br>🔍 <strong>验证过去</strong> · 🔮 <strong>推导未来</strong> · 📅 <strong>定位关键月份</strong><br><br>你可以这样问：「我2022年感情为何出现危机？」或「2026年哪几个月需要特别注意？」</div>
     </div>
     <div class="chat-input-area">
         <input type="text" class="chat-input" id="userQuery" placeholder="输入你的问题..." onkeypress="handleChatKey(event)">
@@ -5248,7 +5248,7 @@ ${outputStructure}`;
                 bDiv.innerHTML = `<span>五行: <strong class="text-white">${bText}</strong></span> <span>命主: <strong class="text-white">${currentChart.chartData[0].stem}${currentChart.chartData[0].branch}</strong></span>`;
                 bDiv.classList.remove('hidden');
                 // Always reset chat to avoid persisting old context in a fresh chart
-                document.getElementById('chatMessages').innerHTML = '<div class="msg msg-ai">你好！我是你的 AI 命理助手。我已经读取了你的全盘数据，你可以问我任何关于事业、感情或流年的问题。</div>';
+                document.getElementById('chatMessages').innerHTML = '<div class="msg msg-ai">你好！我是问星大师，你的命盘数据已经全部读取完毕。<br><br>这一次，我不只能帮你看未来——我还能帮你<strong>读懂过去</strong>。告诉我某年发生了什么，我会从三层星象（本命·大限·流年）还原它的因果与来龙去脉。<br><br>🔍 <strong>验证过去</strong> · 🔮 <strong>推导未来</strong> · 📅 <strong>定位关键月份</strong><br><br>你可以这样问：「我2022年感情为何出现危机？」或「2026年哪几个月需要特别注意？」</div>';
                 
                 renderChart3D(currentChart);
                 // 延迟显示五维雷达图（等待3D渲染完成和加载屏消失后）
