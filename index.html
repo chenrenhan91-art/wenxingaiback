@@ -2393,6 +2393,48 @@
         return result.trim();
     }
 
+    // 打开面板并滚动到账号注册/登录区域
+    function openLoginGuide() {
+        closeAiModal();
+        const panel = document.getElementById('inputPanel');
+        panel.classList.remove('collapsed');
+        if (window.innerWidth <= 768) {
+            document.getElementById('infoPanel').classList.remove('active');
+        }
+        setTimeout(() => {
+            const authSection = document.getElementById('authForm');
+            if (!authSection) return;
+            authSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            authSection.style.transition = 'outline 0.25s, box-shadow 0.25s';
+            authSection.style.outline = '2px solid rgba(99,184,212,0.85)';
+            authSection.style.borderRadius = '8px';
+            authSection.style.boxShadow = '0 0 22px rgba(99,184,212,0.45)';
+            setTimeout(() => {
+                authSection.style.outline = '';
+                authSection.style.boxShadow = '';
+            }, 2800);
+        }, 320);
+    }
+
+    // 统一渲染 AI 结果：未登录时展示引导按钮，已登录时渲染 Markdown
+    function renderAIContent(containerEl, text) {
+        if (!text || text === '__LOGIN_REQUIRED__') {
+            containerEl.innerHTML = `
+                <div style="text-align:center; padding:36px 16px;">
+                    <div style="font-size:2.8rem; margin-bottom:14px;">🔐</div>
+                    <div style="font-size:1.05rem; font-weight:800; color:#e2e8f0; margin-bottom:8px;">登录后解锁 AI 星盘解读</div>
+                    <div style="font-size:0.82rem; color:#94a3b8; margin-bottom:26px; line-height:1.8;">注册即免费获得 <strong style="color:#60a5fa;">3 次</strong> AI 解读额度<br>深度解析命盘・宫位・四化飞星</div>
+                    <button onclick="openLoginGuide()" style="background:linear-gradient(135deg,#2563eb,#6366f1); border:none; color:#fff; padding:13px 36px; border-radius:12px; cursor:pointer; font-size:0.95rem; font-weight:800; letter-spacing:1px; box-shadow:0 4px 22px rgba(99,102,241,0.45); transition:transform 0.15s;"
+                        onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+                        ✨ 立即注册 / 登录
+                    </button>
+                </div>
+            `;
+        } else {
+            containerEl.innerHTML = marked.parse(text);
+        }
+    }
+
     function buildSystemInstruction(systemInstruction = "") {
         const customInstruction = (typeof systemInstruction === 'string' ? systemInstruction : '').trim();
         return customInstruction ? `${AI_STYLE_INSTRUCTION}\n${customInstruction}` : AI_STYLE_INSTRUCTION;
@@ -2401,7 +2443,7 @@
     async function callAI(prompt, systemInstruction = "") {
         // 所有 AI 调用统一走后端：额度/专业版判断也在后端完成
         if (!getAuthToken()) {
-            return '⚠️ **请先登录**\n\n登录后可获得免费共 3 次 AI 调用额度。';
+            return '__LOGIN_REQUIRED__';
         }
         const finalSystemInstruction = buildSystemInstruction(systemInstruction);
 
@@ -4025,8 +4067,8 @@ ${outputStructure}`;
 
             const aiText = await callAI(prompt, systemInstruction);
             const finalText = aiText || '星象模糊，暂无法解读。';
-            if (resultEl) resultEl.innerHTML = finalText.replace(/\n/g, '<br>');
-            if (modalContent) modalContent.innerHTML = marked.parse(finalText);
+            if (resultEl) resultEl.innerHTML = (finalText === '__LOGIN_REQUIRED__') ? '<span style="color:#94a3b8;">请先登录后使用 AI 功能</span>' : finalText.replace(/\n/g, '<br>');
+            if (modalContent) renderAIContent(modalContent, finalText);
         } catch (err) {
             console.error('AI synastry analysis failed:', err);
             if (resultEl) resultEl.innerHTML = '<div style="color:#fca5a5;">AI 分析失败，请稍后再试。</div>';
@@ -4325,7 +4367,7 @@ ${outputStructure}`;
         const systemPrompt = `你是六爻解卦助手。请严格围绕用户当前这个问题解读，不要发散到其他事项。遵循“一事一卜，不宜多占”。输出要求：1) 先直接回答用户问题；2) 再给卦象依据（本卦看现状，动爻看变化，变卦看趋势）；3) 最后给 3 条可执行建议。语言简洁清晰，避免空泛套话。`;
         const userPrompt = `用户问题：${question}\n卦象信息如下：\n- 本卦：${snapshot.benGuaName}（结构：${snapshot.benBinStr}）\n- 变卦：${snapshot.bianGuaName}（结构：${snapshot.bianBinStr}）\n- 动爻：${snapshot.hasMovingLine ? snapshot.movingLinesDesc : '静卦无动爻'}\n请只围绕这个问题，结合本卦、动爻、变卦给出解读。`;
         const result = await callAI(userPrompt, systemPrompt);
-        contentDiv.innerHTML = marked.parse(result);
+        renderAIContent(contentDiv, result);
     }
 
     // --- THREE.JS ---
@@ -5743,7 +5785,7 @@ ${outputStructure}`;
         const starsDesc = selectedPalaceData.stars.map(s => { let desc = `${s.name}（亮度：${s.brightness}）`; if (s.sihua) desc += ` [化${s.sihua}]`; return desc; }).join('，') || "无主星";
         const prompt = `请根据以下信息解析【${palaceName}】：宫位：${palaceName} 宫干支：${selectedPalaceData.stem}${selectedPalaceData.branch} 星曜组合：${starsDesc} 输出要求：1) 先给结论（这个宫位当前最值得关注的 1-2 点）；2) 再给原因（主星/四化/吉煞星分别说明影响）；3) 如果无主星，简述借对宫逻辑；4) 最后给 3 条可执行建议；5) 全文通俗易懂，术语配解释；6) 使用简洁 Markdown。`;
         const result = await callAI(prompt);
-        contentDiv.innerHTML = marked.parse(result);
+        renderAIContent(contentDiv, result);
         // G: AI content reveal animation
         if (!MOBILE_PERF_MODE) {
             const _revEls = contentDiv.querySelectorAll('p, h3, li');
@@ -5951,7 +5993,7 @@ ${outputStructure}`;
         const systemPrompt = `以下是用户的完整命盘数据，请结合此数据以及你的紫微斗数推导知识体系回答用户的问题：\n${chartSummary}`;
         const response = await callAI(query, systemPrompt);
         chatBox.removeChild(loadingDiv);
-        const aiDiv = document.createElement('div'); aiDiv.className = 'msg msg-ai'; aiDiv.innerHTML = marked.parse(response); chatBox.appendChild(aiDiv); chatBox.scrollTop = chatBox.scrollHeight;
+        const aiDiv = document.createElement('div'); aiDiv.className = 'msg msg-ai'; renderAIContent(aiDiv, response); chatBox.appendChild(aiDiv); chatBox.scrollTop = chatBox.scrollHeight;
     }
 
     let lastFrameTs = 0;
