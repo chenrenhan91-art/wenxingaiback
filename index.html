@@ -2744,7 +2744,44 @@
         getSummary() {
             let summary = `用户性别: ${this.gender === 1 ? '男' : '女'}。\n`;
             summary += `五行局: ${this.bureau}局。\n`;
-            summary += `命盘结构:\n`;
+
+            // ── 大限序列计算 ──
+            // 顺行：阳年生男 / 阴年生女；逆行：阴年生男 / 阳年生女
+            const mingIdx = this.chartData.findIndex(p => p.isMing);
+            const isYangYear = (this.yearStemIdx % 2 === 0);
+            const isMale = (this.gender === 1);
+            const isForward = (isYangYear && isMale) || (!isYangYear && !isMale);
+            const bureauStart = this.bureau; // 2/3/4/5/6 岁起限
+            const birthYear = this.gregorianDate.getFullYear();
+            const currentYear = new Date().getFullYear();
+            const currentAge = currentYear - birthYear;
+
+            summary += `出生公历年: ${birthYear}年，当前约${currentAge}岁（${currentYear}年）。\n`;
+            summary += `大限行运方向: ${isForward ? '顺行' : '逆行'}。\n`;
+            summary += `大限序列（每限十年）:\n`;
+
+            let currentDecadeStr = '';
+            for (let i = 0; i < 9; i++) {
+                const startAge = bureauStart + i * 10;
+                if (startAge > 95) break;
+                const endAge = startAge + 9;
+                // 顺行: 命宫→兄弟→夫妻→... 对应 chartData[(mingIdx-i+12)%12]
+                // 逆行: 命宫→父母→福德→... 对应 chartData[(mingIdx+i)%12]
+                const palaceIdx = isForward
+                    ? ((mingIdx - i) % 12 + 12) % 12
+                    : (mingIdx + i) % 12;
+                const palace = this.chartData[palaceIdx];
+                if (!palace) continue;
+                const decadeLabel = `${palace.stem}${palace.branch}大限（${palace.name}）`;
+                const isCurrent = (currentAge >= startAge && currentAge <= endAge);
+                summary += `  第${i + 1}限: ${decadeLabel} ${startAge}~${endAge}岁${isCurrent ? ' ←【当前大限】' : ''}\n`;
+                if (isCurrent) currentDecadeStr = `${decadeLabel} ${startAge}~${endAge}岁`;
+            }
+            if (currentDecadeStr) {
+                summary += `当前大限：${currentDecadeStr}，命主今年${currentAge}岁。\n`;
+            }
+
+            summary += `\n命盘结构:\n`;
             this.chartData.forEach(p => {
                 const starStr = p.stars.map(s => {
                     let info = `${s.name}(${s.brightness})`;
