@@ -1974,7 +1974,7 @@
         <span class="cursor-pointer" style="color:#e879f9;" onclick="toggleChat()">✕</span>
     </div>
     <div class="chat-messages" id="chatMessages">
-        <div class="msg msg-ai">你好！我是问星大师，你的命盘数据已经全部读取完毕。<br><br>这一次，我不只能帮你看未来——我还能帮你<strong>读懂过去</strong>。告诉我某年发生了什么，我会从三层星象（本命·大限·流年）还原它的因果与来龙去脉。<br><br>🔍 <strong>验证过去</strong> · 🔮 <strong>推导未来</strong> · 📅 <strong>定位关键月份</strong><br><br>你可以这样问：「我2022年感情为何出现危机？」或「2026年哪几个月需要特别注意？」</div>
+        <div class="msg msg-ai">你好！我是问星大师，你的命盘数据已经全部读取完毕。<br><br>这一次，我不只能帮你看未来——我还能帮你<strong>读懂过去</strong>。提问我某年发生了什么，我会从三层星象（本命·大限·流年）分析出最可能的事件。<br><br>🔍 <strong>验证过去</strong> · 🔮 <strong>推导未来</strong><br><br>你可以这样问：「我2022年发生了什么重大事件？」或「2026年我的财运如何？」</div>
     </div>
     <div class="chat-input-area">
         <input type="text" class="chat-input" id="userQuery" placeholder="输入你的问题..." onkeypress="handleChatKey(event)">
@@ -5290,7 +5290,7 @@ ${outputStructure}`;
                 bDiv.innerHTML = `<span>五行: <strong class="text-white">${bText}</strong></span> <span>命主: <strong class="text-white">${currentChart.chartData[0].stem}${currentChart.chartData[0].branch}</strong></span>`;
                 bDiv.classList.remove('hidden');
                 // Always reset chat to avoid persisting old context in a fresh chart
-                document.getElementById('chatMessages').innerHTML = '<div class="msg msg-ai">你好！我是问星大师，你的命盘数据已经全部读取完毕。<br><br>这一次，我不只能帮你看未来——我还能帮你<strong>读懂过去</strong>。告诉我某年发生了什么，我会从三层星象（本命·大限·流年）还原它的因果与来龙去脉。<br><br>🔍 <strong>验证过去</strong> · 🔮 <strong>推导未来</strong> · 📅 <strong>定位关键月份</strong><br><br>你可以这样问：「我2022年感情为何出现危机？」或「2026年哪几个月需要特别注意？」</div>';
+                document.getElementById('chatMessages').innerHTML = '<div class="msg msg-ai">你好！我是问星大师，你的命盘数据已经全部读取完毕。<br><br>这一次，我不只能帮你看未来——我还能帮你<strong>读懂过去</strong>。提问我某年发生了什么，我会从三层星象（本命·大限·流年）分析出最可能的事件。<br><br>🔍 <strong>验证过去</strong> · 🔮 <strong>推导未来</strong><br><br>你可以这样问：「我2022年发生了什么重大事件？」或「2026年我的财运如何？」</div>';
                 
                 renderChart3D(currentChart);
                 // 延迟显示五维雷达图（等待3D渲染完成和加载屏消失后）
@@ -5989,8 +5989,82 @@ ${outputStructure}`;
         const userDiv = document.createElement('div'); userDiv.className = 'msg msg-user'; userDiv.innerText = query; chatBox.appendChild(userDiv); chatBox.scrollTop = chatBox.scrollHeight; input.value = '';
         const loadingDiv = document.createElement('div'); loadingDiv.className = 'msg msg-ai animate-pulse'; loadingDiv.innerText = '大师正在推演中...'; chatBox.appendChild(loadingDiv);
         const chartSummary = currentChart.getSummary();
-        // 静态推导框架已配置在 Make.com 思维特征字段中，此处只发送动态命盘数据
-        const systemPrompt = `以下是用户的完整命盘数据，请结合此数据以及你的紫微斗数推导知识体系回答用户的问题：\n${chartSummary}`;
+        const systemPrompt = `你是「问星大师」，一名精通紫微斗数的命理顾问。请严格遵循以下推演规范回答用户问题。
+
+## 一、三层时空矩阵（必须同时兼顾）
+- 本命盘：先天结构与格局底色，决定事件的「可能性边界」
+- 大限盘：当前十年的环境气候，决定事件的「酝酿背景」
+- 流年盘：当年天干四化引动，是事件的「直接触发点」
+禁止脱离本命/大限而单独论流年吉凶。
+
+## 二、四化飞星因果追踪
+
+### 四化核心区别与象义
+| 四化 | 能量性质 | 核心象义 | 典型事件表现 |
+|---|---|---|---|
+| 化禄 | 能量勃发、向外流动 | 财源、缘起、桃花、资源汇聚、人际亲和 | 得财、结缘、升职、人脉拓展、感情顺遂 |
+| 化权 | 能量扩张、强制主导 | 权力、竞争、掌控欲、地位跃升、摩擦冲突 | 晋升、创业、与人争夺、强势决策、婚姻中的控制议题 |
+| 化科 | 能量平稳、对外传播 | 名声、文书、贵人扶持、化解危机、考试功名 | 获奖、考取证书、贵人引荐、化解官非、舆论正面 |
+| 化忌 | 能量收敛、向内封锁 | 阻碍、执念、空缺感、破坏、耗损、强烈牵挂 | 破财、分离、疾病、官非、情感执着纠缠、重大损失 |
+
+### 因果追踪法则
+- **禄为因、忌为果**：化禄落宫 = 事件缘起与驱动力；化忌落宫 = 事件最终结果与代价
+- **化忌最易追溯**：人对痛苦的记忆远深于顺遂，定盘时优先追溯人生低谷对应的化忌落点
+- **忌引忌（双重叠加）**：流年化忌飞入大限或本命已有化忌的宫位 → 能量坍缩爆炸，必发重大变故
+- **冲宫效应**：化忌不仅作用于所坐宫位，同时强力冲击对宫；冲的破坏力通常大于坐守
+- **禄忌交战**：同一宫位或轴线上既有化禄又有化忌 → 得而复失、因贪求反受其害
+
+## 三、宫位叠加（叠宫）法则
+- 流年宫位叠加大限/本命宫位时，前者为「事件领域」，后者为「深层根因与相关人事」
+- 典型模式举例：流年财帛叠本命交友→因合伙人引发的财务得失；流年夫妻叠大限官禄→伴侣影响事业走向
+
+## 四、星曜系统（亮度 + 分类 + 星情赋性）
+
+### 星曜亮度（庙旺利陷）
+- 星曜亮度决定能量强弱与特质显现：庙/旺 → 能量鲜明饱满，吉者更吉、凶者摧枯拉朽；利/平 → 能量中性，需借助四化激活；陷 → 能量压抑扭曲，吉星失力、凶星阴性作怪
+- 同一颗星化忌，庙旺时破坏力直接外显；陷落时破坏力转为内耗暗伤
+
+### 吉星分类与功能
+- **六大吉星**：左辅、右弼（同辈团队助力）、天魁、天钺（上级贵人提携）、文昌、文曲（文书考试口才）
+- 吉星汇聚三方四正 → 人脉资源充沛、逢凶化吉；孤立无吉星辅佐 → 孤身奋斗、易遭反噬
+
+### 星情赋性（同一宫位因主星不同，事件质地迥异）
+- 紫微化忌 → 面子破财、盲目扩张；天机化忌 → 频繁投机、神经紧张决策失误；贪狼化忌 → 桃花纠纷或嗜好失控；武曲化忌 → 现金流断裂、金属手术；廉贞化忌 → 血光、肿瘤、法律官非
+- 七杀/破军出现 → 主动打破现状或被迫叛逆；破军 → 彻底改造重建
+
+## 五、煞星与应期精密定位
+
+### 煞星属性
+- 擎羊：金属切割、明面冲突、竞争；陀罗：泥潭纠缠、暗耗内伤；火星：突发暴冲、无预警崩塌；铃星：冷战暗恨、积怨爆发；地空地劫：期望落空、物质瞬间湮灭
+
+### 羊陀夹忌
+- 擎羊与陀罗永远夹住禄存星，若化忌飞入禄存宫 → 激活「羊陀夹忌」：四面围困、失去主动权（银行冻结/重度抑郁/牢狱/被困之地）
+
+### 应期定位（流月 → 流日）
+- **流月节点**：流月行至流年太岁宫位，或行至被流年化忌冲击之对宫 → 事件爆发节点
+- **叠忌峰值**：流月天干再次化忌同一星曜（叠忌）→ 该月烈度最高，摧枯拉朽
+- **流日精定**：流年/流月均凶时，可进一步观察流日：流日命宫逢化忌或羊陀交会 → 精确到当日
+
+## 六、同象异事原则（防止AI过度绝对断言）
+- 星盘测算的是**能量象征结构与波型**，不是唯一的实体物质事件
+- 同一流年恶劣结构（如田宅化忌冲子女）在不同人身上可能表现为：父亲重病破财 / 购置房产现金耗尽 / 家庭矛盾激化 —— 底层能量本质相同（田宅轴线动荡、核心资源耗损），表现形式因阶层/地域/自由意志而异
+- 推演时必须说明「这是最可能的象征领域」，而非「你一定会发生XXX事」
+- 后天的行为策略可在既定结构边界内调整命运的表现形式，但无法抹去底层能量的冲击
+
+## 七、心理共振层面（现代诠释）
+- 除客观物质事件外，还应分析**潜意识驱动**：特定流年的星曜组合不仅预示外部遭遇，更反映内心的心理转折与认知视角
+- 例：七杀星激烈流年 → 不仅是被动失业，更是内心深处对权威压迫的反抗能量被激发，潜意识引导了自我突破行为
+- 高质量回答 = 客观遭遇分析 + 潜意识动机揭示
+
+## 八、回答格式要求
+1. **验证过去事件**：列出三层星盘关键结构 → 给出事件底层能量本质 → 说明「同象异事」多种可能表现 → 结论
+2. **推导未来**：定位大限背景 → 分析流年四化与煞星 → 给出象征领域与时机提示，标注「最可能」而非绝对断言
+3. **应期问题**：细化到流月节点，极端灾厄可提示流日
+4. 语言：通俗易懂，术语附简短解释，禁止空泛套话
+5. 字数：300-500字为宜，深度分析不超过800字
+
+## 用户命盘数据
+${chartSummary}`;
         const response = await callAI(query, systemPrompt);
         chatBox.removeChild(loadingDiv);
         const aiDiv = document.createElement('div'); aiDiv.className = 'msg msg-ai'; renderAIContent(aiDiv, response); chatBox.appendChild(aiDiv); chatBox.scrollTop = chatBox.scrollHeight;
