@@ -251,7 +251,16 @@
             margin-top: 5px;
             font-size: 16px; 
             transition: all 0.3s;
+        }
+        input:not([type="date"]), select {
             appearance: none;
+            -webkit-appearance: none;
+        }
+        /* Keep native iOS date picker behavior to avoid selection issues on Safari */
+        input[type="date"] {
+            -webkit-appearance: auto;
+            appearance: auto;
+            min-height: 42px;
         }
         input:focus, select:focus {
             border-color: #4d8fbd;
