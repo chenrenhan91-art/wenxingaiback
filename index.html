@@ -40,12 +40,22 @@
     }
     </script>
 
-    <!-- Same-origin vendor assets: reduce WeChat external handshake latency -->
-    <script src="./vendor/tailwindcss.js"></script>
-    <script src="./vendor/three.min.js"></script>
-    <script src="./vendor/OrbitControls.js"></script>
-    <script src="./vendor/lunar.min.js"></script>
-    <script defer src="./vendor/marked.min.js"></script>
+    <!-- DNS 预连接：减少移动端 CDN 握手延迟 -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <!-- Tailwind CSS (must load synchronously to process utility classes before paint) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Lunar Calendar Library -->
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.12/lunar.min.js"></script>
+    <!-- Marked: 仅 AI 回包时使用，defer 不阻塞首屏 -->
+    <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
         /* Base Reset & Fonts */
