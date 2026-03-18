@@ -73,7 +73,8 @@
         body.mobile-lite .panel,
         body.mobile-lite .floating-window,
         body.mobile-lite .onboarding-overlay,
-        body.mobile-lite .ai-content {
+        body.mobile-lite .ai-content,
+        body.mobile-lite .auth-modal-card {
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
         }
@@ -272,6 +273,60 @@
         @keyframes inputBreath {
             0%, 100% { box-shadow: inset 2px 0 0 #4d8fbd, 0 0 8px rgba(77,143,189,0.15); }
             50% { box-shadow: inset 2px 0 0 #6ab0d4, 0 0 18px rgba(106,176,212,0.28); }
+        }
+        .date-composer {
+            display: grid;
+            grid-template-columns: 1.25fr 0.9fr 0.9fr;
+            gap: 8px;
+            margin-top: 5px;
+            padding: 10px;
+            border-radius: 14px;
+            background: linear-gradient(145deg, rgba(7, 16, 34, 0.92), rgba(9, 20, 40, 0.86));
+            border: 1px solid rgba(77, 143, 189, 0.16);
+            box-shadow: inset 0 1px 0 rgba(125, 211, 252, 0.05), 0 10px 24px rgba(2, 6, 23, 0.22);
+        }
+        .date-segment {
+            position: relative;
+        }
+        .date-segment-tag {
+            position: absolute;
+            left: 12px;
+            top: 9px;
+            font-size: 0.64rem;
+            color: #9bdaf7;
+            letter-spacing: 1px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .date-segment input,
+        .date-segment select {
+            margin-top: 0;
+            min-height: 52px;
+            padding-top: 20px;
+            padding-left: 12px;
+            padding-right: 12px;
+            border-radius: 12px;
+            border-color: rgba(77, 143, 189, 0.24);
+            background: linear-gradient(180deg, rgba(3, 10, 22, 0.88), rgba(8, 16, 34, 0.96));
+            box-shadow: inset 0 1px 0 rgba(125, 211, 252, 0.05);
+        }
+        .date-segment select {
+            padding-right: 28px;
+            background-image:
+                linear-gradient(45deg, transparent 50%, rgba(125, 211, 252, 0.88) 50%),
+                linear-gradient(135deg, rgba(125, 211, 252, 0.88) 50%, transparent 50%);
+            background-position:
+                calc(100% - 16px) calc(50% + 5px),
+                calc(100% - 11px) calc(50% + 5px);
+            background-size: 5px 5px, 5px 5px;
+            background-repeat: no-repeat;
+        }
+        .date-composer-hint {
+            margin-top: 8px;
+            font-size: 0.7rem;
+            color: #7b94a8;
+            line-height: 1.55;
+            padding: 0 2px;
         }
 
         /* LiuYao AI button (Uiverse, scoped: no global button reset) */
@@ -570,6 +625,15 @@
 
         /* Extra-small phones */
         @media (max-width: 420px) {
+            .date-composer { grid-template-columns: 1.15fr 0.9fr 0.9fr; gap: 6px; }
+            .date-segment-tag { left: 10px; top: 8px; font-size: 0.62rem; }
+            .date-segment input,
+            .date-segment select {
+                min-height: 50px;
+                padding-top: 19px;
+                padding-left: 10px;
+                padding-right: 10px;
+            }
             .star-card { padding: 10px 10px 9px; border-radius: 10px; }
             .star-name { font-size: 0.95rem; }
             .star-badges { gap: 5px; }
@@ -626,12 +690,262 @@
         /* Modal & Floating Common */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 60; display: none; justify-content: center; align-items: center; pointer-events: auto; }
         .ai-content { background: linear-gradient(145deg, #050d1e, #0a1628); width: 90%; max-width: 600px; max-height: 80vh; border-radius: 12px; border: 1px solid #2a5878; padding: 0; overflow: visible; position: relative; box-shadow: 0 0 50px rgba(42, 88, 120, 0.2); display: flex; flex-direction: column; }
-        .ai-content-inner { padding: 30px; overflow-y: auto; max-height: 80vh; border-radius: 12px; }
-        .close-modal { position: absolute; top: -14px; right: -14px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; color: #b8d0e4; background: rgba(5,12,28,0.92); border: 1.5px solid rgba(42,88,120,0.55); border-radius: 50%; transition: background 0.2s, color 0.2s, box-shadow 0.2s; z-index: 62; box-shadow: 0 2px 12px rgba(0,0,0,0.5); line-height: 1; }
-        .close-modal:hover { background: rgba(42,88,120,0.7); color: #e8f4fc; box-shadow: 0 0 14px rgba(42,88,120,0.6); }
+        .ai-content-inner { padding: 56px 30px 30px; overflow-y: auto; max-height: 80vh; border-radius: 12px; }
+        .close-modal,
+        .panel-close-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            margin: 0;
+            border-radius: 999px;
+            border: 1px solid rgba(125, 211, 252, 0.22);
+            background: linear-gradient(180deg, rgba(7, 19, 35, 0.96), rgba(4, 12, 24, 0.96));
+            color: #dbeafe;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(186, 230, 253, 0.08);
+            transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, border-color 0.18s ease, filter 0.18s ease;
+            -webkit-appearance: none;
+            appearance: none;
+            user-select: none;
+            flex-shrink: 0;
+        }
+        .close-modal {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 62;
+        }
+        .close-modal:hover,
+        .panel-close-btn:hover {
+            transform: translateY(-1px);
+            color: #f8fafc;
+            border-color: rgba(125, 211, 252, 0.42);
+            background: linear-gradient(180deg, rgba(9, 28, 48, 0.98), rgba(5, 16, 31, 0.98));
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(103, 232, 249, 0.08) inset;
+        }
+        .close-modal:active,
+        .panel-close-btn:active {
+            transform: translateY(0);
+            filter: brightness(0.98);
+        }
+        .close-modal:focus-visible,
+        .panel-close-btn:focus-visible {
+            outline: 2px solid rgba(125, 211, 252, 0.7);
+            outline-offset: 2px;
+        }
+        .panel-close-btn {
+            position: relative;
+        }
         .markdown-body h3 { color: #6ab0d4; margin-top: 1.2em; font-size: 1.1em; font-weight: bold; border-bottom: 1px dashed rgba(106, 176, 212, 0.3); padding-bottom: 5px; }
         .markdown-body p { line-height: 1.7; margin-bottom: 0.8em; color: #b8d0e4; }
         .markdown-body strong { color: #8bb8d4; }
+        .auth-modal-card {
+            background: linear-gradient(160deg, rgba(4, 13, 27, 0.98), rgba(10, 24, 42, 0.96));
+            width: min(92vw, 460px);
+            max-height: 84vh;
+            border-radius: 22px;
+            border: 1px solid rgba(103, 232, 249, 0.18);
+            padding: 0;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(186, 230, 253, 0.08);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+        .auth-modal-inner {
+            padding: 56px 22px 22px;
+            overflow-y: auto;
+            max-height: 84vh;
+        }
+        .auth-modal-eyebrow {
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: #67e8f9;
+            opacity: 0.92;
+        }
+        .auth-modal-title {
+            margin-top: 10px;
+            font-size: 1.9rem;
+            font-weight: 900;
+            line-height: 1.16;
+            color: #f8fafc;
+        }
+        .auth-modal-desc {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: #94a3b8;
+        }
+        .auth-modal-tabs {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 18px;
+            padding: 6px;
+            border-radius: 14px;
+            background: rgba(2, 8, 23, 0.55);
+            border: 1px solid rgba(71, 85, 105, 0.32);
+        }
+        .auth-modal-tab {
+            border: 1px solid transparent;
+            border-radius: 10px;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.88rem;
+            font-weight: 800;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+        .auth-modal-tab.active {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(37, 99, 235, 0.2));
+            border-color: rgba(103, 232, 249, 0.24);
+            color: #f8fafc;
+            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.1);
+        }
+        .auth-modal-status {
+            display: none;
+            margin-top: 16px;
+            padding: 11px 13px;
+            border-radius: 14px;
+            font-size: 0.84rem;
+            line-height: 1.6;
+        }
+        .auth-modal-status.info {
+            display: block;
+            color: #bae6fd;
+            background: rgba(8, 47, 73, 0.5);
+            border: 1px solid rgba(56, 189, 248, 0.24);
+        }
+        .auth-modal-status.success {
+            display: block;
+            color: #dcfce7;
+            background: rgba(20, 83, 45, 0.42);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+        .auth-modal-status.error {
+            display: block;
+            color: #ffe4e6;
+            background: rgba(127, 29, 29, 0.42);
+            border: 1px solid rgba(251, 113, 133, 0.24);
+        }
+        .auth-modal-form {
+            margin-top: 18px;
+            display: grid;
+            gap: 12px;
+        }
+        .auth-modal-input {
+            width: 100%;
+            padding: 13px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(71, 85, 105, 0.72);
+            background: rgba(2, 6, 23, 0.6);
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+        .auth-modal-input:focus {
+            border-color: rgba(56, 189, 248, 0.68);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.12);
+            transform: translateY(-1px);
+        }
+        .auth-modal-submit {
+            width: 100%;
+            margin-top: 16px;
+            border: 1px solid rgba(125, 211, 252, 0.34);
+            border-radius: 14px;
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            color: #fff;
+            font-size: 0.93rem;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            padding: 13px 16px;
+            cursor: pointer;
+            box-shadow: 0 16px 34px rgba(37, 99, 235, 0.24);
+            transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+        }
+        .auth-modal-submit:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.03);
+        }
+        .auth-modal-submit:disabled {
+            cursor: wait;
+            opacity: 0.76;
+            transform: none;
+        }
+        .auth-modal-footnote {
+            margin-top: 12px;
+            font-size: 0.8rem;
+            line-height: 1.7;
+            text-align: center;
+            color: #64748b;
+        }
+        .auth-account-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 18px;
+        }
+        .auth-account-card {
+            border-radius: 16px;
+            border: 1px solid rgba(71, 85, 105, 0.28);
+            background: rgba(2, 8, 23, 0.5);
+            padding: 14px;
+        }
+        .auth-account-label {
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+        .auth-account-value {
+            margin-top: 8px;
+            font-size: 0.98rem;
+            line-height: 1.5;
+            font-weight: 800;
+            color: #f8fafc;
+            word-break: break-word;
+        }
+        .auth-modal-actions {
+            display: grid;
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .auth-modal-ghost,
+        .auth-modal-danger {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.18s ease, filter 0.18s ease;
+        }
+        .auth-modal-ghost {
+            border: 1px solid rgba(148, 163, 184, 0.26);
+            background: rgba(15, 23, 42, 0.66);
+            color: #e2e8f0;
+        }
+        .auth-modal-danger {
+            border: 1px solid rgba(251, 113, 133, 0.26);
+            background: rgba(127, 29, 29, 0.36);
+            color: #ffe4e6;
+        }
+        .auth-modal-ghost:hover,
+        .auth-modal-danger:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.03);
+        }
 
         /* Pro Unlock Button */
         .pro-unlock-btn {
@@ -698,81 +1012,78 @@
         .msg-user { background: linear-gradient(135deg, #2a5878, #1a3850); align-self: flex-end; margin-left: auto; color: #c8dce8; border-bottom-right-radius: 2px; }
         .msg-ai { background: #0e1e30; align-self: flex-start; color: #b8d0e4; border-bottom-left-radius: 2px; }
 
-        /* Help / Tutorial Panel */
-        .help-panel { bottom: 110px; right: 30px; width: 420px; height: 520px; border: 1px solid rgba(77, 143, 189, 0.22); border-radius: 16px; overflow: hidden; }
-        .help-header { padding: 15px 18px; background: linear-gradient(90deg, rgba(5,10,22,0.98), rgba(4,8,20,0.98)); border-bottom: 1px solid rgba(77,143,189,0.15); border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; box-shadow: inset 0 1px 0 rgba(77,143,189,0.4); }
-        .help-body { flex: 1; padding: 16px 16px 20px 16px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #2a3a50 transparent; }
-        .help-body h3 { margin: 14px 0 8px 0; font-size: 0.95rem; font-weight: 800; color: #4d8fbd; letter-spacing: 0.5px; }
-        .help-body p, .help-body li { font-size: 0.85rem; color: #a0bcd0; line-height: 1.7; }
-        .help-body ul { margin: 0; padding-left: 18px; }
-        .help-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(77, 143, 189, 0.25); background: rgba(77, 143, 189, 0.08); color: #c8dce8; font-size: 0.75rem; }
-        .help-muted { color: #546a7b; }
-
-        /* Help button (Glitch) - From Uiverse.io by 212004ALJI (scoped) */
-        .help-glitch-btn,
-        .help-glitch-btn::after {
-            padding: 10px 50px;
-            font-size: 20px;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            background-color: transparent;
+        .panel-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .auth-entry-btn {
             position: relative;
-            line-height: 1.1;
+            min-width: 136px;
+            padding: 8px 11px 8px 34px;
+            border: 1px solid rgba(103, 232, 249, 0.32);
+            border-radius: 11px;
+            background: linear-gradient(135deg, rgba(8, 24, 48, 0.98), rgba(18, 70, 109, 0.96));
+            color: #f8fafc;
             cursor: pointer;
-            user-select: none;
-            white-space: nowrap;
+            text-align: left;
+            box-shadow: 0 14px 30px rgba(6, 23, 41, 0.34), inset 0 1px 0 rgba(186, 230, 253, 0.14);
+            transition: transform 0.18s ease, box-shadow 0.22s ease, border-color 0.22s ease, filter 0.22s ease;
+            overflow: hidden;
         }
-
-        .help-glitch-btn::after {
-            --move1: inset(50% 50% 50% 50%);
-            --move2: inset(31% 0 40% 0);
-            --move3: inset(39% 0 15% 0);
-            --move4: inset(45% 0 40% 0);
-            --move5: inset(45% 0 6% 0);
-            --move6: inset(14% 0 61% 0);
-            clip-path: var(--move1);
-            content: attr(data-text);
+        .auth-entry-btn::before {
+            content: "✦";
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #cffafe;
+            font-size: 0.72rem;
+            text-shadow: 0 0 12px rgba(103, 232, 249, 0.65);
+        }
+        .auth-entry-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.12) 35%, transparent 70%);
+            transform: translateX(-140%);
+            transition: transform 0.45s ease;
+        }
+        .auth-entry-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.04);
+            border-color: rgba(125, 211, 252, 0.56);
+            box-shadow: 0 18px 36px rgba(6, 23, 41, 0.4), inset 0 1px 0 rgba(186, 230, 253, 0.2);
+        }
+        .auth-entry-btn:hover::after {
+            transform: translateX(120%);
+        }
+        .auth-entry-btn:active {
+            transform: translateY(0);
+        }
+        .auth-entry-title {
             display: block;
-            pointer-events: none;
+            font-size: 0.67rem;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            color: #f8fafc;
         }
-
-        .help-glitch-btn:hover::after {
-            animation: glitch_4011 1s;
-            animation-timing-function: steps(2, end);
-            text-shadow: -3px -3px 0px #1df2f0, 3px 3px 0px #E94BE8;
-            background-color: transparent;
-            border: 3px solid rgb(0, 255, 213);
-        }
-
-        .help-glitch-btn:hover {
-            text-shadow: -1px -1px 0px #1df2f0, 1px 1px 0px #E94BE8;
-            background-color: transparent;
-            border: 1px solid rgb(0, 255, 213);
-            box-shadow: 0px 10px 10px -10px rgb(0, 255, 213);
-        }
-
-        @keyframes glitch_4011 {
-            0% { clip-path: var(--move1); transform: translate(0px,-10px); }
-            10% { clip-path: var(--move2); transform: translate(-10px,10px); }
-            20% { clip-path: var(--move3); transform: translate(10px,0px); }
-            30% { clip-path: var(--move4); transform: translate(-10px,10px); }
-            40% { clip-path: var(--move5); transform: translate(10px,-10px); }
-            50% { clip-path: var(--move6); transform: translate(-10px,10px); }
-            60% { clip-path: var(--move1); transform: translate(10px,-10px); }
-            70% { clip-path: var(--move3); transform: translate(-10px,10px); }
-            80% { clip-path: var(--move2); transform: translate(10px,-10px); }
-            90% { clip-path: var(--move4); transform: translate(-10px,10px); }
-            100% { clip-path: var(--move1); transform: translate(0); }
+        .auth-entry-sub {
+            display: block;
+            margin-top: 2px;
+            font-size: 0.53rem;
+            line-height: 1.3;
+            color: #cbd5e1;
+            opacity: 0.95;
         }
 
         .calendar-panel { bottom: 110px; right: 30px; width: 340px; max-height: calc(100vh - 140px); border: 1px solid rgba(77,143,189,0.28); font-family: 'Noto Sans SC', sans-serif; overflow: hidden; }
-        .cal-header { background: linear-gradient(160deg, rgba(5,10,22,0.98) 0%, rgba(10,20,42,0.95) 60%, rgba(5,10,22,0.98) 100%); padding: 20px 20px 18px; text-align: center; border-bottom: 1px solid rgba(77,143,189,0.2); position: relative; flex-shrink: 0; box-shadow: inset 0 1px 0 rgba(77,143,189,0.55), 0 8px 28px rgba(0,0,0,0.5); }
+        .cal-header { background: linear-gradient(160deg, rgba(5,10,22,0.98) 0%, rgba(10,20,42,0.95) 60%, rgba(5,10,22,0.98) 100%); padding: 20px 64px 18px; text-align: center; border-bottom: 1px solid rgba(77,143,189,0.2); position: relative; flex-shrink: 0; box-shadow: inset 0 1px 0 rgba(77,143,189,0.55), 0 8px 28px rgba(0,0,0,0.5); }
         .cal-header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent 5%, rgba(77,143,189,0.8) 35%, rgba(106,176,212,0.8) 65%, transparent 95%); border-radius: 16px 16px 0 0; }
         .cal-header::after { content: ''; position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 5px solid rgba(77,143,189,0.4); }
         .cal-date-big { font-size: 2.2rem; font-weight: bold; color: #e8f4fc; line-height: 1; margin-bottom: 5px; text-shadow: 0 0 22px rgba(77,143,189,0.3), 0 2px 12px rgba(0,0,0,0.65); letter-spacing: 2px; }
@@ -1163,6 +1474,32 @@
                 max-height: calc(70dvh - 64px) !important;
                 padding-bottom: 10px;
             }
+            .date-composer {
+                grid-template-columns: 1.16fr 0.92fr 0.92fr;
+                gap: 8px;
+                padding: 12px;
+                border-radius: 16px;
+                background: linear-gradient(160deg, rgba(7, 16, 34, 0.98), rgba(10, 20, 42, 0.94));
+                border-color: rgba(77, 143, 189, 0.22);
+                box-shadow: inset 0 1px 0 rgba(125, 211, 252, 0.08), 0 14px 30px rgba(2, 6, 23, 0.28);
+            }
+            .date-segment input,
+            .date-segment select {
+                min-height: 54px;
+                border-radius: 14px;
+                padding-top: 21px;
+                font-size: 16px;
+            }
+            .date-segment select {
+                background-position:
+                    calc(100% - 15px) calc(50% + 6px),
+                    calc(100% - 10px) calc(50% + 6px);
+            }
+            .date-composer-hint {
+                margin-top: 10px;
+                font-size: 0.72rem;
+                color: #8ca4b8;
+            }
             
             /* Info Panel - Bottom Sheet Style */
             .info-panel {
@@ -1244,14 +1581,15 @@
             .fab .fab-label { bottom: -18px; font-size: 0.55rem; color: #94a3b8; }
             
             /* Fixed Close Button on Mobile */
+            .close-modal,
+            .panel-close-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 19px;
+            }
             .close-modal {
-                top: 0px !important;
-                right: 0px !important;
-                font-size: 20px !important;
-                z-index: 61 !important;
-                position: sticky !important;
-                float: right !important;
-                padding: 8px 12px !important;
+                top: 10px !important;
+                right: 10px !important;
             }
             .ai-content-inner { max-height: 85vh !important; }
             
@@ -1259,11 +1597,46 @@
             h1 { font-size: 1.1rem; }
             .panel-header { min-height: 50px; padding: 10px 15px; }
 
-            /* Mobile: help glitch button fit */
-            .help-glitch-btn,
-            .help-glitch-btn::after {
-                padding: 8px 18px;
-                font-size: 14px;
+            .panel-header-actions {
+                gap: 8px;
+            }
+            .auth-entry-btn {
+                min-width: 116px;
+                padding: 7px 10px 7px 30px;
+                border-radius: 10px;
+            }
+            .auth-entry-btn::before {
+                left: 10px;
+            }
+            .auth-entry-title {
+                font-size: 0.61rem;
+            }
+            .auth-entry-sub {
+                font-size: 0.49rem;
+            }
+            .auth-modal-card {
+                width: calc(100vw - 24px);
+                max-height: min(88vh, 720px);
+                border-radius: 18px;
+            }
+            .auth-modal-inner {
+                padding: 52px 18px 18px;
+                max-height: min(88vh, 720px);
+            }
+            .auth-modal-title {
+                font-size: 1.55rem;
+            }
+            .auth-modal-desc {
+                font-size: 0.84rem;
+            }
+            .auth-account-grid {
+                grid-template-columns: 1fr;
+            }
+            .radar-content {
+                padding: 54px 14px 16px;
+            }
+            .cal-header {
+                padding: 18px 58px 18px;
             }
             
             /* 3D Canvas Adjust */
@@ -1346,7 +1719,7 @@
             background: linear-gradient(145deg, #050d1e, #0a1628, #0e1c34);
             border: 1px solid rgba(77, 143, 189, 0.32);
             border-radius: 20px;
-            padding: 24px 22px 20px;
+            padding: 60px 22px 20px;
             width: 100%;
             max-width: 440px;
             max-height: 92vh;
@@ -1663,8 +2036,11 @@
         <!-- Header -->
         <div class="panel-header" onclick="toggleInputPanel()">
             <h1 class="flex items-center gap-2">🌌 <span class="hidden sm:inline">星盘设置</span><span class="sm:hidden text-sm">星盘设置</span></h1>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <button type="button" class="help-glitch-btn" data-text="使用指南" onclick="toggleHelpPanel(); event.stopPropagation();">使用指南</button>
+            <div class="panel-header-actions">
+                <button type="button" id="authEntryBtn" class="auth-entry-btn" onclick="openLoginGuide(false); event.stopPropagation();">
+                    <span class="auth-entry-title">登录 / 注册</span>
+                    <span class="auth-entry-sub">领取 3 次 AI 解读</span>
+                </button>
                 <div class="toggle-icon">▼</div>
             </div>
         </div>
@@ -1673,7 +2049,22 @@
         <div class="input-content">
             
             <label>出生日期 (阳历)</label>
-            <input type="date" id="birthDate" value="">
+            <div class="date-composer" data-target="birthDate">
+                <div class="date-segment">
+                    <span class="date-segment-tag">年</span>
+                    <input type="text" data-part="year" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="1992" autocomplete="bday-year" aria-label="出生年份">
+                </div>
+                <div class="date-segment">
+                    <span class="date-segment-tag">月</span>
+                    <select data-part="month" aria-label="出生月份"></select>
+                </div>
+                <div class="date-segment">
+                    <span class="date-segment-tag">日</span>
+                    <select data-part="day" aria-label="出生日期"></select>
+                </div>
+            </div>
+            <div class="date-composer-hint">可直接分别调整年、月、日，系统会自动校验大小月与闰年。</div>
+            <input type="hidden" id="birthDate" value="">
             
             <label>出生时辰</label>
             <select id="birthHour">
@@ -1715,43 +2106,6 @@
                 </div>
             </button>
 
-            <!-- Account / Quota Section (Minimal) -->
-            <div style="margin-top: 18px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
-                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                    <label style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin: 0;">👤 账户</label>
-                    <a href="./pro.html" id="upgradeLink" style="font-size: 0.75rem; color: #a78bfa; text-decoration: underline; text-underline-offset: 4px;">升级专业版</a>
-                </div>
-
-                <div id="authStatus" style="margin-top: 10px; font-size: 0.8rem; color: #cbd5e1; line-height: 1.4;">
-                    未登录：登录后可使用 AI（免费共 3 次）
-                </div>
-
-                <div id="authQuota" style="margin-top: 6px; font-size: 0.75rem; color: #60a5fa; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;">
-                    剩余：--
-                </div>
-
-                <div id="authForm" style="margin-top: 10px;">
-                    <input type="email" id="authUsername" placeholder="邮箱地址" autocomplete="email" style="width: 100%; margin-top: 6px; background: rgba(0,0,0,0.4); border: 1px solid #334455; color: #e0f0ff; padding: 10px; border-radius: 6px; font-size: 14px;">
-                    <input type="password" id="authPassword" placeholder="密码（6-72）" autocomplete="current-password" style="width: 100%; margin-top: 8px; background: rgba(0,0,0,0.4); border: 1px solid #334455; color: #e0f0ff; padding: 10px; border-radius: 6px; font-size: 14px;">
-
-                    <div style="display:flex; gap:10px; margin-top: 10px;">
-                        <button id="loginBtn" onclick="loginUser()" style="flex:1; background: linear-gradient(135deg, #0ea5e9, #2563eb); border: 1px solid rgba(56,189,248,.6); color: #fff; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 800;">登录</button>
-                        <button id="registerBtn" onclick="registerUser()" style="flex:1; background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(148, 163, 184, 0.35); color: #e2e8f0; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 800;">注册</button>
-                    </div>
-                    <div style="margin-top: 8px; font-size: 0.7rem; color: #64748b; text-align: center; line-height: 1.4;">使用邮箱注册账号 · 已注册用户直接登录</div>
-                </div>
-
-                <div id="authActions" style="margin-top: 10px; display:none;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                        <div style="font-size: 0.75rem; color: #94a3b8;">用户ID：<span id="authUserId" style="color:#e2e8f0; font-weight:800;">--</span></div>
-                        <button onclick="logoutUser()" style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.5); color: #fecdd3; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 800;">退出</button>
-                    </div>
-                    <div style="margin-top: 8px; font-size: 0.75rem; color: #64748b; line-height: 1.4;">
-                        专业版开通方式：把你的用户ID发给管理员，由后台标记。
-                    </div>
-                </div>
-            </div>
-            
             <div id="bureau-info" class="mt-6 text-xs text-blue-200 border-t border-blue-900 pt-3 hidden flex justify-between font-mono">
                 <!-- Bureau info -->
             </div>
@@ -1824,7 +2178,7 @@
 <div class="floating-window calendar-panel" id="dailyPanel">
     <div class="handle-bar"></div>
     <div class="cal-header">
-        <span class="close-modal" style="top: 15px; right: 15px; font-size: 20px;" onclick="toggleDailyPanel()">✕</span>
+        <button type="button" class="close-modal" onclick="toggleDailyPanel()" aria-label="关闭今日星历">✕</button>
         <div class="cal-date-big" id="calSolarDate">--</div>
         <div class="cal-lunar" id="calLunarDate">--</div>
         <div class="cal-ganzhi" id="calGanzhi">--</div>
@@ -1857,7 +2211,7 @@
         <div class="life-title">🌠 人生大运K线</div>
         <div style="display:flex;align-items:center;gap:10px;">
             <button class="save-screenshot-btn" onclick="saveLifeChartScreenshot()" title="保存K线截图">📸 保存截图</button>
-            <span class="cursor-pointer text-gray-400 hover:text-white" style="color:#c4b5fd;" onclick="toggleLifePanel()">✕</span>
+            <button type="button" class="panel-close-btn" onclick="toggleLifePanel()" aria-label="关闭人生大运K线">✕</button>
         </div>
     </div>
     <div class="life-chart-container">
@@ -1873,7 +2227,7 @@
     <div class="handle-bar"></div>
     <div class="synastry-header">
         <div class="synastry-title">☯ 两人合盘契合度</div>
-        <span class="cursor-pointer text-gray-400 hover:text-white" style="color:#a5b4fc;" onclick="toggleSynastryPanel()">✕</span>
+        <button type="button" class="panel-close-btn" onclick="toggleSynastryPanel()" aria-label="关闭合盘面板">✕</button>
     </div>
     <div class="synastry-body">
         <div class="synastry-grid">
@@ -1885,7 +2239,22 @@
             <div class="syn-card">
                 <h4>🤝 B方 · 生辰</h4>
                 <label class="text-xs text-slate-400">出生日期 (阳历)</label>
-                <input type="date" id="birthDateB" class="syn-input" value="1992-08-08">
+                <div class="date-composer" data-target="birthDateB">
+                    <div class="date-segment">
+                        <span class="date-segment-tag">年</span>
+                        <input type="text" data-part="year" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="1992" autocomplete="bday-year" aria-label="B方出生年份">
+                    </div>
+                    <div class="date-segment">
+                        <span class="date-segment-tag">月</span>
+                        <select data-part="month" aria-label="B方出生月份"></select>
+                    </div>
+                    <div class="date-segment">
+                        <span class="date-segment-tag">日</span>
+                        <select data-part="day" aria-label="B方出生日期"></select>
+                    </div>
+                </div>
+                <div class="date-composer-hint">直接在合盘面板中修改 B 方的年、月、日。</div>
+                <input type="hidden" id="birthDateB" value="1992-08-08">
                 <label class="text-xs text-slate-400 mt-2 block">出生时辰</label>
                 <select id="birthHourB" class="syn-input">
                     <option value="0">子时 (23:00-01:00)</option>
@@ -1936,7 +2305,7 @@
     <div class="handle-bar"></div>
     <div class="liu-yao-header">
         <div class="life-title" style="color:#2dd4bf; text-shadow:0 0 14px rgba(45,212,191,0.4);">🪙 六爻起卦</div>
-        <span class="cursor-pointer" style="color:#5eead4;" onclick="toggleLiuYaoPanel()">✕</span>
+        <button type="button" class="panel-close-btn" onclick="toggleLiuYaoPanel()" aria-label="关闭六爻面板">✕</button>
     </div>
     <div class="liu-yao-content">
         <div class="text-xs text-gray-400 mb-4 text-center">诚心默念所问之事，点击下方铜钱起卦。<br>(共需摇六次，当前第 <span id="yaoCount" class="text-teal-400 font-bold">0</span>/6 爻)</div>
@@ -1975,12 +2344,70 @@
     </div>
 </div>
 
+<div id="auth-modal" class="modal-overlay" onclick="handleAuthModalBackdrop(event)">
+    <div class="auth-modal-card">
+        <button type="button" class="close-modal" onclick="closeAuthModal()" aria-label="关闭登录注册弹框">✕</button>
+        <div class="auth-modal-inner">
+            <div id="authModalFormView">
+                <div id="authModalEyebrow" class="auth-modal-eyebrow">首次使用</div>
+                <div id="authModalTitle" class="auth-modal-title">注册问星AI</div>
+                <div id="authModalDesc" class="auth-modal-desc">注册即送 3 次 AI 解读额度，完成后无需离开当前页面即可继续排盘。</div>
+
+                <div class="auth-modal-tabs">
+                    <button type="button" id="authTabRegister" class="auth-modal-tab active" onclick="switchAuthMode('register')">注册</button>
+                    <button type="button" id="authTabLogin" class="auth-modal-tab" onclick="switchAuthMode('login')">登录</button>
+                </div>
+
+                <div id="authModalStatus" class="auth-modal-status"></div>
+
+                <div class="auth-modal-form">
+                    <input type="text" id="authUsername" class="auth-modal-input" autocomplete="username" placeholder="用户名（3-32 位）">
+                    <input type="password" id="authPassword" class="auth-modal-input" autocomplete="current-password" placeholder="密码（6-72 位）">
+                </div>
+
+                <button type="button" id="authSubmitBtn" class="auth-modal-submit" onclick="submitAuth()">立即注册</button>
+                <div id="authModalFootnote" class="auth-modal-footnote">已有账号可切换到登录，系统会自动同步你的 AI 额度和专业版状态。</div>
+            </div>
+
+            <div id="authModalAccountView" style="display:none;">
+                <div class="auth-modal-eyebrow">账户中心</div>
+                <div class="auth-modal-title">已同步当前账号</div>
+                <div id="authAccountDesc" class="auth-modal-desc">返回星盘后即可继续使用相关 AI 功能。</div>
+
+                <div class="auth-account-grid">
+                    <div class="auth-account-card">
+                        <div class="auth-account-label">账户</div>
+                        <div id="authAccountName" class="auth-account-value">--</div>
+                    </div>
+                    <div class="auth-account-card">
+                        <div class="auth-account-label">类型</div>
+                        <div id="authAccountPlan" class="auth-account-value">免费版</div>
+                    </div>
+                    <div class="auth-account-card">
+                        <div class="auth-account-label">AI 额度</div>
+                        <div id="authAccountQuota" class="auth-account-value">剩余 --</div>
+                    </div>
+                    <div class="auth-account-card">
+                        <div class="auth-account-label">用户 ID</div>
+                        <div id="authAccountUserId" class="auth-account-value">--</div>
+                    </div>
+                </div>
+
+                <div class="auth-modal-actions">
+                    <a href="./pro.html" id="authUpgradeLink" class="auth-modal-ghost" style="display:block; text-decoration:none; text-align:center;">升级专业版</a>
+                    <button type="button" class="auth-modal-danger" onclick="logoutUser()">退出登录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Chat Window -->
 <div class="floating-window chat-window" id="chatWindow">
     <div class="handle-bar"></div>
     <div class="chat-header">
         <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400" style="font-size:1.05rem;letter-spacing:0.5px;">🔮 AI 命理咨询室</span>
-        <span class="cursor-pointer" style="color:#e879f9;" onclick="toggleChat()">✕</span>
+        <button type="button" class="panel-close-btn" onclick="toggleChat()" aria-label="关闭命理咨询室">✕</button>
     </div>
     <div class="chat-messages" id="chatMessages">
         <div class="msg msg-ai">你好！我是问星大师，你的命盘数据已经全部读取完毕。<br><br>这一次，我不只能帮你看未来——我还能帮你<strong>读懂过去</strong>。提问我某年发生了什么，我会从三层星象（本命·大限·流年）分析出最可能的事件。<br><br>🔍 <strong>验证过去</strong> · 🔮 <strong>推导未来</strong><br><br>你可以这样问：「我2022年发生了什么重大事件？」或「2026年我的财运如何？」</div>
@@ -1991,77 +2418,10 @@
     </div>
 </div>
 
-<!-- Help / Tutorial Panel -->
-<div class="floating-window help-panel" id="helpPanel">
-    <div class="handle-bar"></div>
-    <div class="help-header">
-        <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-emerald-300">❓ 使用指南</span>
-        <span class="cursor-pointer text-gray-400 hover:text-white" onclick="toggleHelpPanel()">✕</span>
-    </div>
-    <div class="help-body">
-        <div class="help-badge">🌌 问星AI · 使用指南 2026</div>
-        <p class="mt-3 help-muted">涵盖全部功能：3D 星盘、五维雷达、AI 解读、合盘、六爻、今日星历、大运 K 线、命理咨询、命例管理。</p>
-
-        <h3>1) 星盘生成与基础操作</h3>
-        <ul>
-            <li>在左上角 <strong>星盘设置</strong> 填写：出生日期（阳历）、出生时辰、性别，点击 <strong>🚀 开启星盘</strong>。</li>
-            <li>3D 星盘支持 <strong>旋转、缩放、拖拽</strong>，背景为动态宇宙星系（银河盘面 + 星云 + 亮星）。</li>
-            <li>点击任意 <strong>宫位 / 星岛</strong>，右侧（手机为底部）弹出详情面板，展示星曜、四化、亮度等信息。</li>
-            <li class="help-muted">庙/旺主星光晕更大；四化星以双层彩环标识（禄=天青 / 权=帝紫 / 科=青翠 / 忌=烈红）。</li>
-        </ul>
-
-        <h3>2) 注册/登录 & AI 额度</h3>
-        <ul>
-            <li>在左侧 <strong>账户</strong> 区域注册并登录；<strong>未登录无法使用任何 AI 功能</strong>。</li>
-            <li><strong>免费版</strong>：全站 AI 调用合计 <strong>3 次</strong>（用完即止）。</li>
-            <li><strong>专业版</strong>：AI 调用 <strong>无限制</strong>，由后台开通；点击左侧 <strong>升级专业版</strong> 查看详情。</li>
-            <li class="help-muted">额度按账号统计，多设备登录自动同步。</li>
-        </ul>
-
-        <h3>3) 五维运势雷达图</h3>
-        <ul>
-            <li>每次生成星盘后自动弹出 <strong>五维雷达</strong>，展示事业、财运、感情、健康、贵人五个维度得分。</li>
-            <li>点击雷达图下方的 <strong>宫位快捷按钮</strong>，跳转至对应宫位，再使用"AI 深度解析"获取详解。</li>
-        </ul>
-
-        <h3>4) AI 深度解析 & 命理咨询</h3>
-        <ul>
-            <li>宫位详情面板底部点击 <strong>✨ 问星 AI 深度解析</strong>，AI 结合星曜组合深度诠释（支持 Markdown 排版）。</li>
-            <li>右下角 <strong>✨ 命理咨询</strong>：自由提问（事业/感情/流年等），AI 结合命盘摘要智能作答，支持多轮对话。</li>
-        </ul>
-
-        <h3>5) 右下角更多功能</h3>
-        <ul>
-            <li><strong>🤝 两人合盘</strong>：填写 B 方信息，选择关系类型，计算双方契合度；支持 AI 深度分析。</li>
-            <li><strong>🐢 六爻起卦</strong>：点击铜钱或"🤲 摇一卦"（真实物理抛掷动画），共摇 6 次成卦；输入占问题目后"问星 AI 解卦"解读本卦与变卦。</li>
-            <li><strong>📅 今日星历</strong>：展示今日干支、宜忌；生成命盘后还可"✨ 推演今日运程"。</li>
-            <li><strong>📈 人生大运 K 线</strong>：可视化一生大运起伏曲线，附简要批注；可滑动查看各年龄段。</li>
-        </ul>
-
-        <h3>6) 命例保存与管理（本地）</h3>
-        <ul>
-            <li>在左侧 <strong>📋 星盘备注</strong> 填入名字/关系后，点 <strong>💾 保存此星盘</strong>，支持多人档案管理。</li>
-            <li>在 <strong>📚 星盘记录</strong> 里可 <strong>📂 加载</strong> 或 <strong>🗑️ 删除</strong> 任意命例。</li>
-            <li class="help-muted">数据仅存于本地浏览器（localStorage），清除缓存或更换设备后记录将丢失。</li>
-        </ul>
-
-        <h3>7) 常见问题</h3>
-        <ul>
-            <li><strong>3D 星盘不显示</strong>：请使用 Chrome / Edge 并开启硬件加速；旧设备可能不支持 WebGL。</li>
-            <li><strong>移动端加载慢</strong>：已自动降低粒子数量与特效质量；若仍卡顿可尝试关闭后台其他应用。</li>
-            <li><strong>AI 解析失败</strong>：检查网络连接后稍后重试；若持续失败可能为后端接口异常。</li>
-            <li><strong>出生时辰不确定</strong>：可先选近似时段体验，需严谨判断时建议事先校时。</li>
-        </ul>
-
-        <h3>8) 数据与隐私</h3>
-        <p>点击 AI 功能时，页面仅上传必要的命盘摘要与提问内容进行生成式回答。建议 <strong>勿输入身份证号、住址等敏感信息</strong>。</p>
-    </div>
-</div>
-
 <!-- AI Result Modal -->
 <div id="ai-modal" class="modal-overlay">
     <div class="ai-content">
-        <span class="close-modal" onclick="closeAiModal()">✕</span>
+        <button type="button" class="close-modal" onclick="closeAiModal()" aria-label="关闭AI结果弹框">✕</button>
         <div class="ai-content-inner">
             <h2 class="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">✨ 星曜启示</h2>
             <div id="ai-result-text" class="markdown-body text-sm">
@@ -2077,7 +2437,7 @@
 <!-- Radar Chart Modal (命盘五维运势) -->
 <div id="radar-modal" class="radar-modal-overlay">
     <div class="radar-content">
-        <button class="close-modal" onclick="closeRadarModal()" style="float:right; position:relative; top:0; right:0; margin:0; padding:4px 10px; font-size:20px; z-index:1;">&times;</button>
+        <button type="button" class="close-modal" onclick="closeRadarModal()" aria-label="关闭命盘五维运势">✕</button>
         <div class="radar-header">
             <span class="radar-title">✨ 命盘五维运势</span>
             <span class="radar-subtitle">基于紫微斗数宫位星曜组合分析 · 点击宫位探索 AI 解读</span>
@@ -2203,35 +2563,27 @@
     }
 
     function renderAuthUI() {
-        const statusEl = document.getElementById('authStatus');
-        const quotaEl = document.getElementById('authQuota');
-        const formEl = document.getElementById('authForm');
-        const actionsEl = document.getElementById('authActions');
-        const userIdEl = document.getElementById('authUserId');
-        const upgradeLink = document.getElementById('upgradeLink');
+        const authEntryBtn = document.getElementById('authEntryBtn');
+        const authEntryTitle = authEntryBtn?.querySelector('.auth-entry-title');
+        const authEntrySub = authEntryBtn?.querySelector('.auth-entry-sub');
 
-        if (!statusEl || !quotaEl || !formEl || !actionsEl || !userIdEl || !upgradeLink) return;
+        if (!authEntryBtn) return;
 
         if (!currentUser) {
-            statusEl.innerText = '未登录：登录后可使用 AI（免费共 3 次）';
-            quotaEl.innerText = '剩余：--';
-            formEl.style.display = 'block';
-            actionsEl.style.display = 'none';
-            upgradeLink.style.display = 'inline';
+            if (authEntryTitle) authEntryTitle.innerText = '登录 / 注册';
+            if (authEntrySub) authEntrySub.innerText = '领取 3 次 AI 解读';
+            renderAuthModal();
             return;
         }
 
-        userIdEl.innerText = String(currentUser.id);
         if (currentUser.isPro) {
-            statusEl.innerText = `已登录：${currentUser.username}（专业版）`;
-            quotaEl.innerText = '额度：无限制';
+            if (authEntryTitle) authEntryTitle.innerText = '账户中心';
+            if (authEntrySub) authEntrySub.innerText = 'AI 解读无限使用';
         } else {
-            statusEl.innerText = `已登录：${currentUser.username}（免费版）`;
-            quotaEl.innerText = `剩余：${currentUser.remaining}/${currentUser.total}`;
+            if (authEntryTitle) authEntryTitle.innerText = '账户中心';
+            if (authEntrySub) authEntrySub.innerText = `剩余 ${currentUser.remaining}/${currentUser.total} 次 AI`;
         }
-        formEl.style.display = 'none';
-        actionsEl.style.display = 'block';
-        upgradeLink.style.display = currentUser.isPro ? 'none' : 'inline';
+        renderAuthModal();
     }
 
     async function fetchMe() {
@@ -2267,62 +2619,312 @@
         }
     }
 
-    async function loginUser() {
-        const u = document.getElementById('authUsername')?.value?.trim();
-        const p = document.getElementById('authPassword')?.value || '';
-        if (!u || !p) { showToast('请输入邮箱和密码', 'warn'); return; }
-        try {
-            const resp = await fetch(`${API_BASE}/api/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: u, password: p })
-            });
-            const data = await resp.json().catch(() => ({}));
-            if (!resp.ok) throw new Error(data?.message || '登录失败');
-            setAuthToken(data.token);
-            currentUser = data.user;
-            renderAuthUI();
-            showToast(`✅ 欢迎回来，${data.user?.username || ''}`, 'success');
-        } catch (e) {
-            showToast(e?.message || '登录失败', 'error');
+    let authModalMode = 'register';
+
+    function setAuthModalStatus(message = '', type = 'info') {
+        const statusEl = document.getElementById('authModalStatus');
+        if (!statusEl) return;
+        statusEl.className = 'auth-modal-status';
+        if (!message) {
+            statusEl.textContent = '';
+            return;
         }
+        statusEl.classList.add(type);
+        statusEl.textContent = message;
     }
 
-    async function registerUser() {
-        const u = document.getElementById('authUsername')?.value?.trim();
-        const p = document.getElementById('authPassword')?.value || '';
-        if (!u || !p) { showToast('请输入邮箱和密码', 'warn'); return; }
+    function switchAuthMode(mode) {
+        if (currentUser) return;
+        authModalMode = mode === 'login' ? 'login' : 'register';
+        setAuthModalStatus('');
+        renderAuthModal();
+    }
+
+    function renderAuthModal() {
+        const formView = document.getElementById('authModalFormView');
+        const accountView = document.getElementById('authModalAccountView');
+        const registerTab = document.getElementById('authTabRegister');
+        const loginTab = document.getElementById('authTabLogin');
+        const titleEl = document.getElementById('authModalTitle');
+        const eyebrowEl = document.getElementById('authModalEyebrow');
+        const descEl = document.getElementById('authModalDesc');
+        const footnoteEl = document.getElementById('authModalFootnote');
+        const submitBtn = document.getElementById('authSubmitBtn');
+        const upgradeLink = document.getElementById('authUpgradeLink');
+
+        if (!formView || !accountView) return;
+
+        if (currentUser) {
+            formView.style.display = 'none';
+            accountView.style.display = 'block';
+            document.getElementById('authAccountName').textContent = currentUser.username || '--';
+            document.getElementById('authAccountUserId').textContent = String(currentUser.id ?? '--');
+
+            if (currentUser.isPro) {
+                document.getElementById('authAccountPlan').textContent = '专业版';
+                document.getElementById('authAccountQuota').textContent = '无限使用';
+                document.getElementById('authAccountDesc').textContent = '当前已是专业版，返回星盘后即可直接无限使用 AI 解读。';
+                if (upgradeLink) upgradeLink.style.display = 'none';
+            } else {
+                document.getElementById('authAccountPlan').textContent = '免费版';
+                document.getElementById('authAccountQuota').textContent = `剩余 ${currentUser.remaining}/${currentUser.total}`;
+                document.getElementById('authAccountDesc').textContent = '当前账号状态已同步，返回星盘后可继续使用 AI 相关功能。';
+                if (upgradeLink) upgradeLink.style.display = 'block';
+            }
+            return;
+        }
+
+        formView.style.display = 'block';
+        accountView.style.display = 'none';
+        const isLogin = authModalMode === 'login';
+        if (registerTab) registerTab.classList.toggle('active', !isLogin);
+        if (loginTab) loginTab.classList.toggle('active', isLogin);
+        if (eyebrowEl) eyebrowEl.textContent = isLogin ? '欢迎回来' : '首次使用';
+        if (titleEl) titleEl.textContent = isLogin ? '登录问星AI' : '注册问星AI';
+        if (descEl) descEl.textContent = isLogin
+            ? '登录后即可继续使用 AI 命盘解读、合盘分析与额度同步。'
+            : '注册即送 3 次 AI 解读额度，完成后无需离开当前页面即可继续排盘。';
+        if (submitBtn) submitBtn.textContent = isLogin ? '立即登录' : '立即注册';
+        if (footnoteEl) footnoteEl.textContent = isLogin
+            ? '没有账号也没关系，切换到注册后即可直接领取免费 AI 额度。'
+            : '已有账号可切换到登录，系统会自动同步你的 AI 额度和专业版状态。';
+    }
+
+    function openAuthModal(mode = '', closeAi = false) {
+        if (closeAi) closeAiModal();
+        const modal = document.getElementById('auth-modal');
+        if (!modal) return;
+        if (!currentUser) authModalMode = mode === 'login' ? 'login' : 'register';
+        setAuthModalStatus('');
+        renderAuthModal();
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            const focusTarget = currentUser
+                ? document.getElementById('authUpgradeLink')
+                : document.getElementById('authUsername');
+            if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
+        }, 30);
+    }
+
+    function closeAuthModal() {
+        const modal = document.getElementById('auth-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function handleAuthModalBackdrop(event) {
+        if (event.target?.id === 'auth-modal') closeAuthModal();
+    }
+
+    async function submitAuth() {
+        const username = document.getElementById('authUsername')?.value?.trim();
+        const password = document.getElementById('authPassword')?.value || '';
+        const submitBtn = document.getElementById('authSubmitBtn');
+        const actionText = authModalMode === 'login' ? '登录' : '注册';
+
+        if (!username || !password) {
+            setAuthModalStatus('请输入用户名和密码。', 'error');
+            return;
+        }
+
+        const route = authModalMode === 'login' ? '/api/auth/login' : '/api/auth/register';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = `${actionText}中...`;
+        }
+
         try {
-            const resp = await fetch(`${API_BASE}/api/auth/register`, {
+            const resp = await fetch(`${API_BASE}${route}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: u, password: p })
+                body: JSON.stringify({ username, password })
             });
             const data = await resp.json().catch(() => ({}));
-            if (!resp.ok) throw new Error(data?.message || '注册失败');
+            if (!resp.ok) throw new Error(data?.message || `${actionText}失败`);
+
             setAuthToken(data.token);
             currentUser = data.user;
+            const passwordInput = document.getElementById('authPassword');
+            if (passwordInput) passwordInput.value = '';
+            setAuthModalStatus(authModalMode === 'login' ? '登录成功，账号状态已同步。' : '注册成功，已为你开通 3 次 AI 解读额度。', 'success');
             renderAuthUI();
-            showToast(`✅ 注册成功，欢迎 ${data.user?.username || ''}`, 'success');
-            if (data.warning) console.warn(data.warning);
         } catch (e) {
-            showToast(e?.message || '注册失败', 'error');
+            setAuthModalStatus(e?.message || `${actionText}失败`, 'error');
+            renderAuthModal();
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = authModalMode === 'login' ? '立即登录' : '立即注册';
+            }
         }
     }
 
     function logoutUser() {
         setAuthToken('');
         currentUser = null;
+        authModalMode = 'login';
         renderAuthUI();
+        setAuthModalStatus('已退出登录。', 'info');
     }
-    
+
     function parseLocalYmd(dateStr) {
         // dateStr: "YYYY-MM-DD"
         if (!dateStr) return null;
         const parts = String(dateStr).split('-').map(n => parseInt(n, 10));
         if (parts.length !== 3 || parts.some(n => Number.isNaN(n))) return null;
         const [y, m, d] = parts;
-        return new Date(y, m - 1, d);
+        const result = new Date(y, m - 1, d);
+        if (
+            result.getFullYear() !== y ||
+            result.getMonth() !== m - 1 ||
+            result.getDate() !== d
+        ) return null;
+        return result;
+    }
+
+    function padDateUnit(value) {
+        return String(value).padStart(2, '0');
+    }
+
+    function getDaysInMonth(year, month) {
+        if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return 31;
+        return new Date(year, month, 0).getDate();
+    }
+
+    function getDateComposer(targetId) {
+        const root = document.querySelector(`.date-composer[data-target="${targetId}"]`);
+        const hidden = document.getElementById(targetId);
+        if (!root || !hidden) return null;
+        return {
+            root,
+            hidden,
+            year: root.querySelector('[data-part="year"]'),
+            month: root.querySelector('[data-part="month"]'),
+            day: root.querySelector('[data-part="day"]')
+        };
+    }
+
+    function fillComposerMonthOptions(selectEl) {
+        if (!selectEl) return;
+        const currentValue = selectEl.value;
+        const options = ['<option value="">月</option>'];
+        for (let month = 1; month <= 12; month++) {
+            options.push(`<option value="${month}">${padDateUnit(month)}月</option>`);
+        }
+        selectEl.innerHTML = options.join('');
+        if (currentValue) selectEl.value = String(parseInt(currentValue, 10));
+    }
+
+    function fillComposerDayOptions(selectEl, maxDay, preferredValue = '') {
+        if (!selectEl) return;
+        const parsedPreferred = parseInt(preferredValue, 10);
+        const safeDay = Number.isInteger(parsedPreferred)
+            ? String(Math.min(Math.max(parsedPreferred, 1), maxDay))
+            : '';
+        const options = ['<option value="">日</option>'];
+        for (let day = 1; day <= maxDay; day++) {
+            options.push(`<option value="${day}">${padDateUnit(day)}日</option>`);
+        }
+        selectEl.innerHTML = options.join('');
+        if (safeDay) selectEl.value = safeDay;
+    }
+
+    function refreshComposerDays(targetId) {
+        const composer = getDateComposer(targetId);
+        if (!composer) return;
+        const year = parseInt(composer.year.value, 10);
+        const month = parseInt(composer.month.value, 10);
+        const maxDay = getDaysInMonth(year, month);
+        fillComposerDayOptions(composer.day, maxDay, composer.day.value);
+    }
+
+    function clearCompositeDateValue(targetId) {
+        const composer = getDateComposer(targetId);
+        if (!composer) return;
+        composer.year.value = '';
+        composer.month.value = '';
+        fillComposerDayOptions(composer.day, 31, '');
+        composer.hidden.value = '';
+        composer.root.dataset.ready = '0';
+    }
+
+    function updateCompositeDateValue(targetId) {
+        const composer = getDateComposer(targetId);
+        if (!composer) return '';
+
+        refreshComposerDays(targetId);
+
+        const yearText = composer.year.value.trim();
+        const month = parseInt(composer.month.value, 10);
+        const day = parseInt(composer.day.value, 10);
+        const year = parseInt(yearText, 10);
+
+        if (
+            !yearText ||
+            yearText.length !== 4 ||
+            !Number.isInteger(year) ||
+            !Number.isInteger(month) ||
+            !Number.isInteger(day)
+        ) {
+            composer.hidden.value = '';
+            composer.root.dataset.ready = '0';
+            return '';
+        }
+
+        const maxDay = getDaysInMonth(year, month);
+        const safeDay = Math.min(day, maxDay);
+        if (safeDay !== day) composer.day.value = String(safeDay);
+
+        const dateValue = `${yearText}-${padDateUnit(month)}-${padDateUnit(safeDay)}`;
+        composer.hidden.value = dateValue;
+        composer.root.dataset.ready = '1';
+        return dateValue;
+    }
+
+    function setCompositeDateValue(targetId, dateValue) {
+        const composer = getDateComposer(targetId);
+        if (!composer) return;
+        if (!dateValue) {
+            clearCompositeDateValue(targetId);
+            return;
+        }
+
+        const match = String(dateValue).trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (!match) {
+            clearCompositeDateValue(targetId);
+            return;
+        }
+
+        const yearText = match[1];
+        const month = parseInt(match[2], 10);
+        const day = parseInt(match[3], 10);
+        const maxDay = getDaysInMonth(parseInt(yearText, 10), month);
+
+        if (!Number.isInteger(month) || month < 1 || month > 12 || !Number.isInteger(day) || day < 1) {
+            clearCompositeDateValue(targetId);
+            return;
+        }
+
+        composer.year.value = yearText;
+        composer.month.value = String(month);
+        fillComposerDayOptions(composer.day, maxDay, day);
+        updateCompositeDateValue(targetId);
+    }
+
+    function initCompositeDateInput(targetId) {
+        const composer = getDateComposer(targetId);
+        if (!composer) return;
+
+        fillComposerMonthOptions(composer.month);
+        fillComposerDayOptions(composer.day, 31, '');
+
+        composer.year.addEventListener('input', () => {
+            composer.year.value = composer.year.value.replace(/\D/g, '').slice(0, 4);
+            updateCompositeDateValue(targetId);
+        });
+        composer.month.addEventListener('change', () => updateCompositeDateValue(targetId));
+        composer.day.addEventListener('change', () => updateCompositeDateValue(targetId));
+
+        setCompositeDateValue(targetId, composer.hidden.value || composer.hidden.getAttribute('value') || '');
     }
 
     const AI_STYLE_INSTRUCTION = [
@@ -2402,27 +3004,9 @@
         return result.trim();
     }
 
-    // 打开面板并滚动到账号注册/登录区域
-    function openLoginGuide() {
-        closeAiModal();
-        const panel = document.getElementById('inputPanel');
-        panel.classList.remove('collapsed');
-        if (window.innerWidth <= 768) {
-            document.getElementById('infoPanel').classList.remove('active');
-        }
-        setTimeout(() => {
-            const authSection = document.getElementById('authForm');
-            if (!authSection) return;
-            authSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            authSection.style.transition = 'outline 0.25s, box-shadow 0.25s';
-            authSection.style.outline = '2px solid rgba(99,184,212,0.85)';
-            authSection.style.borderRadius = '8px';
-            authSection.style.boxShadow = '0 0 22px rgba(99,184,212,0.45)';
-            setTimeout(() => {
-                authSection.style.outline = '';
-                authSection.style.boxShadow = '';
-            }, 2800);
-        }, 320);
+    // 打开当前页内登录/注册弹框
+    function openLoginGuide(closeAi = false) {
+        openAuthModal('', closeAi);
     }
 
     // 统一渲染 AI 结果：未登录时展示引导按钮，已登录时渲染 Markdown
@@ -2433,7 +3017,7 @@
                     <div style="font-size:2.8rem; margin-bottom:14px;">🔐</div>
                     <div style="font-size:1.05rem; font-weight:800; color:#e2e8f0; margin-bottom:8px;">登录后解锁 AI 星盘解读</div>
                     <div style="font-size:0.82rem; color:#94a3b8; margin-bottom:26px; line-height:1.8;">注册即免费获得 <strong style="color:#60a5fa;">3 次</strong> AI 解读额度<br>深度解析命盘・宫位・四化飞星</div>
-                    <button onclick="openLoginGuide()" style="background:linear-gradient(135deg,#2563eb,#6366f1); border:none; color:#fff; padding:13px 36px; border-radius:12px; cursor:pointer; font-size:0.95rem; font-weight:800; letter-spacing:1px; box-shadow:0 4px 22px rgba(99,102,241,0.45); transition:transform 0.15s;"
+                    <button onclick="openAuthModal('register', true)" style="background:linear-gradient(135deg,#2563eb,#6366f1); border:none; color:#fff; padding:13px 36px; border-radius:12px; cursor:pointer; font-size:0.95rem; font-weight:800; letter-spacing:1px; box-shadow:0 4px 22px rgba(99,102,241,0.45); transition:transform 0.15s;"
                         onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
                         ✨ 立即注册 / 登录
                     </button>
@@ -3324,7 +3908,7 @@
     
     // Helper to close other windows
     function closeAllFloatingWindows(except = null) {
-        const windows = ['dailyPanel', 'lifePanel', 'liuYaoPanel', 'chatWindow', 'settings-modal', 'synastryPanel', 'helpPanel'];
+        const windows = ['dailyPanel', 'lifePanel', 'liuYaoPanel', 'chatWindow', 'settings-modal', 'synastryPanel'];
         windows.forEach(id => {
             const el = document.getElementById(id);
             if (el && el !== except && el.id !== 'ai-modal') el.style.display = 'none';
@@ -3894,7 +4478,7 @@
             panel.style.display = 'flex';
             const dateA = document.getElementById('birthDate').value;
             if (dateA && !document.getElementById('birthDateB').dataset.prefilled) {
-                document.getElementById('birthDateB').value = dateA;
+                setCompositeDateValue('birthDateB', dateA);
                 document.getElementById('birthDateB').dataset.prefilled = '1';
             }
         }
@@ -6018,15 +6602,6 @@ ${outputStructure}`;
         } catch(e) { showToast('保存失败', 'warn'); console.error(e); }
     }
     function toggleChat() { const win = document.getElementById('chatWindow'); closeAllFloatingWindows(win); win.style.display = win.style.display === 'flex' ? 'none' : 'flex'; }
-    function toggleHelpPanel() {
-        const panel = document.getElementById('helpPanel');
-        closeAllFloatingWindows(panel);
-        panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
-        if (panel.style.display === 'flex') {
-            const body = panel.querySelector('.help-body');
-            if (body) body.scrollTop = 0;
-        }
-    }
     function handleChatKey(e) { if (e.key === 'Enter') askMaster(); }
     async function askMaster() {
         if (!currentChart) { showToast('请先生成星盘', 'warn'); return; }
@@ -6119,7 +6694,7 @@ ${chartSummary}`;
     // First run logic
     const firstLoadDelay = IS_MOBILE_DEVICE ? 850 : 2000;
     setTimeout(() => { const loader = document.getElementById('loading'); if (loader && loader.style.display !== 'none') { loader.style.opacity = 0; setTimeout(() => { loader.style.display = 'none'; }, 500); } }, firstLoadDelay);
-    ['dailyPanel','lifePanel','liuYaoPanel','chatWindow','synastryPanel','helpPanel'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    ['dailyPanel','lifePanel','liuYaoPanel','chatWindow','synastryPanel'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
     
     // Mobile initialization: Show input panel (紫微星系) by default on first load
     if (window.innerWidth <= 768) {
@@ -6134,6 +6709,17 @@ ${chartSummary}`;
     }
     
     // Bootstrap auth state
+    initCompositeDateInput('birthDate');
+    initCompositeDateInput('birthDateB');
+    document.getElementById('authUsername')?.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') submitAuth();
+    });
+    document.getElementById('authPassword')?.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') submitAuth();
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeAuthModal();
+    });
     renderAuthUI();
     void fetchMe();
 
@@ -6271,7 +6857,7 @@ ${chartSummary}`;
         }
 
         // Set input values
-        document.getElementById('birthDate').value = record.date;
+        setCompositeDateValue('birthDate', record.date);
         document.getElementById('birthHour').value = record.hourIdx;
         document.getElementById('gender').value = record.gender === '男' ? '1' : '0';
         document.getElementById('recordName').value = record.name;
