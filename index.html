@@ -2927,6 +2927,15 @@
         setCompositeDateValue(targetId, composer.hidden.value || composer.hidden.getAttribute('value') || '');
     }
 
+    function resolveCompositeDateValue(targetId) {
+        const hidden = document.getElementById(targetId);
+        if (!hidden) return '';
+        const composer = getDateComposer(targetId);
+        if (!composer) return hidden.value || '';
+        const synced = updateCompositeDateValue(targetId);
+        return synced || hidden.value || '';
+    }
+
     const AI_STYLE_INSTRUCTION = [
         '请使用普通用户容易理解的中文。',
         '涉及命理术语时，首次出现请使用“术语（解释）”格式。',
@@ -3165,7 +3174,10 @@
 
     class ZWDSChart {
         constructor(dateStr, hourIdx, genderVal) {
-            this.gregorianDate = new Date(`${dateStr}T12:00:00`);
+            const birthDate = parseLocalYmd(dateStr);
+            if (!birthDate) throw new Error(`Invalid birth date: ${dateStr}`);
+            birthDate.setHours(12, 0, 0, 0);
+            this.gregorianDate = birthDate;
             this.gender = parseInt(genderVal); 
             const solar = Solar.fromDate(this.gregorianDate);
             this.lunar = solar.getLunar();
@@ -3916,9 +3928,10 @@
     }
 
     function generateLifeChartLogic() {
-        const dateStr = document.getElementById('birthDate').value;
+        const dateStr = resolveCompositeDateValue('birthDate');
         const hourIdx = document.getElementById('birthHour').value;
         const gender = document.getElementById('gender').value;
+        if (!parseLocalYmd(dateStr)) { showToast('请先选择有效的出生日期', 'warn'); return; }
         const data = calculateLifeTrendData(dateStr, hourIdx, gender);
         startLifeChartAnimation(data);
         const info = getBaZiInfo(dateStr, hourIdx);
@@ -4476,7 +4489,7 @@
             panel.style.display = 'none';
         } else {
             panel.style.display = 'flex';
-            const dateA = document.getElementById('birthDate').value;
+            const dateA = resolveCompositeDateValue('birthDate');
             if (dateA && !document.getElementById('birthDateB').dataset.prefilled) {
                 setCompositeDateValue('birthDateB', dateA);
                 document.getElementById('birthDateB').dataset.prefilled = '1';
@@ -4485,15 +4498,15 @@
     }
     
     function computeSynastry() {
-        const dateA = document.getElementById('birthDate').value;
+        const dateA = resolveCompositeDateValue('birthDate');
         const hourA = document.getElementById('birthHour').value;
         const genderA = document.getElementById('gender').value;
-        const dateB = document.getElementById('birthDateB').value;
+        const dateB = resolveCompositeDateValue('birthDateB');
         const hourB = document.getElementById('birthHourB').value;
         const genderB = document.getElementById('genderB').value;
         const relationType = document.getElementById('relationType').value;
         
-        if (!dateA || !dateB) {
+        if (!parseLocalYmd(dateA) || !parseLocalYmd(dateB)) {
             showToast('请完善双方的出生日期', 'warn');
             return;
         }
@@ -4510,10 +4523,10 @@
     }
 
     async function analyzeSynastryAI() {
-        const dateA = document.getElementById('birthDate').value;
+        const dateA = resolveCompositeDateValue('birthDate');
         const hourA = document.getElementById('birthHour').value;
         const genderA = document.getElementById('gender').value;
-        const dateB = document.getElementById('birthDateB').value;
+        const dateB = resolveCompositeDateValue('birthDateB');
         const hourB = document.getElementById('birthHourB').value;
         const genderB = document.getElementById('genderB').value;
         const relationType = document.getElementById('relationType').value;
@@ -4522,7 +4535,7 @@
         const modal = document.getElementById('ai-modal');
         const modalContent = document.getElementById('ai-result-text');
 
-        if (!dateA || !dateB) {
+        if (!parseLocalYmd(dateA) || !parseLocalYmd(dateB)) {
             showToast('请完善双方的出生日期', 'warn');
             return;
         }
@@ -5902,6 +5915,14 @@ ${outputStructure}`;
     }
 
     function generateChart() {
+        const date = resolveCompositeDateValue('birthDate');
+        const hourIdx = document.getElementById('birthHour').value;
+        const gender = document.getElementById('gender').value;
+        if (!parseLocalYmd(date)) {
+            showToast('请先完整填写有效的出生日期', 'warn');
+            return;
+        }
+
         const _cLoadEl = document.getElementById('chart-loading');
         if (_cLoadEl) _cLoadEl.classList.add('visible');
         document.getElementById('loading').style.display = 'flex'; document.getElementById('loading').style.opacity = 1;
@@ -5910,7 +5931,6 @@ ${outputStructure}`;
         const chartRenderDelay = IS_MOBILE_DEVICE ? 1000 : 2500;
         
         setTimeout(() => {
-            const date = document.getElementById('birthDate').value; const hourIdx = document.getElementById('birthHour').value; const gender = document.getElementById('gender').value;
             try {
                 currentChart = new ZWDSChart(date, hourIdx, gender);
                 const bureaus = ['水二局', '木三局', '金四局', '土五局', '火六局'];
@@ -5925,7 +5945,10 @@ ${outputStructure}`;
                 renderChart3D(currentChart);
                 // 延迟显示五维雷达图（等待3D渲染完成和加载屏消失后）
                 setTimeout(() => showRadarModal(currentChart), 750);
-            } catch (e) { console.error(e); showToast('生成失败，请检查输入', 'error'); }
+            } catch (e) {
+                console.error('generateChart failed:', { date, hourIdx, gender, error: e });
+                showToast('生成失败，请重试或检查出生信息', 'error');
+            }
             const _cLoadEl2 = document.getElementById('chart-loading');
             if (_cLoadEl2) _cLoadEl2.classList.remove('visible');
             document.getElementById('loading').style.opacity = 0; setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 500);
@@ -6331,7 +6354,7 @@ ${outputStructure}`;
 
     function getCurrentChartIdentity() {
         if (!currentChart) return '';
-        const birthDate = document.getElementById('birthDate')?.value || '';
+        const birthDate = resolveCompositeDateValue('birthDate');
         const birthHour = String(document.getElementById('birthHour')?.value ?? currentChart.lunarHourIdx ?? '');
         const gender = String(document.getElementById('gender')?.value ?? currentChart.gender ?? '');
         return [
@@ -6727,7 +6750,7 @@ ${chartSummary}`;
     showOnboarding();
 
     // Default chart: only if birthDate has a value
-    if (document.getElementById('birthDate').value) {
+    if (resolveCompositeDateValue('birthDate')) {
         generateChart(false);
     } 
 
@@ -6761,12 +6784,12 @@ ${chartSummary}`;
             return;
         }
         
-        const dateStr = document.getElementById('birthDate').value;
+        const dateStr = resolveCompositeDateValue('birthDate');
         const hourIdx = document.getElementById('birthHour').value;
         const gender = document.getElementById('gender').value;
         const hourText = document.getElementById('birthHour').options[document.getElementById('birthHour').selectedIndex].text;
         
-        if (!dateStr) {
+        if (!parseLocalYmd(dateStr)) {
             showToast('请先选择出生日期', 'warn');
             return;
         }
