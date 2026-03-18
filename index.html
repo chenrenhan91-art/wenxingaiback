@@ -5007,8 +5007,6 @@ ${outputStructure}`;
     let chartObj = new THREE.Group();
     let connectionGroup = new THREE.Group(); 
     let coreMesh, coreUniforms, sectorMeshes = []; 
-    let is3DInitialized = false;
-    const SHOULD_LAZY_INIT_3D = IS_WECHAT;
 
     // --- Aurora Shader Background ---
     let shaderBgRenderer = null;
@@ -5064,7 +5062,6 @@ ${outputStructure}`;
     }
 
     function init3D() {
-        if (is3DInitialized) return;
         const container = document.getElementById('canvas-container');
         scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(THEME.fogColor, THEME.fogDensity);
@@ -5140,29 +5137,6 @@ ${outputStructure}`;
         }
 
         animate();
-        is3DInitialized = true;
-    }
-
-    function hideGlobalLoadingUI() {
-        const chartLoading = document.getElementById('chart-loading');
-        const loading = document.getElementById('loading');
-        if (chartLoading) chartLoading.classList.remove('visible');
-        if (!loading) return;
-        loading.style.opacity = 0;
-        setTimeout(() => { loading.style.display = 'none'; }, 500);
-    }
-
-    function ensure3DInitialized() {
-        if (is3DInitialized) return true;
-        try {
-            init3D();
-            return true;
-        } catch (e) {
-            console.error('3D Init Failed', e);
-            hideGlobalLoadingUI();
-            showToast('星盘场景初始化失败，请刷新后重试', 'error');
-            return false;
-        }
     }
 
     function initShaderBg() {
@@ -5945,42 +5919,32 @@ ${outputStructure}`;
         if (window.innerWidth <= 768) { document.getElementById('inputPanel').classList.add('collapsed'); }
         const chartRenderDelay = IS_MOBILE_DEVICE ? 1000 : 2500;
 
-        const startChartGeneration = () => {
-            if (!ensure3DInitialized()) return;
-
-            setTimeout(() => {
-                try {
-                    currentChart = new ZWDSChart(date, hourIdx, gender);
-                    const bureaus = ['水二局', '木三局', '金四局', '土五局', '火六局'];
-                    let bIdx = -1; if(currentChart.bureau === 2) bIdx = 0; if(currentChart.bureau === 3) bIdx = 1; if(currentChart.bureau === 4) bIdx = 2; if(currentChart.bureau === 5) bIdx = 3; if(currentChart.bureau === 6) bIdx = 4;
-                    const bText = bIdx >= 0 ? bureaus[bIdx] : '未知局';
-                    const bDiv = document.getElementById('bureau-info');
-                    bDiv.innerHTML = `<span>五行: <strong class="text-white">${bText}</strong></span> <span>命主: <strong class="text-white">${currentChart.chartData[0].stem}${currentChart.chartData[0].branch}</strong></span>`;
-                    bDiv.classList.remove('hidden');
-                    // Always reset chat to avoid persisting old context in a fresh chart
-                    document.getElementById('chatMessages').innerHTML = '<div class="msg msg-ai">你好！我是问星大师，你的命盘数据已经全部读取完毕。<br><br>这一次，我不只能帮你看未来——我还能帮你<strong>读懂过去</strong>。提问我某年发生了什么，我会从三层星象（本命·大限·流年）分析出最可能的事件。<br><br>🔍 <strong>验证过去</strong> · 🔮 <strong>推导未来</strong><br><br>你可以这样问：「我2022年发生了什么重大事件？」或「2026年我的财运如何？」</div>';
-                    
-                    renderChart3D(currentChart);
-                    // 延迟显示五维雷达图（等待3D渲染完成和加载屏消失后）
-                    setTimeout(() => showRadarModal(currentChart), 750);
-                } catch (e) {
-                    console.error('generateChart failed:', { date, hourIdx, gender, error: e });
-                    showToast('生成失败，请重试或检查出生信息', 'error');
-                }
-                hideGlobalLoadingUI();
-            }, chartRenderDelay);
-        };
-
-        if (SHOULD_LAZY_INIT_3D && !is3DInitialized) {
-            requestAnimationFrame(() => requestAnimationFrame(startChartGeneration));
-            return;
-        }
-
-        startChartGeneration();
+        setTimeout(() => {
+            try {
+                currentChart = new ZWDSChart(date, hourIdx, gender);
+                const bureaus = ['水二局', '木三局', '金四局', '土五局', '火六局'];
+                let bIdx = -1; if(currentChart.bureau === 2) bIdx = 0; if(currentChart.bureau === 3) bIdx = 1; if(currentChart.bureau === 4) bIdx = 2; if(currentChart.bureau === 5) bIdx = 3; if(currentChart.bureau === 6) bIdx = 4;
+                const bText = bIdx >= 0 ? bureaus[bIdx] : '未知局';
+                const bDiv = document.getElementById('bureau-info');
+                bDiv.innerHTML = `<span>五行: <strong class="text-white">${bText}</strong></span> <span>命主: <strong class="text-white">${currentChart.chartData[0].stem}${currentChart.chartData[0].branch}</strong></span>`;
+                bDiv.classList.remove('hidden');
+                // Always reset chat to avoid persisting old context in a fresh chart
+                document.getElementById('chatMessages').innerHTML = '<div class="msg msg-ai">你好！我是问星大师，你的命盘数据已经全部读取完毕。<br><br>这一次，我不只能帮你看未来——我还能帮你<strong>读懂过去</strong>。提问我某年发生了什么，我会从三层星象（本命·大限·流年）分析出最可能的事件。<br><br>🔍 <strong>验证过去</strong> · 🔮 <strong>推导未来</strong><br><br>你可以这样问：「我2022年发生了什么重大事件？」或「2026年我的财运如何？」</div>';
+                
+                renderChart3D(currentChart);
+                // 延迟显示五维雷达图（等待3D渲染完成和加载屏消失后）
+                setTimeout(() => showRadarModal(currentChart), 750);
+            } catch (e) {
+                console.error('generateChart failed:', { date, hourIdx, gender, error: e });
+                showToast('生成失败，请重试或检查出生信息', 'error');
+            }
+            const _cLoadEl2 = document.getElementById('chart-loading');
+            if (_cLoadEl2) _cLoadEl2.classList.remove('visible');
+            document.getElementById('loading').style.opacity = 0; setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 500);
+        }, chartRenderDelay); 
     }
 
     function renderChart3D(chart) {
-        if (!is3DInitialized) return;
         clearChart3D();
         chart.chartData.forEach((data, index) => { const sector = createSectorMesh(index, data); chartObj.add(sector); });
     }
@@ -6729,13 +6693,10 @@ ${chartSummary}`;
         updateShaderBg(now);
     }
 
-    if (!SHOULD_LAZY_INIT_3D) {
-        ensure3DInitialized();
-    }
+    try { init3D(); } catch (e) { console.error("3D Init Failed", e); setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 1000); }
 
     // 页面隐藏时暂停渲染，切回时恢复（节省移动端 GPU/电量）
     document.addEventListener('visibilitychange', () => {
-        if (!is3DInitialized) return;
         if (document.hidden) {
             if (animRafId) { cancelAnimationFrame(animRafId); animRafId = null; }
         } else {
@@ -6779,7 +6740,7 @@ ${chartSummary}`;
     showOnboarding();
 
     // Default chart: only if birthDate has a value
-    if (!SHOULD_LAZY_INIT_3D && resolveCompositeDateValue('birthDate')) {
+    if (resolveCompositeDateValue('birthDate')) {
         generateChart(false);
     } 
 
