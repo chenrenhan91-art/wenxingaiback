@@ -1831,39 +1831,373 @@
         .radar-explore-hint strong {
             color: #94a3b8;
         }
-        .radar-palace-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 14px;
+        .radar-feature-system {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 16px;
         }
-        .radar-palace-btn {
-            background: rgba(77, 143, 189, 0.05);
-            border: 1px solid rgba(77, 143, 189, 0.18);
-            border-radius: 10px;
-            padding: 10px 6px 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.22s ease;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #8bb8d4;
+        .radar-feature-orbit {
+            --orbit-radius: 118px;
+            position: relative;
+            width: min(100%, 320px);
+            aspect-ratio: 1 / 1;
+            margin: 0 auto;
+        }
+        .radar-feature-ring,
+        .radar-feature-ring-secondary {
+            position: absolute;
+            inset: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+        }
+        .radar-feature-ring {
+            width: 100%;
+            height: 100%;
+        }
+        .radar-feature-ring-secondary {
+            width: 62%;
+            height: 62%;
+            border-color: rgba(77, 143, 189, 0.16);
+        }
+        .radar-feature-core {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 136px;
+            height: 136px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background:
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.22), transparent 42%),
+                linear-gradient(145deg, rgba(37, 99, 235, 0.42), rgba(139, 92, 246, 0.26), rgba(20, 184, 166, 0.34));
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow:
+                0 16px 36px rgba(15, 23, 42, 0.55),
+                0 0 28px rgba(56, 189, 248, 0.18),
+                inset 0 0 24px rgba(255, 255, 255, 0.08);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
+            justify-content: center;
+            gap: 4px;
+            text-align: center;
+            overflow: hidden;
         }
-        .radar-palace-btn:hover {
-            background: rgba(77, 143, 189, 0.13);
-            border-color: rgba(77, 143, 189, 0.45);
-            color: #e8f4fc;
+        .radar-feature-core::before,
+        .radar-feature-core::after {
+            content: "";
+            position: absolute;
+            inset: 10px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: radar-core-breathe 3.2s ease-in-out infinite;
+        }
+        .radar-feature-core::after {
+            inset: 0;
+            opacity: 0.45;
+            animation-delay: 1.2s;
+        }
+        .radar-feature-core-kicker {
+            font-size: 0.62rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(226, 232, 240, 0.7);
+            position: relative;
+            z-index: 1;
+        }
+        .radar-feature-core-title {
+            font-size: 1.08rem;
+            font-weight: 900;
+            color: #f8fafc;
+            letter-spacing: 0.08em;
+            position: relative;
+            z-index: 1;
+        }
+        .radar-feature-core-score {
+            font-size: 1.4rem;
+            line-height: 1;
+            font-weight: 900;
+            color: #f8fafc;
+            text-shadow: 0 0 20px rgba(255,255,255,0.2);
+            position: relative;
+            z-index: 1;
+        }
+        .radar-feature-core-desc {
+            font-size: 0.7rem;
+            color: rgba(226, 232, 240, 0.76);
+            position: relative;
+            z-index: 1;
+        }
+        .radar-feature-node {
+            position: absolute;
+            width: 82px;
+            min-height: 82px;
+            transform: translate(-50%, -50%);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: linear-gradient(180deg, rgba(6, 14, 28, 0.92), rgba(9, 22, 42, 0.82));
+            color: #dbeafe;
+            cursor: pointer;
+            padding: 10px 8px 9px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            box-shadow: 0 10px 24px rgba(2, 8, 23, 0.32);
+            overflow: hidden;
+        }
+        .radar-feature-node::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            background: radial-gradient(circle at 50% 0%, rgba(var(--node-rgb), 0.26), transparent 62%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .radar-feature-node:hover,
+        .radar-feature-node.is-active {
+            border-color: rgba(var(--node-rgb), 0.42);
+            box-shadow:
+                0 16px 28px rgba(2, 8, 23, 0.42),
+                0 0 0 1px rgba(var(--node-rgb), 0.22),
+                0 0 20px rgba(var(--node-rgb), 0.18);
+            background: linear-gradient(180deg, rgba(10, 22, 42, 0.96), rgba(13, 28, 52, 0.9));
+        }
+        .radar-feature-node:hover::before,
+        .radar-feature-node.is-active::before {
+            opacity: 1;
+        }
+        .radar-feature-node:hover {
+            transform: translate(-50%, -50%) scale(1.04);
+        }
+        .radar-feature-node.is-active {
+            transform: translate(-50%, -50%) scale(1.08);
+        }
+        .radar-feature-node-icon,
+        .radar-feature-node-label,
+        .radar-feature-node-score {
+            position: relative;
+            z-index: 1;
+        }
+        .radar-feature-node-icon {
+            font-size: 1rem;
+        }
+        .radar-feature-node-label {
+            font-size: 0.76rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+        }
+        .radar-feature-node-score {
+            font-size: 0.8rem;
+            color: rgba(226, 232, 240, 0.8);
+            font-family: ui-monospace, "SFMono-Regular", "SF Mono", monospace;
+        }
+        .radar-feature-detail {
+            position: relative;
+        }
+        .radar-feature-card {
+            --accent-rgb: 56, 189, 248;
+            position: relative;
+            padding: 16px;
+            border-radius: 18px;
+            background:
+                linear-gradient(180deg, rgba(4, 11, 24, 0.96), rgba(8, 18, 36, 0.92)),
+                radial-gradient(circle at top, rgba(var(--accent-rgb), 0.12), transparent 52%);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow:
+                0 18px 40px rgba(2, 8, 23, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+            overflow: hidden;
+        }
+        .radar-feature-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 3px;
+            background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.95), rgba(var(--accent-rgb), 0.2));
+        }
+        .radar-feature-card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .radar-feature-kicker {
+            font-size: 0.68rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(148, 163, 184, 0.82);
+            margin-bottom: 5px;
+        }
+        .radar-feature-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .radar-feature-title-row h3 {
+            margin: 0;
+            font-size: 1.06rem;
+            color: #f8fafc;
+            letter-spacing: 0.04em;
+        }
+        .radar-feature-title-icon {
+            font-size: 1rem;
+        }
+        .radar-feature-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            flex: 0 0 auto;
+        }
+        .radar-feature-score {
+            font-size: 1.4rem;
+            line-height: 1;
+            font-weight: 900;
+            color: rgb(var(--accent-rgb));
+            text-shadow: 0 0 16px rgba(var(--accent-rgb), 0.2);
+        }
+        .radar-feature-level {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border: 1px solid transparent;
+        }
+        .radar-feature-level-high {
+            color: #4ade80;
+            border-color: rgba(74, 222, 128, 0.3);
+            background: rgba(74, 222, 128, 0.12);
+        }
+        .radar-feature-level-mid {
+            color: #fbbf24;
+            border-color: rgba(251, 191, 36, 0.28);
+            background: rgba(251, 191, 36, 0.1);
+        }
+        .radar-feature-level-low {
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.28);
+            background: rgba(248, 113, 113, 0.1);
+        }
+        .radar-feature-copy {
+            margin: 0 0 14px;
+            font-size: 0.84rem;
+            line-height: 1.75;
+            color: rgba(226, 232, 240, 0.78);
+        }
+        .radar-feature-palace-list {
+            display: grid;
+            gap: 10px;
+        }
+        .radar-feature-palace-card {
+            width: 100%;
+            text-align: left;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(10, 18, 33, 0.78);
+            padding: 12px;
+            cursor: pointer;
+            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+        }
+        .radar-feature-palace-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(77, 143, 189, 0.15);
+            border-color: rgba(148, 163, 184, 0.28);
+            background: rgba(12, 23, 42, 0.9);
+            box-shadow: 0 12px 24px rgba(2, 8, 23, 0.26);
         }
-        .radar-palace-btn:active { transform: translateY(0); }
-        .rpb-icon { font-size: 1.1rem; }
-        .rpb-name { font-size: 0.75rem; font-weight: 900; }
-        .rpb-sub { font-size: 0.65rem; color: #64748b; font-weight: 400; }
+        .radar-feature-palace-card.is-primary {
+            border-color: rgba(var(--accent-rgb), 0.34);
+            background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.11), rgba(7, 18, 34, 0.9));
+        }
+        .radar-feature-palace-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+        .radar-feature-palace-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+        .radar-feature-palace-role {
+            font-size: 0.64rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(148, 163, 184, 0.82);
+        }
+        .radar-feature-palace-desc {
+            font-size: 0.76rem;
+            line-height: 1.6;
+            color: rgba(148, 163, 184, 0.92);
+            margin-bottom: 10px;
+        }
+        .radar-feature-star-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .radar-feature-star-chip,
+        .radar-feature-empty-chip {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 5px 9px;
+            font-size: 0.7rem;
+            line-height: 1;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+        }
+        .radar-feature-star-chip {
+            color: #dbeafe;
+            background: rgba(15, 23, 42, 0.62);
+        }
+        .radar-feature-empty-chip {
+            color: rgba(148, 163, 184, 0.92);
+            background: rgba(15, 23, 42, 0.4);
+        }
+        .radar-feature-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .radar-feature-footer-text {
+            font-size: 0.72rem;
+            color: rgba(148, 163, 184, 0.82);
+        }
+        .radar-feature-ai-btn {
+            border: 1px solid rgba(var(--accent-rgb), 0.28);
+            background: rgba(var(--accent-rgb), 0.12);
+            color: #f8fafc;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 0.74rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+        .radar-feature-ai-btn:hover {
+            background: rgba(var(--accent-rgb), 0.2);
+            border-color: rgba(var(--accent-rgb), 0.42);
+            transform: translateY(-1px);
+        }
+        @keyframes radar-core-breathe {
+            0%, 100% { transform: scale(1); opacity: 0.38; }
+            50% { transform: scale(1.08); opacity: 0.12; }
+        }
         .radar-close-btn {
             width: 100%;
             padding: 11px;
@@ -1900,9 +2234,14 @@
             .radar-content { padding: 18px 14px 16px; }
             .radar-title { font-size: 1.1rem; letter-spacing: 2px; }
             #radarCanvas { width: 260px !important; height: 260px !important; }
-            .radar-palace-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-            .radar-palace-btn { padding: 8px 4px 6px; font-size: 0.75rem; }
-            .rpb-icon { font-size: 1rem; }
+            .radar-feature-orbit { --orbit-radius: 102px; width: min(100%, 284px); }
+            .radar-feature-core { width: 120px; height: 120px; }
+            .radar-feature-core-title { font-size: 0.98rem; }
+            .radar-feature-node { width: 74px; min-height: 74px; padding: 8px 6px; }
+            .radar-feature-node-label { font-size: 0.7rem; }
+            .radar-feature-node-score { font-size: 0.72rem; }
+            .radar-feature-card-head { flex-direction: column; align-items: flex-start; }
+            .radar-feature-meta { align-items: flex-start; }
         }
 
         /* C: Button ripple wave */
@@ -2450,11 +2789,16 @@
         <!-- H: 五维评分行 (JS populated) -->
         <div class="radar-explore-section">
             <p class="radar-explore-hint">
-                💡 以下宫位是各维度的核心所在<br>
-                <strong>点击宫位 → 右侧面板查看星曜 → AI 深度解析</strong>
+                💡 点击下方五维节点，展开当前维度对应的核心宫位与主导星曜<br>
+                <strong>点开维度 → 先看宫位信息 → 再进入右侧面板做 AI 深度解析</strong>
             </p>
-            <div id="radarPalaceGrid" class="radar-palace-grid">
-                <!-- Palace buttons injected by JS -->
+            <div class="radar-feature-system">
+                <div id="radarFeatureOrbit" class="radar-feature-orbit">
+                    <!-- Feature orbit injected by JS -->
+                </div>
+                <div id="radarFeatureDetail" class="radar-feature-detail">
+                    <!-- Feature detail injected by JS -->
+                </div>
             </div>
             <button class="radar-close-btn" onclick="closeRadarModal()">稍后慢慢探索 →</button>
         </div>
@@ -2939,6 +3283,9 @@
         '请使用普通用户容易理解的中文。',
         '涉及命理术语时，首次出现请使用“术语（解释）”格式。',
         '回答按“结论 -> 原因 -> 建议”组织，优先短句和列表。',
+        '语气保持温和支持，先给可执行方向，再说明风险。',
+        '风险表达使用“可能/倾向/需留意”等概率词，不使用“注定/必然/完蛋”等绝对化词语。',
+        '涉及压力或阻力时，必须同步提供可操作的缓解建议，不制造焦虑。',
         '避免空洞玄学堆砌，不要使用宿命化表达。',
         '不要输出拼音、拉丁字母音译或英文转写（如 zi wei、ming gong）。',
         '不要使用✳、✨、★等装饰符号。'
@@ -3003,6 +3350,8 @@
         result = stripPinyinTransliteration(result);
         // Remove decorative star-like symbols to keep content clean.
         result = result.replace(/[✳✴✶✷✸✹✺✻❇❈❉❊❋✦✧★☆⭐🌟✨]/g, '');
+        // Soften overly absolute or catastrophic wording.
+        result = softenPessimisticTone(result);
         // Normalize common bullet variants.
         result = result.replace(/^[ \t]*[•·▪▫◦●○■□◆◇▶▷►▸▹▻]+\s*/gm, '- ');
         // Compact redundant blank lines / trailing spaces.
@@ -3010,6 +3359,32 @@
         result = result.replace(/[ \t]+$/gm, '');
         result = result.replace(/\n{3,}/g, '\n\n');
         return result.trim();
+    }
+
+    function softenPessimisticTone(text) {
+        if (typeof text !== 'string' || !text.trim()) return text;
+        let result = text;
+        const replacements = [
+            [/注定/g, '倾向'],
+            [/必然/g, '较可能'],
+            [/一定会/g, '有可能会'],
+            [/肯定会/g, '较可能会'],
+            [/绝对会/g, '较可能会'],
+            [/大凶/g, '压力偏高'],
+            [/灾难/g, '明显挑战'],
+            [/完蛋/g, '需要及时调整'],
+            [/无解/g, '短期较难'],
+            [/非常不利/g, '阶段性不利']
+        ];
+        replacements.forEach(([pattern, replacement]) => {
+            result = result.replace(pattern, replacement);
+        });
+        const hasRiskSignal = /(风险|阻力|压力|不利|冲突|损耗|波动|化忌)/.test(result);
+        const hasActionSignal = /(建议|可执行|你可以|行动|先做|步骤|优先)/.test(result);
+        if (hasRiskSignal && !hasActionSignal) {
+            result += '\n\n建议先从一个可控的小步骤开始，连续观察 1-2 周再做调整。';
+        }
+        return result;
     }
 
     // 打开当前页内登录/注册弹框
@@ -4665,7 +5040,8 @@
                 family: '你是一位精通中州学派紫微斗数的合盘分析师，专注亲人与长辈关系。核心分析维度：父母宫与田宅宫的代际业力传承、化权与化忌映射的代际创伤或庇护结构、家族资源聚散信号。输出风格：先用命理意象给出氛围感总定调，再给具体星曜依据，最后给可执行建议。',
                 partner: '你是一位精通中州学派紫微斗数的合盘分析师，专注事业搭档关系。核心分析维度：官禄宫与财帛宫的权力博弈与利益共同体结构、化权的服从与功高盖主风险、化禄的资源互惠机制。输出风格：先用命理意象给出氛围感总定调，再给具体星曜依据，最后给可执行建议。'
             };
-            const systemInstruction = systemInstructions[relationType] || systemInstructions.friend;
+            const baseSystemInstruction = systemInstructions[relationType] || systemInstructions.friend;
+            const systemInstruction = `${baseSystemInstruction}\n语气要求：温和支持，先写可形成的积极面与可执行做法，再写风险；风险使用“可能/倾向/需留意”等概率语言，避免宿命化和恐吓式表达。`;
 
             // 关系类型专属输出结构
             const outputStructures = {
@@ -5006,7 +5382,7 @@ ${outputStructure}`;
                 <p class="text-xs text-gray-500 mt-2">正在以此卦问询天机</p>
             </div>
         `;
-        const systemPrompt = `你是六爻解卦助手。请严格围绕用户当前这个问题解读，不要发散到其他事项。遵循“一事一卜，不宜多占”。输出要求：1) 先直接回答用户问题；2) 再给卦象依据（本卦看现状，动爻看变化，变卦看趋势）；3) 最后给 3 条可执行建议。语言简洁清晰，避免空泛套话。`;
+        const systemPrompt = `你是六爻解卦助手。请严格围绕用户当前这个问题解读，不要发散到其他事项。遵循“一事一卜，不宜多占”。输出要求：1) 先直接回答用户问题；2) 再给卦象依据（本卦看现状，动爻看变化，变卦看趋势）；3) 最后给 3 条可执行建议。语气温和支持，先给可执行方向；风险使用“可能/倾向/需留意”等概率表述，避免宿命化和悲观恐吓。语言简洁清晰，避免空泛套话。`;
         const userPrompt = `用户问题：${question}\n卦象信息如下：\n- 本卦：${snapshot.benGuaName}（结构：${snapshot.benBinStr}）\n- 变卦：${snapshot.bianGuaName}（结构：${snapshot.bianBinStr}）\n- 动爻：${snapshot.hasMovingLine ? snapshot.movingLinesDesc : '静卦无动爻'}\n请只围绕这个问题，结合本卦、动爻、变卦给出解读。`;
         const result = await callAI(userPrompt, systemPrompt);
         renderAIContent(contentDiv, result);
@@ -6401,7 +6777,7 @@ ${outputStructure}`;
             return;
         }
 
-        const prompt = `今天是：${todayInfo.date} (农历${todayInfo.lunar}, ${todayInfo.ganzhi})。宜：${todayInfo.yi}。忌：${todayInfo.ji}。用户命盘摘要：${currentChart.getSummary().substring(0, 500)}... 请结合今日的日课（干支五行、宜忌）和用户的命盘结构，给出一小段（100字以内）的今日运势提醒。要求：简单易懂，有参考价值，口语化。注意：直接输出运势内容即可，严禁在结尾显示“共xx字”或类似的字数统计。`;
+        const prompt = `今天是：${todayInfo.date} (农历${todayInfo.lunar}, ${todayInfo.ganzhi})。宜：${todayInfo.yi}。忌：${todayInfo.ji}。用户命盘摘要：${currentChart.getSummary().substring(0, 500)}... 请结合今日的日课（干支五行、宜忌）和用户的命盘结构，给出一小段（100字以内）的今日运势提醒。要求：简单易懂，有参考价值，口语化；先给可执行的小建议，再提示需留意点；风险使用“可能/倾向/需留意”等概率词，避免悲观和绝对化。注意：直接输出运势内容即可，严禁在结尾显示“共xx字”或类似的字数统计。`;
         dailyReportInFlight[cacheKey] = (async () => {
             const result = await callAI(prompt);
             if (isDailyReportCacheable(result)) {
@@ -6436,7 +6812,7 @@ ${outputStructure}`;
         `;
         const palaceName = selectedPalaceData.name;
         const starsDesc = selectedPalaceData.stars.map(s => { let desc = `${s.name}（亮度：${s.brightness}）`; if (s.sihua) desc += ` [化${s.sihua}]`; return desc; }).join('，') || "无主星";
-        const prompt = `请根据以下信息解析【${palaceName}】：宫位：${palaceName} 宫干支：${selectedPalaceData.stem}${selectedPalaceData.branch} 星曜组合：${starsDesc} 输出要求：1) 先给结论（这个宫位当前最值得关注的 1-2 点）；2) 再给原因（主星/四化/吉煞星分别说明影响）；3) 如果无主星，简述借对宫逻辑；4) 最后给 3 条可执行建议；5) 全文通俗易懂，术语配解释；6) 使用简洁 Markdown。`;
+        const prompt = `请根据以下信息解析【${palaceName}】：宫位：${palaceName} 宫干支：${selectedPalaceData.stem}${selectedPalaceData.branch} 星曜组合：${starsDesc} 输出要求：1) 先给结论（这个宫位当前最值得关注的 1-2 点）；2) 再给原因（主星/四化/吉煞星分别说明影响）；3) 如果无主星，简述借对宫逻辑；4) 最后给 3 条可执行建议；5) 全文通俗易懂，术语配解释；6) 使用简洁 Markdown；7) 语气温和支持，先说可行动方向，再说风险，风险用“可能/倾向/需留意”等概率表述，避免绝对化与悲观恐吓。`;
         const result = await callAI(prompt);
         renderAIContent(contentDiv, result);
         // G: AI content reveal animation
@@ -6642,6 +7018,8 @@ ${outputStructure}`;
 【规则3·星情与煞星】同一宫位因主星不同事件质地迥异：紫微忌=面子破财、武曲忌=现金流断/手术、廉贞忌=血光法律、天机忌=投机决策误、贪狼忌=桃花嗜好。羊陀夹忌=四面围困失主动权；流月行至太岁宫或被忌冲对宫=事件爆发节点。
 
 【规则4·同象异事】星盘测算能量结构而非唯一事件；同一凶象在不同人可能表现为：破财/病痛/家庭矛盾等，底层本质相同。推演时说「最可能的象征领域」，不做绝对断言。
+
+【规则5·语气与心理安全】语气温和支持，先给可执行路径与稳定情绪的建议，再给风险判断；风险表述用“可能/倾向/需留意”，避免“注定/必然”等宿命化措辞，不制造焦虑。
 
 【输出格式】验证过去：三层结构→能量本质→同象异事可能形式→结论。推导未来：大限背景→流年四化→象征领域与时机，标注「最可能」。语言通俗，术语附解释，300字内除非用户要求详解。
 
@@ -7033,6 +7411,275 @@ ${chartSummary}`;
         return { career, wealth, love, health, guiren };
     }
 
+    const RADAR_PALACE_DESC_MAP = {
+        '命宫': '核心人格 · 天赋特质 · 命运总览',
+        '兄弟': '知心好友 · 合作伙伴 · 现金周转',
+        '夫妻': '感情模式 · 伴侣特质 · 婚姻状况',
+        '子女': '亲子关系 · 晚辈缘分 · 合伙事业',
+        '财帛': '赚钱能力 · 收入来源 · 理财观念',
+        '疾厄': '身体健康 · 潜意识 · 情绪压力',
+        '迁移': '对外形象 · 社交机遇 · 出行运势',
+        '交友': '人际圈子 · 粉丝受众 · 朋友助力',
+        '官禄': '事业发展 · 职场表现 · 创业方向',
+        '田宅': '居住环境 · 房产运势 · 家庭氛围',
+        '福德': '精神享受 · 兴趣嗜好 · 财源起伏',
+        '父母': '长辈缘分 · 遗传基因 · 上司关系'
+    };
+
+    const RADAR_DIMENSION_META = [
+        {
+            key: 'career',
+            label: '事业',
+            icon: '✦',
+            color: '#38bdf8',
+            rgb: '56, 189, 248',
+            subtitle: '官禄 · 命宫',
+            primaryPalace: '官禄',
+            palaceNames: ['官禄', '命宫']
+        },
+        {
+            key: 'wealth',
+            label: '财运',
+            icon: '✺',
+            color: '#fbbf24',
+            rgb: '251, 191, 36',
+            subtitle: '财帛 · 田宅',
+            primaryPalace: '财帛',
+            palaceNames: ['财帛', '田宅']
+        },
+        {
+            key: 'love',
+            label: '感情',
+            icon: '♡',
+            color: '#f472b6',
+            rgb: '244, 114, 182',
+            subtitle: '夫妻 · 福德',
+            primaryPalace: '夫妻',
+            palaceNames: ['夫妻', '福德']
+        },
+        {
+            key: 'health',
+            label: '健康',
+            icon: '✳',
+            color: '#4ade80',
+            rgb: '74, 222, 128',
+            subtitle: '疾厄宫',
+            primaryPalace: '疾厄',
+            palaceNames: ['疾厄']
+        },
+        {
+            key: 'guiren',
+            label: '贵人',
+            icon: '✧',
+            color: '#a78bfa',
+            rgb: '167, 139, 250',
+            subtitle: '迁移 · 交友 · 父母',
+            primaryPalace: '迁移',
+            palaceNames: ['迁移', '交友', '父母']
+        }
+    ];
+
+    let activeRadarDimensionKey = null;
+
+    function getRadarPalaceByName(chart, name) {
+        if (!chart || !Array.isArray(chart.chartData)) return null;
+        return chart.chartData.find(p => p && p.name === name) || null;
+    }
+
+    function getRadarStarBrightnessWeight(brightness) {
+        return { '庙': 6, '旺': 5, '得': 4, '利': 3, '平': 2, '闲': 1, '陷': 0 }[brightness] ?? 2;
+    }
+
+    function compareRadarStars(a, b) {
+        const categoryOrder = { main: 0, lucky: 1, bad: 2 };
+        const sihuaOrder = { '禄': 4, '权': 3, '科': 2, '忌': -2 };
+        return (
+            (categoryOrder[a.category] ?? 9) - (categoryOrder[b.category] ?? 9) ||
+            (sihuaOrder[b.sihua] ?? 0) - (sihuaOrder[a.sihua] ?? 0) ||
+            getRadarStarBrightnessWeight(b.brightness) - getRadarStarBrightnessWeight(a.brightness)
+        );
+    }
+
+    function formatRadarStarLabel(star) {
+        if (!star) return '';
+        const parts = [star.name];
+        if (star.sihua) parts.push(`化${star.sihua}`);
+        if (star.brightness) parts.push(star.brightness);
+        return parts.join(' · ');
+    }
+
+    function getRadarPalaceSummary(palace) {
+        if (!palace) return { topStars: [], note: '命盘数据暂未生成' };
+        const topStars = [...(palace.stars || [])].sort(compareRadarStars).slice(0, 3);
+        const note = topStars.length ? '' : '此宫暂无主星，可结合对宫借星观察';
+        return { topStars, note };
+    }
+
+    function getRadarLevelMeta(score) {
+        if (score >= 78) return { text: '高能', className: 'radar-feature-level-high', tone: '势能偏强，适合主动推进' };
+        if (score >= 60) return { text: '稳态', className: 'radar-feature-level-mid', tone: '节奏平稳，适合持续经营' };
+        return { text: '修复', className: 'radar-feature-level-low', tone: '波动偏大，建议先稳住底盘' };
+    }
+
+    function buildRadarDimensionInsight(meta, palaceList, score) {
+        const palaceNames = palaceList.map(p => p.name).join(' / ') || meta.subtitle;
+        const starNames = palaceList
+            .flatMap(p => (p?.stars || []).map(star => ({ ...star, palaceName: p.name })))
+            .sort(compareRadarStars)
+            .slice(0, 2)
+            .map(formatRadarStarLabel);
+        const level = getRadarLevelMeta(score);
+        const starText = starNames.length
+            ? `当前较值得优先关注的是 ${starNames.join('、')}`
+            : '当前主星信号较弱，可结合流年触发与对宫借星一起观察';
+        return `${meta.label}维度由 ${palaceNames} 共同驱动，${level.tone}。${starText}。`;
+    }
+
+    function getRadarDimensions(chart, scores) {
+        return RADAR_DIMENSION_META.map(meta => {
+            const palaceList = meta.palaceNames
+                .map(name => getRadarPalaceByName(chart, name))
+                .filter(Boolean);
+            const primaryPalace = getRadarPalaceByName(chart, meta.primaryPalace) || palaceList[0] || null;
+            const score = scores?.[meta.key] ?? 0;
+            return {
+                ...meta,
+                score,
+                levelMeta: getRadarLevelMeta(score),
+                primaryPalace,
+                palaceList,
+                insight: buildRadarDimensionInsight(meta, palaceList, score)
+            };
+        });
+    }
+
+    function getBestRadarDimensionKey(dimensions) {
+        if (!dimensions.length) return null;
+        return dimensions.reduce((best, item) => item.score > best.score ? item : best).key;
+    }
+
+    function renderRadarFeatureOrbit(dimensions, activeDimension) {
+        return `
+            <div class="radar-feature-ring"></div>
+            <div class="radar-feature-ring-secondary"></div>
+            <div class="radar-feature-core">
+                <span class="radar-feature-core-kicker">当前聚焦</span>
+                <span class="radar-feature-core-title">${activeDimension.label}</span>
+                <span class="radar-feature-core-score">${activeDimension.score}</span>
+                <span class="radar-feature-core-desc">${activeDimension.subtitle}</span>
+            </div>
+            ${dimensions.map((item, index) => {
+                const angle = (Math.PI * 2 * index / dimensions.length) - Math.PI / 2;
+                const left = 50 + Math.cos(angle) * 39;
+                const top = 50 + Math.sin(angle) * 39;
+                return `
+                <button
+                    type="button"
+                    class="radar-feature-node ${item.key === activeDimension.key ? 'is-active' : ''}"
+                    style="left:${left}%; top:${top}%; --node-rgb:${item.rgb};"
+                    onclick="setRadarActiveDimension('${item.key}')"
+                >
+                    <span class="radar-feature-node-icon">${item.icon}</span>
+                    <span class="radar-feature-node-label">${item.label}</span>
+                    <span class="radar-feature-node-score">${item.score}</span>
+                </button>
+            `;
+            }).join('')}
+        `;
+    }
+
+    function renderRadarFeatureDetail(activeDimension) {
+        if (!activeDimension) return '';
+        const accentRgb = activeDimension.rgb;
+        const primaryName = activeDimension.primaryPalace?.name || activeDimension.palaceList[0]?.name || '';
+        return `
+            <div class="radar-feature-card" style="--accent-rgb:${accentRgb};">
+                <div class="radar-feature-card-head">
+                    <div>
+                        <div class="radar-feature-kicker">${activeDimension.subtitle}</div>
+                        <div class="radar-feature-title-row">
+                            <span class="radar-feature-title-icon">${activeDimension.icon}</span>
+                            <h3>${activeDimension.label}</h3>
+                        </div>
+                    </div>
+                    <div class="radar-feature-meta">
+                        <span class="radar-feature-score">${activeDimension.score}</span>
+                        <span class="radar-feature-level ${activeDimension.levelMeta.className}">${activeDimension.levelMeta.text}</span>
+                    </div>
+                </div>
+                <p class="radar-feature-copy">${activeDimension.insight}</p>
+                <div class="radar-feature-palace-list">
+                    ${activeDimension.palaceList.map((palace, index) => {
+                        const summary = getRadarPalaceSummary(palace);
+                        return `
+                            <button
+                                type="button"
+                                class="radar-feature-palace-card ${index === 0 ? 'is-primary' : ''}"
+                                style="--accent-rgb:${accentRgb};"
+                                onclick="navigateToRadarPalace('${palace.name}')"
+                            >
+                                <div class="radar-feature-palace-top">
+                                    <span class="radar-feature-palace-name">${palace.name}</span>
+                                    <span class="radar-feature-palace-role">${index === 0 ? '核心宫位' : '联动宫位'}</span>
+                                </div>
+                                <div class="radar-feature-palace-desc">${RADAR_PALACE_DESC_MAP[palace.name] || '当前维度的关键场域'}</div>
+                                <div class="radar-feature-star-list">
+                                    ${summary.topStars.length
+                                        ? summary.topStars.map(star => `<span class="radar-feature-star-chip">${formatRadarStarLabel(star)}</span>`).join('')
+                                        : `<span class="radar-feature-empty-chip">${summary.note}</span>`
+                                    }
+                                </div>
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+                <div class="radar-feature-footer">
+                    <span class="radar-feature-footer-text">点击宫位卡片可打开右侧详细星曜面板</span>
+                    ${primaryName
+                        ? `<button type="button" class="radar-feature-ai-btn" onclick="openRadarPalaceFromDimension('${primaryName}', true)">AI 深度解析 ${primaryName}</button>`
+                        : ''
+                    }
+                </div>
+            </div>
+        `;
+    }
+
+    function renderRadarFeatureSystem(chart, scores) {
+        const orbitEl = document.getElementById('radarFeatureOrbit');
+        const detailEl = document.getElementById('radarFeatureDetail');
+        if (!orbitEl || !detailEl) return;
+
+        const dimensions = getRadarDimensions(chart, scores);
+        if (!dimensions.length) {
+            orbitEl.innerHTML = '';
+            detailEl.innerHTML = '';
+            return;
+        }
+
+        if (!activeRadarDimensionKey || !dimensions.some(item => item.key === activeRadarDimensionKey)) {
+            activeRadarDimensionKey = getBestRadarDimensionKey(dimensions);
+        }
+
+        const activeDimension = dimensions.find(item => item.key === activeRadarDimensionKey) || dimensions[0];
+        orbitEl.innerHTML = renderRadarFeatureOrbit(dimensions, activeDimension);
+        detailEl.innerHTML = renderRadarFeatureDetail(activeDimension);
+    }
+
+    function setRadarActiveDimension(key) {
+        if (!currentChart) return;
+        const scores = calcRadarScores(currentChart);
+        if (!scores) return;
+        activeRadarDimensionKey = key;
+        renderRadarFeatureSystem(currentChart, scores);
+    }
+
+    function openRadarPalaceFromDimension(palaceName, shouldAnalyze = false) {
+        navigateToRadarPalace(palaceName);
+        if (shouldAnalyze) {
+            setTimeout(() => analyzeCurrentPalace(), 280);
+        }
+    }
+
     // 雷达图绘制（progress: 0→1 动画）
     function drawRadarChart(canvas, scores, progress) {
         const ctx = canvas.getContext('2d');
@@ -7153,33 +7800,8 @@ ${chartSummary}`;
         const modal = document.getElementById('radar-modal');
         if (!modal) return;
         modal.style.display = 'flex';
-
-        // ── 构建评分条 ──
-        const dims = [
-            { key: 'career', label: '事业', color: '#38bdf8', desc: '官禄·命宫' },
-            { key: 'wealth', label: '财运', color: '#fbbf24', desc: '财帛·田宅' },
-            { key: 'love',   label: '感情', color: '#f472b6', desc: '夫妻·福德' },
-            { key: 'health', label: '健康', color: '#4ade80', desc: '疾厄宫'    },
-            { key: 'guiren', label: '贵人', color: '#a78bfa', desc: '迁移·交友' },
-        ];
-        // ── 构建宫位按钮 ──
-        const palaceConf = [
-            { name: '官禄', icon: '💼', sub: '事业' },
-            { name: '财帛', icon: '💰', sub: '财运' },
-            { name: '夫妻', icon: '💕', sub: '感情' },
-            { name: '疾厄', icon: '🌿', sub: '健康' },
-            { name: '迁移', icon: '🌟', sub: '贵人' },
-            { name: '命宫', icon: '🔮', sub: '命格' },
-        ];
-        const palaceGrid = document.getElementById('radarPalaceGrid');
-        if (palaceGrid) {
-            palaceGrid.innerHTML = palaceConf.map(p => `
-                <button class="radar-palace-btn" onclick="navigateToRadarPalace('${p.name}')">
-                    <span class="rpb-icon">${p.icon}</span>
-                    <span class="rpb-name">${p.name}</span>
-                    <span class="rpb-sub">${p.sub}</span>
-                </button>`).join('');
-        }
+        activeRadarDimensionKey = null;
+        renderRadarFeatureSystem(chart, scores);
 
         // ── 雷达图动画 ──
         const canvas = document.getElementById('radarCanvas');
@@ -7200,6 +7822,7 @@ ${chartSummary}`;
     function closeRadarModal() {
         const modal = document.getElementById('radar-modal');
         if (modal) modal.style.display = 'none';
+        activeRadarDimensionKey = null;
     }
 
     // 从雷达图跳转到对应宫位
