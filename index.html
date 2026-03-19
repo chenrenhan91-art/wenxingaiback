@@ -1763,8 +1763,8 @@
         #radarCanvas {
             display: block;
             border-radius: 12px;
-            width: 328px;
-            height: 328px;
+            width: 360px;
+            height: 360px;
         }
         .radar-scores-grid {
             display: flex;
@@ -2293,7 +2293,7 @@
             .radar-modal-overlay { padding: 6px; }
             .radar-content { max-width: 96vw; padding: 50px 12px 12px; border-radius: 16px; }
             .radar-title { font-size: 1.1rem; letter-spacing: 2px; }
-            #radarCanvas { width: 280px !important; height: 280px !important; }
+            #radarCanvas { width: 308px !important; height: 308px !important; }
             .radar-dimension-tabs { padding: 6px; gap: 5px; }
             .radar-dimension-tab { min-height: 32px; font-size: 0.7rem; letter-spacing: -0.01em; }
             .radar-feature-orbit { --orbit-radius: 102px; width: min(100%, 284px); }
@@ -7724,7 +7724,7 @@ ${chartSummary}`;
             // 刻度标签（最外圈内侧）
             if (l === 5) {
                 ctx.fillStyle = 'rgba(71, 85, 105, 0.9)';
-                ctx.font = '9px monospace';
+                ctx.font = '11px monospace';
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'bottom';
                 ctx.fillText('100', cx + 3, cy - r + 1);
@@ -7785,7 +7785,7 @@ ${chartSummary}`;
 
             if (progress >= 0.9) {
                 // 标签
-                ctx.font = 'bold 13px "Noto Sans SC", sans-serif';
+                ctx.font = 'bold 16px "Noto Sans SC", sans-serif';
                 const cosA = Math.cos(lblPt.angle);
                 const sinA = Math.sin(lblPt.angle);
                 ctx.textAlign     = cosA > 0.18 ? 'left'   : (cosA < -0.18 ? 'right'  : 'center');
