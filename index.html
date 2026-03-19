@@ -2444,10 +2444,6 @@
                 </div>
             </button>
 
-            <div id="bureau-info" class="mt-6 text-xs text-blue-200 border-t border-blue-900 pt-3 hidden flex justify-between font-mono">
-                <!-- Bureau info -->
-            </div>
-
             <!-- Save Record Section -->
             <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
                 <label style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">📋 星盘备注</label>
@@ -6308,12 +6304,6 @@ ${outputStructure}`;
         setTimeout(() => {
             try {
                 currentChart = new ZWDSChart(date, hourIdx, gender);
-                const bureaus = ['水二局', '木三局', '金四局', '土五局', '火六局'];
-                let bIdx = -1; if(currentChart.bureau === 2) bIdx = 0; if(currentChart.bureau === 3) bIdx = 1; if(currentChart.bureau === 4) bIdx = 2; if(currentChart.bureau === 5) bIdx = 3; if(currentChart.bureau === 6) bIdx = 4;
-                const bText = bIdx >= 0 ? bureaus[bIdx] : '未知局';
-                const bDiv = document.getElementById('bureau-info');
-                bDiv.innerHTML = `<span>五行: <strong class="text-white">${bText}</strong></span> <span>命主: <strong class="text-white">${currentChart.chartData[0].stem}${currentChart.chartData[0].branch}</strong></span>`;
-                bDiv.classList.remove('hidden');
                 // Always reset chat to avoid persisting old context in a fresh chart
                 document.getElementById('chatMessages').innerHTML = '<div class="msg msg-ai">你好！我是问星大师，你的命盘数据已经全部读取完毕。<br><br>这一次，我不只能帮你看未来——我还能帮你<strong>读懂过去</strong>。提问我某年发生了什么，我会从三层星象（本命·大限·流年）分析出最可能的事件。<br><br>🔍 <strong>验证过去</strong> · 🔮 <strong>推导未来</strong><br><br>你可以这样问：「我2022年发生了什么重大事件？」或「2026年我的财运如何？」</div>';
                 
