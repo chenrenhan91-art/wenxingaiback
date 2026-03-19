@@ -1853,12 +1853,26 @@
             border-radius: 12px;
             padding: 8px 10px;
             display: inline-flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
             gap: 6px;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             line-height: 1;
+            min-width: 108px;
+            flex: 1 1 calc(33.33% - 10px);
+        }
+        .radar-dimension-tab-main {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+        }
+        .radar-dimension-tab-sub {
+            font-size: 0.68rem;
+            color: rgba(148, 163, 184, 0.92);
+            letter-spacing: 0.02em;
         }
         .radar-dimension-tab:hover {
             border-color: rgba(56, 189, 248, 0.48);
@@ -2290,6 +2304,7 @@
             .radar-title { font-size: 1.1rem; letter-spacing: 2px; }
             #radarCanvas { width: 260px !important; height: 260px !important; }
             .radar-dimension-tabs { padding: 8px; gap: 8px; }
+            .radar-dimension-tab { min-width: 0; flex: 1 1 calc(50% - 8px); }
             .radar-feature-orbit { --orbit-radius: 102px; width: min(100%, 284px); }
             .radar-feature-core { width: 120px; height: 120px; }
             .radar-feature-core-title { font-size: 0.98rem; }
@@ -2847,9 +2862,6 @@
             <div class="radar-feature-system">
                 <div id="radarFeatureOrbit" class="radar-dimension-tabs">
                     <!-- Feature orbit injected by JS -->
-                </div>
-                <div id="radarFeatureDetail" class="radar-feature-detail" style="display:none;">
-                    <!-- Feature detail injected by JS -->
                 </div>
             </div>
             <button class="radar-close-btn" onclick="closeRadarModal()">稍后慢慢探索 →</button>
@@ -7647,80 +7659,20 @@ ${chartSummary}`;
                     class="radar-dimension-tab ${item.key === activeDimension.key ? 'is-active' : ''}"
                     onclick="jumpToRadarDimension('${item.key}')"
                 >
-                    <span>${item.icon}</span>
-                    <span>${item.label}</span>
+                    <span class="radar-dimension-tab-main"><span>${item.icon}</span><span>${item.label}</span></span>
+                    <span class="radar-dimension-tab-sub">对应宫位：${item.primaryPalace?.name || item.palaceList[0]?.name || '命宫'}</span>
                 </button>
             `).join('')}
         `;
     }
 
-    function renderRadarFeatureDetail(chart, activeDimension) {
-        if (!activeDimension) return '';
-        const accentRgb = activeDimension.rgb;
-        const primaryName = activeDimension.primaryPalace?.name || activeDimension.palaceList[0]?.name || '';
-        const quickPalaces = RADAR_DIMENSION_META.map(meta => {
-            const palace = getRadarPalaceByName(chart, meta.primaryPalace) || getRadarPalaceByName(chart, meta.palaceNames[0]);
-            return { meta, palace };
-        }).filter(item => item.palace);
-        return `
-            <div class="radar-feature-card" style="--accent-rgb:${accentRgb};">
-                <div class="radar-feature-card-head">
-                    <div>
-                        <div class="radar-feature-kicker">五个核心宫位 · 点击可跳转</div>
-                        <div class="radar-feature-title-row">
-                            <span class="radar-feature-title-icon">${activeDimension.icon}</span>
-                            <h3>${activeDimension.label}关注维度</h3>
-                        </div>
-                    </div>
-                </div>
-                <p class="radar-feature-copy">${activeDimension.insight}</p>
-                <div class="radar-feature-palace-list">
-                    ${quickPalaces.map(({ meta, palace }) => {
-                        const summary = getRadarPalaceSummary(palace);
-                        const starMaterial = summary.topStars.slice(0, 2).map(star => formatRadarStarLabel(star)).join(' / ');
-                        return `
-                            <button
-                                type="button"
-                                class="radar-feature-palace-card ${palace.name === primaryName ? 'is-primary' : ''}"
-                                style="--accent-rgb:${accentRgb};"
-                                onclick="navigateToRadarPalace('${palace.name}')"
-                            >
-                                <div class="radar-feature-palace-top">
-                                    <span class="radar-feature-palace-name">${palace.name}</span>
-                                    <span class="radar-feature-palace-role">${meta.label}维度</span>
-                                </div>
-                                <div class="radar-feature-palace-desc">${RADAR_PALACE_DESC_MAP[palace.name] || '当前维度的关键场域'}</div>
-                                <div class="radar-feature-material">${starMaterial || summary.note}</div>
-                                <div class="radar-feature-star-list">
-                                    ${summary.topStars.length
-                                        ? summary.topStars.map(star => `<span class="radar-feature-star-chip">${formatRadarStarLabel(star)}</span>`).join('')
-                                        : `<span class="radar-feature-empty-chip">${summary.note}</span>`
-                                    }
-                                </div>
-                            </button>
-                        `;
-                    }).join('')}
-                </div>
-                <div class="radar-feature-footer">
-                    <span class="radar-feature-footer-text">点击宫位卡片可打开右侧详细星曜面板</span>
-                    ${primaryName
-                        ? `<button type="button" class="radar-feature-ai-btn" onclick="openRadarPalaceFromDimension('${primaryName}', true)">AI 深度解析 ${primaryName}</button>`
-                        : ''
-                    }
-                </div>
-            </div>
-        `;
-    }
-
     function renderRadarFeatureSystem(chart, scores) {
         const orbitEl = document.getElementById('radarFeatureOrbit');
-        const detailEl = document.getElementById('radarFeatureDetail');
-        if (!orbitEl || !detailEl) return;
+        if (!orbitEl) return;
 
         const dimensions = getRadarDimensions(chart, scores);
         if (!dimensions.length) {
             orbitEl.innerHTML = '';
-            detailEl.innerHTML = '';
             return;
         }
 
@@ -7730,15 +7682,6 @@ ${chartSummary}`;
 
         const activeDimension = dimensions.find(item => item.key === activeRadarDimensionKey) || dimensions[0];
         orbitEl.innerHTML = renderRadarFeatureOrbit(dimensions, activeDimension);
-        detailEl.innerHTML = '';
-    }
-
-    function setRadarActiveDimension(key) {
-        if (!currentChart) return;
-        const scores = calcRadarScores(currentChart);
-        if (!scores) return;
-        activeRadarDimensionKey = key;
-        renderRadarFeatureSystem(currentChart, scores);
     }
 
     function jumpToRadarDimension(key) {
@@ -7750,13 +7693,6 @@ ${chartSummary}`;
         if (!target || !target.primaryPalace?.name) return;
         activeRadarDimensionKey = key;
         navigateToRadarPalace(target.primaryPalace.name);
-    }
-
-    function openRadarPalaceFromDimension(palaceName, shouldAnalyze = false) {
-        navigateToRadarPalace(palaceName);
-        if (shouldAnalyze) {
-            setTimeout(() => analyzeCurrentPalace(), 280);
-        }
     }
 
     // 雷达图绘制（progress: 0→1 动画）
