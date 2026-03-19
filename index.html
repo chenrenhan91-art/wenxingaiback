@@ -1837,6 +1837,61 @@
             gap: 16px;
             margin-bottom: 16px;
         }
+        .radar-dimension-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 16px;
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            background: linear-gradient(150deg, rgba(2, 6, 23, 0.7), rgba(10, 18, 39, 0.58));
+        }
+        .radar-dimension-tab {
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            background: rgba(15, 23, 42, 0.72);
+            color: #cbd5e1;
+            border-radius: 12px;
+            padding: 8px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.82rem;
+            line-height: 1;
+        }
+        .radar-dimension-tab:hover {
+            border-color: rgba(56, 189, 248, 0.48);
+            color: #e0f2fe;
+            transform: translateY(-1px);
+        }
+        .radar-dimension-tab.is-active {
+            border-color: rgba(56, 189, 248, 0.78);
+            background: linear-gradient(135deg, rgba(14, 116, 144, 0.32), rgba(30, 64, 175, 0.28));
+            color: #e2e8f0;
+            box-shadow: 0 10px 22px rgba(14, 165, 233, 0.18);
+        }
+        .radar-feature-material {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.68rem;
+            color: rgba(148, 163, 184, 0.92);
+            margin-bottom: 8px;
+        }
+        .radar-feature-material::before {
+            content: '素材';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 6px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            background: rgba(15, 23, 42, 0.56);
+            font-size: 0.62rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
         .radar-feature-orbit {
             --orbit-radius: 118px;
             position: relative;
@@ -2234,6 +2289,7 @@
             .radar-content { padding: 18px 14px 16px; }
             .radar-title { font-size: 1.1rem; letter-spacing: 2px; }
             #radarCanvas { width: 260px !important; height: 260px !important; }
+            .radar-dimension-tabs { padding: 8px; gap: 8px; }
             .radar-feature-orbit { --orbit-radius: 102px; width: min(100%, 284px); }
             .radar-feature-core { width: 120px; height: 120px; }
             .radar-feature-core-title { font-size: 0.98rem; }
@@ -2785,14 +2841,14 @@
         <!-- H: 五维评分行 (JS populated) -->
         <div class="radar-explore-section">
             <p class="radar-explore-hint">
-                💡 点击下方五维节点，展开当前维度对应的核心宫位与主导星曜<br>
-                <strong>点开维度 → 先看宫位信息 → 再进入右侧面板做 AI 深度解析</strong>
+                💡 点击下方五维按钮，直接跳转到星盘对应宫位解析<br>
+                <strong>点击维度 → 自动定位宫位 → 在右侧面板查看详情并继续 AI 深度解析</strong>
             </p>
             <div class="radar-feature-system">
-                <div id="radarFeatureOrbit" class="radar-feature-orbit">
+                <div id="radarFeatureOrbit" class="radar-dimension-tabs">
                     <!-- Feature orbit injected by JS -->
                 </div>
-                <div id="radarFeatureDetail" class="radar-feature-detail">
+                <div id="radarFeatureDetail" class="radar-feature-detail" style="display:none;">
                     <!-- Feature detail injected by JS -->
                 </div>
             </div>
@@ -7317,13 +7373,38 @@ ${chartSummary}`;
         if (!chart || !chart.chartData) return null;
 
         const BRIGHT_W = { '庙': 10, '旺': 8, '得': 7, '利': 6, '平': 5, '陷': 3, '闲': 3 };
+        const SIHUA_BASE = { '禄': 12, '权': 9, '科': 5, '忌': -14 };
+        const SIHUA_DIMENSION_WEIGHT = {
+            career: { '禄': 1.18, '权': 1.25, '科': 1.05, '忌': 1.12 },
+            wealth: { '禄': 1.30, '权': 1.08, '科': 1.00, '忌': 1.16 },
+            love:   { '禄': 1.02, '权': 0.95, '科': 1.14, '忌': 1.30 },
+            health: { '禄': 0.82, '权': 0.90, '科': 1.00, '忌': 1.45 },
+            guiren: { '禄': 1.10, '权': 1.00, '科': 1.24, '忌': 1.16 }
+        };
+        const SIHUA_PALACE_WEIGHT = {
+            '官禄': { '禄': 1.10, '权': 1.12 },
+            '财帛': { '禄': 1.15, '忌': 1.10 },
+            '夫妻': { '科': 1.10, '忌': 1.14 },
+            '疾厄': { '禄': 0.90, '忌': 1.20 },
+            '福德': { '科': 1.08 },
+            '迁移': { '科': 1.10 },
+            '交友': { '忌': 1.10 }
+        };
 
         function getP(name) {
             return chart.chartData.find(p => p && p.name === name) || null;
         }
 
+        function getSihuaDelta(sihua, context) {
+            const base = SIHUA_BASE[sihua] || 0;
+            if (!base) return 0;
+            const dimW = SIHUA_DIMENSION_WEIGHT[context?.dimension]?.[sihua] || 1;
+            const palaceW = SIHUA_PALACE_WEIGHT[context?.palaceName]?.[sihua] || 1;
+            return base * dimW * palaceW;
+        }
+
         // 宫位评分核心：以50为基准，正负星权重叠加
-        function evalPalace(palace, posStars, negStars) {
+        function evalPalace(palace, posStars, negStars, context = null) {
             if (!palace) return 50;
             let score = 50;
             palace.stars.forEach(star => {
@@ -7341,45 +7422,55 @@ ${chartSummary}`;
                     delta += (bw - 5) * 0.3; // 主星亮度偏差
                 }
                 // 四化修正
-                if (star.sihua === '禄') delta += 12;
-                if (star.sihua === '权') delta += 9;
-                if (star.sihua === '科') delta += 5;
-                if (star.sihua === '忌') delta -= 14;
+                delta += getSihuaDelta(star.sihua, context);
                 score += delta;
             });
             return score;
         }
 
-        function clamp(v) { return Math.min(Math.max(Math.round(v), 10), 99); }
+        // 去极值平滑：压缩过高/过低分数的波动，再做边界约束
+        function smoothClamp(v) {
+            let x = Number(v) || 50;
+            if (x < 25) {
+                x = 25 - Math.sqrt(Math.max(0, 25 - x)) * 2.2;
+            } else if (x > 85) {
+                x = 85 + Math.sqrt(Math.max(0, x - 85)) * 2.2;
+            }
+            return Math.min(Math.max(Math.round(x), 10), 99);
+        }
 
         // ── 事业 ──
         const careerPos = ['紫微', '天府', '武曲', '太阳', '天相', '左辅', '右弼', '文昌', '文曲', '禄存'];
         const careerNeg = ['七杀', '破军', '廉贞', '巨门', '擎羊', '陀罗'];
-        const career = clamp(
-            evalPalace(getP('官禄'), careerPos, careerNeg) * 0.65 +
-            evalPalace(getP('命宫'), careerPos, careerNeg) * 0.35
+        const career = smoothClamp(
+            evalPalace(getP('官禄'), careerPos, careerNeg, { dimension: 'career', palaceName: '官禄' }) * 0.65 +
+            evalPalace(getP('命宫'), careerPos, careerNeg, { dimension: 'career', palaceName: '命宫' }) * 0.35
         );
 
         // ── 财运 ──
         const wealthPos = ['武曲', '天府', '太阴', '紫微', '禄存', '太阳', '天机'];
         const wealthNeg = ['破军', '廉贞', '七杀', '擎羊', '陀罗'];
-        const wealth = clamp(
-            evalPalace(getP('财帛'), wealthPos, wealthNeg) * 0.65 +
-            evalPalace(getP('田宅'), wealthPos, wealthNeg) * 0.35
+        const wealth = smoothClamp(
+            evalPalace(getP('财帛'), wealthPos, wealthNeg, { dimension: 'wealth', palaceName: '财帛' }) * 0.65 +
+            evalPalace(getP('田宅'), wealthPos, wealthNeg, { dimension: 'wealth', palaceName: '田宅' }) * 0.35
         );
 
         // ── 感情 ──
         const lovePos = ['天同', '太阴', '廉贞', '贪狼', '天相', '左辅', '右弼', '紫微', '天梁'];
         const loveNeg = ['七杀', '破军', '巨门', '擎羊', '陀罗'];
-        const love = clamp(
-            evalPalace(getP('夫妻'), lovePos, loveNeg) * 0.7 +
-            evalPalace(getP('福德'), lovePos, loveNeg) * 0.3
+        const love = smoothClamp(
+            evalPalace(getP('夫妻'), lovePos, loveNeg, { dimension: 'love', palaceName: '夫妻' }) * 0.7 +
+            evalPalace(getP('福德'), lovePos, loveNeg, { dimension: 'love', palaceName: '福德' }) * 0.3
         );
 
-        // ── 健康 ──
+        // ── 健康（疾厄为主，福德/命宫为辅）──
         const healthPos = ['天梁', '天同', '天机', '太阴', '天相', '紫微', '天府'];
         const healthNeg = ['七杀', '破军', '廉贞', '擎羊', '陀罗'];
-        const health = clamp(evalPalace(getP('疾厄'), healthPos, healthNeg));
+        const health = smoothClamp(
+            evalPalace(getP('疾厄'), healthPos, healthNeg, { dimension: 'health', palaceName: '疾厄' }) * 0.72 +
+            evalPalace(getP('福德'), healthPos, healthNeg, { dimension: 'health', palaceName: '福德' }) * 0.18 +
+            evalPalace(getP('命宫'), healthPos, healthNeg, { dimension: 'health', palaceName: '命宫' }) * 0.10
+        );
 
         // ── 贵人 ── 六宫吉星加权
         const guirenPos = ['左辅', '右弼', '文昌', '文曲', '禄存', '天梁', '太阴', '天相', '天同', '天机'];
@@ -7394,9 +7485,9 @@ ${chartSummary}`;
         ];
         let guirenRaw = 0;
         guirenPalaces.forEach(({ name, w }) => {
-            guirenRaw += evalPalace(getP(name), guirenPos, guirenNeg) * w;
+            guirenRaw += evalPalace(getP(name), guirenPos, guirenNeg, { dimension: 'guiren', palaceName: name }) * w;
         });
-        const guiren = clamp(guirenRaw);
+        const guiren = smoothClamp(guirenRaw);
 
         return { career, wealth, love, health, guiren };
     }
@@ -7550,69 +7641,56 @@ ${chartSummary}`;
 
     function renderRadarFeatureOrbit(dimensions, activeDimension) {
         return `
-            <div class="radar-feature-ring"></div>
-            <div class="radar-feature-ring-secondary"></div>
-            <div class="radar-feature-core">
-                <span class="radar-feature-core-kicker">当前聚焦</span>
-                <span class="radar-feature-core-title">${activeDimension.label}</span>
-                <span class="radar-feature-core-score">${activeDimension.score}</span>
-                <span class="radar-feature-core-desc">${activeDimension.subtitle}</span>
-            </div>
-            ${dimensions.map((item, index) => {
-                const angle = (Math.PI * 2 * index / dimensions.length) - Math.PI / 2;
-                const left = 50 + Math.cos(angle) * 39;
-                const top = 50 + Math.sin(angle) * 39;
-                return `
+            ${dimensions.map(item => `
                 <button
                     type="button"
-                    class="radar-feature-node ${item.key === activeDimension.key ? 'is-active' : ''}"
-                    style="left:${left}%; top:${top}%; --node-rgb:${item.rgb};"
-                    onclick="setRadarActiveDimension('${item.key}')"
+                    class="radar-dimension-tab ${item.key === activeDimension.key ? 'is-active' : ''}"
+                    onclick="jumpToRadarDimension('${item.key}')"
                 >
-                    <span class="radar-feature-node-icon">${item.icon}</span>
-                    <span class="radar-feature-node-label">${item.label}</span>
-                    <span class="radar-feature-node-score">${item.score}</span>
+                    <span>${item.icon}</span>
+                    <span>${item.label}</span>
                 </button>
-            `;
-            }).join('')}
+            `).join('')}
         `;
     }
 
-    function renderRadarFeatureDetail(activeDimension) {
+    function renderRadarFeatureDetail(chart, activeDimension) {
         if (!activeDimension) return '';
         const accentRgb = activeDimension.rgb;
         const primaryName = activeDimension.primaryPalace?.name || activeDimension.palaceList[0]?.name || '';
+        const quickPalaces = RADAR_DIMENSION_META.map(meta => {
+            const palace = getRadarPalaceByName(chart, meta.primaryPalace) || getRadarPalaceByName(chart, meta.palaceNames[0]);
+            return { meta, palace };
+        }).filter(item => item.palace);
         return `
             <div class="radar-feature-card" style="--accent-rgb:${accentRgb};">
                 <div class="radar-feature-card-head">
                     <div>
-                        <div class="radar-feature-kicker">${activeDimension.subtitle}</div>
+                        <div class="radar-feature-kicker">五个核心宫位 · 点击可跳转</div>
                         <div class="radar-feature-title-row">
                             <span class="radar-feature-title-icon">${activeDimension.icon}</span>
-                            <h3>${activeDimension.label}</h3>
+                            <h3>${activeDimension.label}关注维度</h3>
                         </div>
-                    </div>
-                    <div class="radar-feature-meta">
-                        <span class="radar-feature-score">${activeDimension.score}</span>
-                        <span class="radar-feature-level ${activeDimension.levelMeta.className}">${activeDimension.levelMeta.text}</span>
                     </div>
                 </div>
                 <p class="radar-feature-copy">${activeDimension.insight}</p>
                 <div class="radar-feature-palace-list">
-                    ${activeDimension.palaceList.map((palace, index) => {
+                    ${quickPalaces.map(({ meta, palace }) => {
                         const summary = getRadarPalaceSummary(palace);
+                        const starMaterial = summary.topStars.slice(0, 2).map(star => formatRadarStarLabel(star)).join(' / ');
                         return `
                             <button
                                 type="button"
-                                class="radar-feature-palace-card ${index === 0 ? 'is-primary' : ''}"
+                                class="radar-feature-palace-card ${palace.name === primaryName ? 'is-primary' : ''}"
                                 style="--accent-rgb:${accentRgb};"
                                 onclick="navigateToRadarPalace('${palace.name}')"
                             >
                                 <div class="radar-feature-palace-top">
                                     <span class="radar-feature-palace-name">${palace.name}</span>
-                                    <span class="radar-feature-palace-role">${index === 0 ? '核心宫位' : '联动宫位'}</span>
+                                    <span class="radar-feature-palace-role">${meta.label}维度</span>
                                 </div>
                                 <div class="radar-feature-palace-desc">${RADAR_PALACE_DESC_MAP[palace.name] || '当前维度的关键场域'}</div>
+                                <div class="radar-feature-material">${starMaterial || summary.note}</div>
                                 <div class="radar-feature-star-list">
                                     ${summary.topStars.length
                                         ? summary.topStars.map(star => `<span class="radar-feature-star-chip">${formatRadarStarLabel(star)}</span>`).join('')
@@ -7652,7 +7730,7 @@ ${chartSummary}`;
 
         const activeDimension = dimensions.find(item => item.key === activeRadarDimensionKey) || dimensions[0];
         orbitEl.innerHTML = renderRadarFeatureOrbit(dimensions, activeDimension);
-        detailEl.innerHTML = renderRadarFeatureDetail(activeDimension);
+        detailEl.innerHTML = '';
     }
 
     function setRadarActiveDimension(key) {
@@ -7661,6 +7739,17 @@ ${chartSummary}`;
         if (!scores) return;
         activeRadarDimensionKey = key;
         renderRadarFeatureSystem(currentChart, scores);
+    }
+
+    function jumpToRadarDimension(key) {
+        if (!currentChart) return;
+        const scores = calcRadarScores(currentChart);
+        if (!scores) return;
+        const dimensions = getRadarDimensions(currentChart, scores);
+        const target = dimensions.find(item => item.key === key);
+        if (!target || !target.primaryPalace?.name) return;
+        activeRadarDimensionKey = key;
+        navigateToRadarPalace(target.primaryPalace.name);
     }
 
     function openRadarPalaceFromDimension(palaceName, shouldAnalyze = false) {
