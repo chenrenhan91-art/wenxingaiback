@@ -66,8 +66,8 @@
       <!-- Hero -->
       <section class="mt-8 sm:mt-10">
         <div class="glass rounded-2xl p-6 sm:p-10">
-          <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-            <div class="max-w-2xl">
+          <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+            <div class="min-w-0">
               <h1 class="text-2xl sm:text-4xl font-black tracking-tight">
                 解锁 <span class="gradient-text">AI 深度解析</span>
               </h1>
@@ -75,18 +75,56 @@
                 把命盘信息从“能看懂”升级到“能落地”。专业版 AI 会结合盘面结构、星曜组合与常见断语逻辑，给出更完整的分析框架与可执行建议。
               </p>
 
-              <div class="mt-6 grid gap-3 sm:grid-cols-3">
-                <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-4">
-                  <div class="text-sm font-bold text-cyan-300">更系统</div>
-                  <div class="mt-1 text-xs text-slate-300">结构化输出：重点—依据—建议</div>
+              <div class="mt-6 grid gap-4 sm:grid-cols-3">
+                <div class="group relative overflow-hidden rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 via-slate-950/40 to-slate-900/50 p-5 shadow-lg shadow-cyan-950/10">
+                  <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent"></div>
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <div class="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300/90">01</div>
+                      <div class="mt-2 text-lg font-extrabold text-slate-50">更系统</div>
+                    </div>
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/25 bg-cyan-500/10 text-xl shadow-[0_0_24px_rgba(34,211,238,.18)]">◫</div>
+                  </div>
+                  <div class="mt-4 text-sm leading-relaxed text-slate-300">
+                    结构化输出：重点、依据、建议一次看清，减少来回跳读。
+                  </div>
+                  <div class="mt-5 h-1.5 overflow-hidden rounded-full bg-slate-800/80">
+                    <div class="h-full w-[84%] rounded-full bg-gradient-to-r from-cyan-300 to-sky-400"></div>
+                  </div>
                 </div>
-                <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-4">
-                  <div class="text-sm font-bold text-purple-300">更深入</div>
-                  <div class="mt-1 text-xs text-slate-300">星曜组合、宫位联动、用神思路</div>
+
+                <div class="group relative overflow-hidden rounded-2xl border border-purple-500/20 bg-gradient-to-br from-purple-500/10 via-slate-950/40 to-slate-900/50 p-5 shadow-lg shadow-purple-950/10 sm:translate-y-3">
+                  <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-300/80 to-transparent"></div>
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <div class="text-xs font-semibold uppercase tracking-[0.28em] text-purple-300/90">02</div>
+                      <div class="mt-2 text-lg font-extrabold text-slate-50">更深入</div>
+                    </div>
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl border border-purple-400/25 bg-purple-500/10 text-xl shadow-[0_0_24px_rgba(168,85,247,.18)]">✦</div>
+                  </div>
+                  <div class="mt-4 text-sm leading-relaxed text-slate-300">
+                    星曜组合、宫位联动、用神思路层层展开，分析更接近完整断盘。
+                  </div>
+                  <div class="mt-5 h-1.5 overflow-hidden rounded-full bg-slate-800/80">
+                    <div class="h-full w-[71%] rounded-full bg-gradient-to-r from-purple-300 to-fuchsia-400"></div>
+                  </div>
                 </div>
-                <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-4">
-                  <div class="text-sm font-bold text-pink-300">更省时</div>
-                  <div class="mt-1 text-xs text-slate-300">一键生成长文解析与要点总结</div>
+
+                <div class="group relative overflow-hidden rounded-2xl border border-pink-500/20 bg-gradient-to-br from-pink-500/10 via-slate-950/40 to-slate-900/50 p-5 shadow-lg shadow-pink-950/10 sm:translate-y-1">
+                  <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-pink-300/80 to-transparent"></div>
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <div class="text-xs font-semibold uppercase tracking-[0.28em] text-pink-300/90">03</div>
+                      <div class="mt-2 text-lg font-extrabold text-slate-50">更省时</div>
+                    </div>
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl border border-pink-400/25 bg-pink-500/10 text-xl shadow-[0_0_24px_rgba(236,72,153,.18)]">⏱</div>
+                  </div>
+                  <div class="mt-4 text-sm leading-relaxed text-slate-300">
+                    一键生成长文解析与要点总结，把耗时的整理交给 AI。
+                  </div>
+                  <div class="mt-5 h-1.5 overflow-hidden rounded-full bg-slate-800/80">
+                    <div class="h-full w-[92%] rounded-full bg-gradient-to-r from-pink-300 to-rose-400"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -126,35 +164,78 @@
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <!-- Value -->
-      <section class="mt-8">
-        <div class="glass rounded-2xl p-6 sm:p-10">
-          <h2 class="text-xl sm:text-2xl font-extrabold">AI 为什么更“懂”易学？</h2>
-          <p class="mt-2 text-sm text-slate-200/90 leading-relaxed">
-            专业版 AI 并非通用闲聊，它已投喂并吸收了关于 <span class="font-bold text-amber-300">《紫微斗数》</span>、
-            <span class="font-bold text-amber-300">《四柱八字》</span>、
-            <span class="font-bold text-amber-300">《六爻》</span> 等易学学说的深度研究内容，
-            在输出时会尽量遵循常见的断盘逻辑：先定格局，再抓主矛盾，最后给出可验证的结论与建议。
-          </p>
-
-          <div class="mt-6 grid gap-4 sm:grid-cols-2">
-            <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-5">
-              <div class="text-sm font-bold text-slate-100">结构化解析</div>
-              <div class="mt-2 text-sm text-slate-300 leading-relaxed">
-                输出会包含：<span class="text-slate-200">关键星曜/宫位</span>、
-                <span class="text-slate-200">组合关系</span>、
-                <span class="text-slate-200">推导依据</span>、
-                <span class="text-slate-200">建议方向</span>，避免只有“情绪化形容”。
+          <div class="mt-8 overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 via-slate-900/35 to-purple-500/10 p-5 sm:p-7 shadow-2xl shadow-cyan-950/10">
+            <div class="flex items-center gap-3">
+              <div class="h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,.9)]"></div>
+              <div class="inline-flex items-center rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-1 text-xs font-semibold tracking-wide text-cyan-200">
+                AI 为什么更“懂”易学？
               </div>
             </div>
-            <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-5">
-              <div class="text-sm font-bold text-slate-100">命盘定制化提问</div>
-              <div class="mt-2 text-sm text-slate-300 leading-relaxed">
-                你可以指定侧重点：事业/感情/财运/健康，或限定时间段与目标。
-                AI 会按你的关注点重排信息与结论，让输出更贴合当下需求。
+
+            <div class="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(260px,0.65fr)] lg:items-start">
+              <div>
+                <h2 class="text-xl sm:text-2xl font-extrabold leading-tight">把盘面结构转成可读、可问、可追问的分析</h2>
+                <p class="mt-3 max-w-3xl text-sm sm:text-base text-slate-200/90 leading-relaxed">
+                  专业版 AI 针对 <span class="font-bold text-amber-300">紫微斗数</span>、
+                  <span class="font-bold text-amber-300">四柱八字</span>、
+                  <span class="font-bold text-amber-300">六爻</span> 做了专门训练，输出时优先提炼格局、主矛盾和可验证结论。
+                </p>
+
+                <div class="mt-5 grid gap-3 sm:grid-cols-3">
+                  <div class="rounded-2xl border border-slate-700/60 bg-slate-950/35 p-4">
+                    <div class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">1</div>
+                    <div class="mt-1 text-sm font-semibold text-slate-100">先定格局</div>
+                    <div class="mt-1 text-xs text-slate-400">先判断命盘主线，再展开细节。</div>
+                  </div>
+                  <div class="rounded-2xl border border-slate-700/60 bg-slate-950/35 p-4">
+                    <div class="text-xs font-bold uppercase tracking-[0.2em] text-purple-300">2</div>
+                    <div class="mt-1 text-sm font-semibold text-slate-100">再抓矛盾</div>
+                    <div class="mt-1 text-xs text-slate-400">聚焦星曜组合、宫位联动与变化。</div>
+                  </div>
+                  <div class="rounded-2xl border border-slate-700/60 bg-slate-950/35 p-4">
+                    <div class="text-xs font-bold uppercase tracking-[0.2em] text-pink-300">3</div>
+                    <div class="mt-1 text-sm font-semibold text-slate-100">落到建议</div>
+                    <div class="mt-1 text-xs text-slate-400">给出可继续追问的方向与提示。</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-slate-700/60 bg-slate-950/45 p-4 sm:p-5 shadow-lg shadow-cyan-950/10">
+                <div class="text-xs font-bold uppercase tracking-[0.25em] text-cyan-300">输出方式</div>
+                <div class="mt-4 space-y-3 text-sm text-slate-200">
+                  <div class="flex items-start gap-3 rounded-xl border border-slate-700/50 bg-slate-900/40 px-3 py-3">
+                    <span class="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cyan-500/20 text-[11px] font-bold text-cyan-200">A</span>
+                    <span>结构化：重点 / 依据 / 建议</span>
+                  </div>
+                  <div class="flex items-start gap-3 rounded-xl border border-slate-700/50 bg-slate-900/40 px-3 py-3">
+                    <span class="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-500/20 text-[11px] font-bold text-purple-200">B</span>
+                    <span>支持追问，方便继续细化</span>
+                  </div>
+                  <div class="flex items-start gap-3 rounded-xl border border-slate-700/50 bg-slate-900/40 px-3 py-3">
+                    <span class="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pink-500/20 text-[11px] font-bold text-pink-200">C</span>
+                    <span>避免堆术语，更注重可读性</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 grid gap-4 sm:grid-cols-2">
+              <div class="rounded-2xl border border-slate-700/60 bg-slate-950/35 p-4 sm:p-5">
+                <div class="text-sm font-bold text-slate-100">结构化解析</div>
+                <div class="mt-2 text-sm text-slate-300 leading-relaxed">
+                  输出会包含：<span class="text-slate-200">关键星曜/宫位</span>、
+                  <span class="text-slate-200">组合关系</span>、
+                  <span class="text-slate-200">推导依据</span>、
+                  <span class="text-slate-200">建议方向</span>，让结论更完整、也更好追问。
+                </div>
+              </div>
+              <div class="rounded-2xl border border-slate-700/60 bg-slate-950/35 p-4 sm:p-5">
+                <div class="text-sm font-bold text-slate-100">命盘定制化提问</div>
+                <div class="mt-2 text-sm text-slate-300 leading-relaxed">
+                  你可以指定侧重点：事业/感情/财运/健康，或限定时间段与目标，
+                  AI 会按你的关注点重排信息与结论。
+                </div>
               </div>
             </div>
           </div>
@@ -351,9 +432,9 @@
           <div class="mt-3 grid gap-4 sm:grid-cols-3">
             <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-5">
               <div class="text-xs text-slate-400">调用模型</div>
-              <div class="mt-1 text-base font-extrabold">Gemini 3.0 Flash</div>
+              <div class="mt-1 text-base font-extrabold">Gemini 3.1 Pro</div>
               <div class="mt-2 text-sm text-slate-300 leading-relaxed">
-                专业版使用 <span class="text-slate-200 font-bold">gemini3.0flash</span> 文本生成模型，用于长文分析、要点归纳与多轮追问。
+                专业版使用 <span class="text-slate-200 font-bold">gemini3.1pro</span> 文本生成模型，用于长文分析、要点归纳与多轮追问。
               </div>
             </div>
             <div class="rounded-xl border border-slate-700/60 bg-slate-900/30 p-5">
@@ -383,18 +464,15 @@
       <section class="mt-8" id="pay">
         <div class="glass rounded-2xl p-6 sm:p-10">
           <h2 class="text-xl sm:text-2xl font-extrabold">扫码解锁（微信）</h2>
-          <p class="mt-2 text-sm text-slate-200/90 leading-relaxed">
-            你可以通过微信扫码完成支持或联系作者。专业版解锁与商务合作请通过下方对应二维码进行。
-          </p>
 
           <div class="mt-6 grid gap-6 sm:grid-cols-2">
             <!-- QR 1: 打赏创作者 -->
             <div class="rounded-2xl border border-slate-700/60 bg-slate-900/30 p-4">
-              <div class="text-center text-sm font-semibold tracking-wide text-cyan-200 mb-3">微信扫码 · 打赏创作者</div>
+              <div class="text-center text-sm font-semibold tracking-wide text-cyan-200 mb-3">解锁专业版/打赏创作者</div>
               <div class="aspect-square w-full rounded-xl bg-slate-900/40 flex items-center justify-center overflow-hidden">
                 <img src="./qr_donate_800.png" alt="微信打赏创作者二维码" class="h-full w-full object-contain" />
               </div>
-              <div class="mt-4 text-center text-sm font-semibold tracking-wide text-cyan-200">用于支持项目持续维护与迭代</div>
+              <div class="mt-4 text-center text-sm font-semibold tracking-wide text-cyan-200">备注ID号或者账号名后付费解锁</div>
             </div>
 
             <!-- QR 2: 作者本人 -->
@@ -403,7 +481,7 @@
               <div class="aspect-square w-full rounded-xl bg-slate-900/40 flex items-center justify-center overflow-hidden">
                 <img src="./qr_author_800.png" alt="微信作者本人二维码" class="h-full w-full object-contain" />
               </div>
-              <div class="mt-4 text-center text-base font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">付款解锁专业版 / 商务合作</div>
+              <div class="mt-4 text-center text-base font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">加入命理交流群/商务合作</div>
             </div>
           </div>
 
