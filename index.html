@@ -3580,8 +3580,17 @@
         '天相': { type: '印星', color: '#4682b4', desc: '辅佐、公正、爱美。' },
         '天梁': { type: '荫星', color: '#556b2f', desc: '老人、原则、医药。' },
         '七杀': { type: '将星', color: '#cd5c5c', desc: '肃杀、变动、独立。' },
-        '破军': { type: '耗星', color: '#191970', desc: '破坏、先破后立。' }
+        '破军': { type: '耗星', color: '#60a5fa', desc: '破坏、先破后立。' }
     };
+
+    function normalizeLunarMonth(lunar) {
+        const rawMonth = typeof lunar?.getMonth === 'function' ? lunar.getMonth() : 0;
+        const isLeapMonth = rawMonth < 0 || (typeof lunar?.isLeap === 'function' && lunar.isLeap());
+        return {
+            month: Math.abs(rawMonth),
+            isLeapMonth
+        };
+    }
 
     const STAR_BRIGHTNESS_TABLE = {
         '紫微': ['平', '庙', '庙', '旺', '得', '得', '庙', '庙', '旺', '平', '得', '旺'],
@@ -3609,8 +3618,10 @@
             this.gender = parseInt(genderVal); 
             const solar = Solar.fromDate(this.gregorianDate);
             this.lunar = solar.getLunar();
+            const lunarMonthInfo = normalizeLunarMonth(this.lunar);
             this.lunarYear = this.lunar.getYear();
-            this.lunarMonth = this.lunar.getMonth();
+            this.lunarMonth = lunarMonthInfo.month;
+            this.isLeapMonth = lunarMonthInfo.isLeapMonth;
             this.lunarDay = this.lunar.getDay();
             this.lunarHourIdx = parseInt(hourIdx, 10);
             this.yearStemIdx = this.lunar.getYearGanIndex(); 
@@ -3656,15 +3667,15 @@
             let Q, pos;
             if (day % bureau === 0) {
                 Q = day / bureau;
-                pos = 2 + Q - 1;
+                pos = 2 + Q;
             } else {
                 let rem = day % bureau;
                 let add = bureau - rem; 
                 Q = (day + add) / bureau;
                 if (add % 2 !== 0) {
-                    pos = 2 + Q - 1 - add; 
+                    pos = 2 + Q - add; 
                 } else {
-                    pos = 2 + Q - 1 + add; 
+                    pos = 2 + Q + add; 
                 }
             }
             while(pos < 0) pos += 12;
@@ -3777,6 +3788,9 @@
         getSummary() {
             let summary = `用户性别: ${this.gender === 1 ? '男' : '女'}。\n`;
             summary += `五行局: ${this.bureau}局。\n`;
+            const lunarMonthText = typeof this.lunar?.getMonthInChinese === 'function' ? this.lunar.getMonthInChinese() : `${this.isLeapMonth ? '闰' : ''}${this.lunarMonth}`;
+            const lunarDayText = typeof this.lunar?.getDayInChinese === 'function' ? this.lunar.getDayInChinese() : String(this.lunarDay);
+            summary += `农历信息: ${this.lunarYear}年${lunarMonthText}月${lunarDayText}。\n`;
 
             // ── 大限序列计算 ──
             // 顺行：阳年生男 / 阴年生女；逆行：阴年生男 / 阳年生女
