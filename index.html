@@ -3595,7 +3595,21 @@
         '天喜': { type: '喜庆', color: '#ffb6c1', desc: '喜事降临、人缘贵人、吉庆之兆。' },
         '天刑': { type: '刑煞', color: '#ff8c69', desc: '官非刑事、手术血光、执法纪律。' },
         '天姚': { type: '桃花', color: '#da70d6', desc: '异性缘旺、才艺风流、桃花主星。' },
-        '截空': { type: '空亡', color: '#a0a0b0', desc: '空亡宫位，主阻隔无力、事难成。' }
+        '截空': { type: '空亡', color: '#a0a0b0', desc: '空亡宫位，主阻隔无力、事难成。' },
+        '左辅': { type: '吉星', color: '#7ec8e3', desc: '贵人辅助、助力成事、锦上添花。' },
+        '右弼': { type: '吉星', color: '#a8d8ea', desc: '幕后支持、贵人庇护、无声辅佐。' },
+        '文昌': { type: '才华', color: '#e0c97a', desc: '才华文艺、考试升学、名声口碑。' },
+        '文曲': { type: '才华', color: '#c8b468', desc: '口才才艺、桃花聪慧、异路功名。' },
+        '天魁': { type: '贵人', color: '#ffe0a0', desc: '阳贵人、逢凶化吉、贵人提携。' },
+        '天钺': { type: '贵人', color: '#ffd080', desc: '阴贵人、暗中助力、贵人庇护。' },
+        '禄存': { type: '禄星', color: '#b8e080', desc: '财禄守护、稳健积累、遇煞化解。' },
+        '天马': { type: '驿马', color: '#90d090', desc: '驿马流动、奔波迁移、动则获益。' },
+        '擎羊': { type: '煞星', color: '#ff6060', desc: '冲动冒进、血光争斗、孤刑劫夺。' },
+        '陀罗': { type: '煞星', color: '#cc5555', desc: '纠缠拖延、暗中阻碍、反复耗损。' },
+        '火星': { type: '煞星', color: '#ff7733', desc: '急爆冲突、突发意外、情绪激烈。' },
+        '铃星': { type: '煞星', color: '#dd6622', desc: '暗中突变、缓发灾祸、阴暗阻滞。' },
+        '地劫': { type: '空劫', color: '#8888cc', desc: '损耗财物、劫夺空亡、无妄损失。' },
+        '地空': { type: '空劫', color: '#9999bb', desc: '空想落空、精神空旷、幻灭失志。' }
     };
 
     const STAR_BRIGHTNESS_TABLE = {
@@ -6548,6 +6562,8 @@ ${outputStructure}`;
                 const brightScoreMap = { '庙': 100, '旺': 85, '得': 70, '利': 60, '平': 45, '陷': 25, '闲': 30 };
                 const brightScore = brightScoreMap[brightText] ?? 45;
 
+                const showBrightness = star.category === 'main';
+
                 let sihuaChip = '';
                 if (star.sihua) {
                     const sihuaCls = { '禄': 'star-sihua-lu', '权': 'star-sihua-quan', '科': 'star-sihua-ke', '忌': 'star-sihua-ji' }[star.sihua];
@@ -6563,14 +6579,14 @@ ${outputStructure}`;
                         <div class="star-badges">
                             <span class="star-chip ${cat.cls}">${cat.text}</span>
                             ${sihuaChip}
-                            <span class="star-tag ${brightCls}">${brightText}</span>
+                            ${showBrightness ? `<span class="star-tag ${brightCls}">${brightText}</span>` : ''}
                         </div>
                     </div>
                     ${desc ? `<div class="star-desc">${desc}</div>` : ''}
-                    <div class="star-bright">
+                    ${showBrightness ? `<div class="star-bright">
                         <div class="star-bright-label">亮度</div>
                         <div class="star-bright-bar"><div class="star-bright-fill" style="width:${brightScore}%; background:${starColor}"></div></div>
-                    </div>
+                    </div>` : ''}
                 `;
 
                 list.appendChild(card);
@@ -6954,7 +6970,7 @@ ${outputStructure}`;
             </div>
         `;
         const palaceName = selectedPalaceData.name;
-        const starsDesc = selectedPalaceData.stars.map(s => { let desc = `${s.name}（亮度：${s.brightness}）`; if (s.sihua) desc += ` [化${s.sihua}]`; return desc; }).join('，') || "无主星";
+        const starsDesc = selectedPalaceData.stars.map(s => { let desc = s.category === 'main' ? `${s.name}（亮度：${s.brightness}）` : s.name; if (s.sihua) desc += ` [化${s.sihua}]`; return desc; }).join('，') || "无主星";
         const prompt = `请解析【${palaceName}】，宫干支：${selectedPalaceData.stem}${selectedPalaceData.branch}，星曜组合：${starsDesc}。\n\n请按以下结构用 Markdown 输出：\n## 核心结论\n（最值得关注的 1-2 点，简要说明）\n## 星曜解读\n（主星、四化、吉煞星各自影响；无主星则说明借对宫逻辑）\n## 可执行建议\n（3 条，具体可立刻行动）`;
         const result = await callAI(prompt);
         renderAIContent(contentDiv, result);
