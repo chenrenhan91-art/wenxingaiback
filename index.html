@@ -3342,7 +3342,8 @@
         '涉及压力或阻力时，必须同步提供可操作的缓解建议，不制造焦虑。',
         '避免空洞玄学堆砌，不要使用宿命化表达。',
         '不要输出拼音、拉丁字母音译或英文转写（如 zi wei、ming gong）。',
-        '不要使用✳、✨、★等装饰符号。'
+        '不要使用✳、✨、★等装饰符号。',
+        '禁止在输出末尾显示字数统计（如"共XX字"等）。'
     ].join('\n');
 
     const AI_TERM_GLOSSARY = [
@@ -3582,7 +3583,12 @@
         '天相': { type: '印星', color: '#4682b4', desc: '辅佐、公正、爱美。' },
         '天梁': { type: '荫星', color: '#556b2f', desc: '老人、原则、医药。' },
         '七杀': { type: '将星', color: '#cd5c5c', desc: '肃杀、变动、独立。' },
-        '破军': { type: '耗星', color: '#191970', desc: '破坏、先破后立。' }
+        '破军': { type: '耗星', color: '#191970', desc: '破坏、先破后立。' },
+        '红鸾': { type: '桃花', color: '#ff6eb4', desc: '婚姻缘分、喜庆喜事、感情升温。' },
+        '天喜': { type: '喜庆', color: '#ffb6c1', desc: '喜事降临、人缘贵人、吉庆之兆。' },
+        '天刑': { type: '刑煞', color: '#ff8c69', desc: '官非刑事、手术血光、执法纪律。' },
+        '天姚': { type: '桃花', color: '#da70d6', desc: '异性缘旺、才艺风流、桃花主星。' },
+        '截空': { type: '空亡', color: '#a0a0b0', desc: '空亡宫位，主阻隔无力、事难成。' }
     };
 
     const STAR_BRIGHTNESS_TABLE = {
@@ -3748,6 +3754,22 @@
             const TM_POS = { 0:2, 4:2, 8:2,   2:8, 6:8, 10:8,   11:5, 3:5, 7:5,   5:11, 9:11, 1:11 };
             const tmIdx = TM_POS[this.yearBranchIdx];
             if (tmIdx !== undefined) this.addStar(tmIdx, '天马', 'lucky');
+
+            // 红鸾（年支·卯起子年逆布）、天喜（红鸾对宫+6）
+            const hongLuan = (3 - this.yearBranchIdx + 12) % 12;
+            this.addStar(hongLuan, '红鸾', 'lucky');
+            this.addStar((hongLuan + 6) % 12, '天喜', 'lucky');
+
+            // 天刑（年支·酉起子年顺布）
+            this.addStar((9 + this.yearBranchIdx) % 12, '天刑', 'bad');
+
+            // 天姚（年支·丑起子年逆布）桃花星
+            this.addStar((1 - this.yearBranchIdx + 12) % 12, '天姚', 'lucky');
+
+            // 截路空亡（年干决定·两宫）：甲己→申酉，乙庚→午未，丙辛→辰巳，丁壬→寅卯，戊癸→子丑
+            const jieKong1 = (8 - (this.yearStemIdx % 5) * 2 + 12) % 12;
+            this.addStar(jieKong1, '截空', 'bad');
+            this.addStar((jieKong1 + 1) % 12, '截空', 'bad');
         }
         
         addStar(idx, name, category) {
@@ -5132,10 +5154,10 @@
             // 化忌黏性提示 + 互化忌结构（C2）
             const mutualJiAI = scores.mutualJi;
             const mutualJiTip = mutualJiAI?.hasMutual
-                ? `\n🔗 互化忌：A的${mutualJiAI.jiStarA}化忌→B的${mutualJiAI.jiPalaceA2B}，B的${mutualJiAI.jiStarB}化忌→A的${mutualJiAI.jiPalaceB2A}（相爱相杀双向业力连结）`
+                ? `\n互化忌：A的${mutualJiAI.jiStarA}化忌→B的${mutualJiAI.jiPalaceA2B}，B的${mutualJiAI.jiStarB}化忌→A的${mutualJiAI.jiPalaceB2A}（相爱相杀双向业力连结）`
                 : '';
             const jiNexusTip = ((scores.jiNexusScore || 0) > 6
-                ? '\n⚠️ 注：双方存在强化忌交织，为深度羁绊型关系，痛苦与黏性并存。' : '') + mutualJiTip;
+                ? '\n注：双方存在强化忌交织，为深度羁绊型关系，痛苦与黏性并存。' : '') + mutualJiTip;
 
             // 关系类型专属 systemInstruction
             const systemInstructions = {
@@ -6875,10 +6897,25 @@ ${outputStructure}`;
             return;
         }
 
-        const prompt = `今天是：${todayInfo.date} (农历${todayInfo.lunar}, ${todayInfo.ganzhi})。宜：${todayInfo.yi}。忌：${todayInfo.ji}。用户命盘摘要：${currentChart.getSummary().substring(0, 500)}... 请结合今日的日课（干支五行、宜忌）和用户的命盘结构，给出一小段（100字以内）的今日运势提醒。要求：简单易懂，有参考价值，口语化；先给可执行的小建议，再提示需留意点；风险使用“可能/倾向/需留意”等概率词，避免悲观和绝对化。注意：直接输出运势内容即可，严禁在结尾显示“共xx字”或类似的字数统计。`;
+        // 精简命盘数据：只取命宫主星 + 流日宫，不传大限序列
+        const _mingPalace = currentChart.chartData.find(p => p.isMing);
+        const _mingMainStars = _mingPalace
+            ? (_mingPalace.stars.filter(s => s.category === 'main').map(s => s.sihua ? `${s.name}[化${s.sihua}]` : s.name).join('、') || '无主星')
+            : '无';
+        const _mingDesc = _mingPalace ? `${_mingPalace.name}（${_mingPalace.stem}${_mingPalace.branch}），主星：${_mingMainStars}` : '未知';
+        // 流日宫：今日地支对应命盘中的宫位
+        const _dayGanzhi = todayInfo.ganzhi.replace('日', '');
+        const _dayBranch = _dayGanzhi.length >= 2 ? _dayGanzhi[1] : '';
+        const _liuriPalace = _dayBranch ? currentChart.chartData.find(p => p.branch === _dayBranch) : null;
+        const _liuriStars = _liuriPalace
+            ? (_liuriPalace.stars.map(s => s.name).join('、') || '无星曜')
+            : '未知';
+        const _liuriDesc = _liuriPalace
+            ? `${_liuriPalace.name}（${_liuriPalace.stem}${_liuriPalace.branch}），含：${_liuriStars}`
+            : '今日地支宫位未知';
+        const prompt = `今日干支：${_dayGanzhi}（农历${todayInfo.lunar}）。宜：${todayInfo.yi}。忌：${todayInfo.ji}。\n命宫：${_mingDesc}。五行局：${currentChart.bureau}局。\n流日宫：${_liuriDesc}。\n请结合今日干支五行与宜忌，分析命宫主星与今日流日宫星曜的能量互动，给出100字以内的今日提醒。要求：口语化，先给可执行小建议，再提需留意点，聚焦流日本身，不提大限。`;
         dailyReportInFlight[cacheKey] = (async () => {
             const result = await callAI(prompt);
-            if (isDailyReportCacheable(result)) {
                 dailyReportCache[cacheKey] = { text: result, ts: Date.now() };
                 pruneDailyReportCache();
                 saveDailyReportCache();
@@ -6910,7 +6947,7 @@ ${outputStructure}`;
         `;
         const palaceName = selectedPalaceData.name;
         const starsDesc = selectedPalaceData.stars.map(s => { let desc = `${s.name}（亮度：${s.brightness}）`; if (s.sihua) desc += ` [化${s.sihua}]`; return desc; }).join('，') || "无主星";
-        const prompt = `请根据以下信息解析【${palaceName}】：宫位：${palaceName} 宫干支：${selectedPalaceData.stem}${selectedPalaceData.branch} 星曜组合：${starsDesc} 输出要求：1) 先给结论（这个宫位当前最值得关注的 1-2 点）；2) 再给原因（主星/四化/吉煞星分别说明影响）；3) 如果无主星，简述借对宫逻辑；4) 最后给 3 条可执行建议；5) 全文通俗易懂，术语配解释；6) 使用简洁 Markdown；7) 语气温和支持，先说可行动方向，再说风险，风险用“可能/倾向/需留意”等概率表述，避免绝对化与悲观恐吓。`;
+        const prompt = `请解析【${palaceName}】，宫干支：${selectedPalaceData.stem}${selectedPalaceData.branch}，星曜组合：${starsDesc}。\n\n请按以下结构用 Markdown 输出：\n## 核心结论\n（最值得关注的 1-2 点，简要说明）\n## 星曜解读\n（主星、四化、吉煞星各自影响；无主星则说明借对宫逻辑）\n## 可执行建议\n（3 条，具体可立刻行动）`;
         const result = await callAI(prompt);
         renderAIContent(contentDiv, result);
         // G: AI content reveal animation
@@ -7116,8 +7153,6 @@ ${outputStructure}`;
 【规则3·星情与煞星】同一宫位因主星不同事件质地迥异：紫微忌=面子破财、武曲忌=现金流断/手术、廉贞忌=血光法律、天机忌=投机决策误、贪狼忌=桃花嗜好。羊陀夹忌=四面围困失主动权；流月行至太岁宫或被忌冲对宫=事件爆发节点。
 
 【规则4·同象异事】星盘测算能量结构而非唯一事件；同一凶象在不同人可能表现为：破财/病痛/家庭矛盾等，底层本质相同。推演时说「最可能的象征领域」，不做绝对断言。
-
-【规则5·语气与心理安全】语气温和支持，先给可执行路径与稳定情绪的建议，再给风险判断；风险表述用“可能/倾向/需留意”，避免“注定/必然”等宿命化措辞，不制造焦虑。
 
 【输出格式】验证过去：三层结构→能量本质→同象异事可能形式→结论。推导未来：大限背景→流年四化→象征领域与时机，标注「最可能」。语言通俗，术语附解释，300字内除非用户要求详解。
 
