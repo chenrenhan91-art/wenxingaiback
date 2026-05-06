@@ -1098,56 +1098,31 @@
         .yi .circle-icon { background: linear-gradient(135deg, #22c55e, #15803d); color: #fff; box-shadow: 0 0 12px rgba(34,197,94,0.5); }
         .ji .circle-icon { background: linear-gradient(135deg, #f87171, #dc2626); color: #fff; box-shadow: 0 0 12px rgba(248,113,113,0.5); }
         .yiji-text { font-size: 0.82rem; color: #e2e8f0; line-height: 1.5; }
-        .ai-fortune-box { margin-top: 14px; background: linear-gradient(135deg, rgba(10,30,60,0.18), rgba(8,24,48,0.14)); border: 1px solid rgba(77,143,189,0.28); border-radius: 12px; padding: 14px; box-shadow: inset 0 1px 0 rgba(77,143,189,0.1); }
-        .ai-title { font-size: 0.88rem; color: #6ab0d4; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; font-weight: 800; letter-spacing: 0.5px; }
-        .ai-text { font-size: 0.83rem; color: #b8d0e4; line-height: 1.65; min-height: 40px; }
-        /* Daily fortune button (Uiverse style, scoped to this button only) */
-        .refresh-btn {
-            display: inline-block;
-            width: 100%;
-            height: 50px;
-            border-radius: 10px;
-            border: 1px solid #03045e;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.5s ease-in;
-            z-index: 1;
-            margin-top: 10px;
-            cursor: pointer;
-        }
-        .refresh-btn::before,
-        .refresh-btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            width: 0;
-            height: 100%;
-            transform: skew(15deg);
-            transition: all 0.5s;
-            overflow: hidden;
-            z-index: -1;
-        }
-        .refresh-btn::before {
-            left: -10px;
-            background: #240046;
-        }
-        .refresh-btn::after {
-            right: -10px;
-            background: #5a189a;
-        }
-        .refresh-btn:hover::before,
-        .refresh-btn:hover::after {
-            width: 58%;
-        }
-        .refresh-btn span {
-            color: #03045e;
-            font-size: 18px;
-            transition: all 0.3s ease-in;
-        }
-        .refresh-btn:hover span {
-            color: #e0aaff;
-            transition: 0.3s;
-        }
+        /* ===== 今日运势评分 ===== */
+        .fortune-score-box { margin-top: 14px; background: linear-gradient(145deg, rgba(8,16,40,0.85), rgba(12,24,52,0.78)); border: 1px solid rgba(77,143,189,0.32); border-radius: 14px; padding: 16px 14px 14px; box-shadow: inset 0 1px 0 rgba(77,143,189,0.15), 0 6px 24px rgba(0,0,0,0.4); position: relative; overflow: hidden; }
+        .fortune-score-box::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background: linear-gradient(90deg, transparent 5%, rgba(106,176,212,0.6) 40%, rgba(192,132,252,0.6) 65%, transparent 95%); }
+        .fortune-score-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+        .fortune-score-circle { width: 72px; height: 72px; border-radius: 50%; background: conic-gradient(var(--fc, #6ab0d4) var(--fp, 60%), rgba(255,255,255,0.05) 0); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; position: relative; box-shadow: 0 0 18px rgba(77,143,189,0.25); }
+        .fortune-score-circle::after { content:''; position:absolute; inset:5px; border-radius:50%; background: rgba(6,12,28,0.92); }
+        .fortune-score-num { font-size: 1.55rem; font-weight: 900; line-height: 1; position: relative; z-index: 1; color: #e8f4fc; }
+        .fortune-score-unit { font-size: 0.65rem; color: #6ab0d4; position: relative; z-index: 1; letter-spacing: 1px; }
+        .fortune-score-right { flex: 1; min-width: 0; }
+        .fortune-level-badge { display: inline-block; font-size: 0.95rem; font-weight: 800; letter-spacing: 2px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--fc, rgba(106,176,212,0.4)); color: var(--fc, #6ab0d4); background: rgba(0,0,0,0.3); margin-bottom: 5px; }
+        .fortune-liuri-hint { font-size: 0.72rem; color: rgba(106,176,212,0.6); letter-spacing: 0.5px; }
+        .fortune-dims { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+        .fortune-dim-row { display: flex; align-items: center; gap: 8px; }
+        .fdim-label { font-size: 0.72rem; color: #7ba8c4; width: 48px; flex-shrink: 0; letter-spacing: 0.5px; }
+        .fdim-bar-wrap { flex: 1; height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
+        .fdim-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #3b82f6, #6ab0d4); transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1); }
+        .fdim-bar.bar-love { background: linear-gradient(90deg, #ec4899, #f472b6); }
+        .fdim-bar.bar-health { background: linear-gradient(90deg, #10b981, #34d399); }
+        .fdim-bar.bar-people { background: linear-gradient(90deg, #a855f7, #c084fc); }
+        .fdim-val { font-size: 0.72rem; color: #8bb8d4; width: 26px; text-align: right; flex-shrink: 0; }
+        .fortune-tips { background: rgba(77,143,189,0.06); border: 1px solid rgba(77,143,189,0.18); border-radius: 8px; padding: 10px 12px; }
+        .fortune-tips-title { font-size: 0.7rem; color: rgba(106,176,212,0.65); margin-bottom: 6px; letter-spacing: 1px; }
+        .fortune-tip-item { font-size: 0.78rem; color: #b8d0e4; line-height: 1.6; padding-left: 10px; position: relative; }
+        .fortune-tip-item::before { content: '·'; position: absolute; left: 2px; color: #6ab0d4; }
+        .fortune-no-chart { font-size: 0.8rem; color: rgba(148,163,184,0.7); text-align: center; padding: 18px 0; line-height: 1.7; }
 
         .life-panel { bottom: 110px; right: 30px; width: 500px; height: 450px; border: 1px solid rgba(77,143,189,0.28); font-family: 'Noto Sans SC', sans-serif; }
         .life-header { padding: 15px 18px; background: linear-gradient(90deg, rgba(5,10,22,0.98), rgba(8,16,36,0.97)); border-bottom: 1px solid rgba(77,143,189,0.18); border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; box-shadow: inset 0 1px 0 rgba(77,143,189,0.5); }
@@ -2590,12 +2565,43 @@
                 <div class="yiji-text" id="calJi">...</div>
             </div>
         </div>
-        <div class="ai-fortune-box">
-            <div class="ai-title">
-                <span>🔮 今日运程参考</span>
+        <div class="ai-fortune-box" id="fortuneScoreBox">
+            <div class="fortune-score-header">
+                <div class="fortune-score-circle" id="fortuneCircle">
+                    <div class="fortune-score-num" id="fortuneScoreNum">--</div>
+                    <div class="fortune-score-unit">分</div>
+                </div>
+                <div class="fortune-score-right">
+                    <div class="fortune-level-badge" id="fortuneLevelBadge">命盘未载入</div>
+                    <div class="fortune-liuri-hint" id="fortuneLiuriHint">今日流日宫</div>
+                </div>
             </div>
-            <div class="ai-text" id="calAiText">点击下方按钮，结合您的命盘进行推演...</div>
-            <button class="refresh-btn" onclick="generateDailyReport()"><span>✨ 推演今日运程</span></button>
+            <div class="fortune-dims" id="fortuneDims">
+                <div class="fortune-dim-row">
+                    <span class="fdim-label">事业财运</span>
+                    <div class="fdim-bar-wrap"><div class="fdim-bar" id="fdimCareer" style="width:0%"></div></div>
+                    <span class="fdim-val" id="fdimCareerVal">--</span>
+                </div>
+                <div class="fortune-dim-row">
+                    <span class="fdim-label">感情人缘</span>
+                    <div class="fdim-bar-wrap"><div class="fdim-bar bar-love" id="fdimLove" style="width:0%"></div></div>
+                    <span class="fdim-val" id="fdimLoveVal">--</span>
+                </div>
+                <div class="fortune-dim-row">
+                    <span class="fdim-label">身心健康</span>
+                    <div class="fdim-bar-wrap"><div class="fdim-bar bar-health" id="fdimHealth" style="width:0%"></div></div>
+                    <span class="fdim-val" id="fdimHealthVal">--</span>
+                </div>
+                <div class="fortune-dim-row">
+                    <span class="fdim-label">贵人助力</span>
+                    <div class="fdim-bar-wrap"><div class="fdim-bar bar-people" id="fdimPeople" style="width:0%"></div></div>
+                    <span class="fdim-val" id="fdimPeopleVal">--</span>
+                </div>
+            </div>
+            <div class="fortune-tips" id="fortuneTips">
+                <div class="fortune-tips-title">▸ 今日提示</div>
+                <div class="fortune-tip-item" id="fortuneTip1">生成命盘后自动计算</div>
+            </div>
         </div>
     </div>
 </div>
@@ -4802,6 +4808,7 @@
         const coreGroupPerPair = coreGroupFit / corePairCount;
 
         // B2: 命格互补加成——权势/杀破狼配机月同梁/巨日系是经典互补结构
+        // 负向互补(authority|breaker等)已在 STAR_SYNERGY 中有惩罚，此处仅给正向加成避免双重扣分
         const dominantA = getDominantStarGroup(coreStarsA);
         const dominantB = getDominantStarGroup(coreStarsB);
         let complementBonus = 0;
@@ -4811,11 +4818,10 @@
             else if (cpair === 'breaker|mind')      complementBonus =  5;
             else if (cpair === 'authority|express') complementBonus =  4;
             else if (cpair === 'mind|express')      complementBonus =  3;
-            else if (cpair === 'authority|breaker') complementBonus = -4;
-            else if (cpair === 'breaker|express')   complementBonus = -2;
+            // authority|breaker / breaker|express 的负向影响已在 STAR_SYNERGY 里体现，不再叠加负值
         }
-        // 互补时强弱差距是优势，大幅减轻差距惩罚
-        const strGapFactor = complementBonus > 0 ? 0.05 : 0.16;
+        // 互补型适当减轻强弱差距惩罚，但不完全消除（保留 0.08 底线）
+        const strGapFactor = complementBonus > 0 ? 0.08 : 0.16;
 
         const coreQualityA = idxSetA.coreIndices.reduce((sum, idx) => sum + getPalaceQuality(chartA, idx), 0);
         const coreQualityB = idxSetB.coreIndices.reduce((sum, idx) => sum + getPalaceQuality(chartB, idx), 0);
@@ -4829,9 +4835,10 @@
         const coreGood = coreSupportA.good + coreSupportB.good;
         const coreBad = coreSupportA.bad + coreSupportB.bad;
 
-        const coreCrossPositive = coreCrossA2B.positive + coreCrossB2A.positive;
-        const coreCrossNegative = coreCrossA2B.negative + coreCrossB2A.negative;
-        const coreCrossDirectionalGap = Math.abs(coreCrossA2B.total - coreCrossB2A.total);
+        // 跨盘四化贡献加上限 ±18，防止多化忌同时命中时单项拉分过大
+        const coreCrossPositive = Math.min(coreCrossA2B.positive + coreCrossB2A.positive, 18);
+        const coreCrossNegative = Math.min(coreCrossA2B.negative + coreCrossB2A.negative, 18);
+        const coreCrossDirectionalGap = Math.min(Math.abs(coreCrossA2B.total - coreCrossB2A.total), 12);
         const coreRiskPenalty = Math.max(0, coreBad * 1.2 - coreGood * 0.75);
 
         let coreRaw =
@@ -4844,7 +4851,7 @@
             - coreCrossNegative * 1.35
             - coreBrightDiff * 2.2
             - coreStrengthGap * strGapFactor
-            - coreQualityGap * 0.28
+            - coreQualityGap * 0.52
             - coreRiskPenalty
             - coreCrossDirectionalGap * 0.6
             + complementBonus;
@@ -4880,9 +4887,10 @@
         const relationGood = relationSupportA.good + relationSupportB.good;
         const relationBad = relationSupportA.bad + relationSupportB.bad;
 
-        const relationCrossPositive = relationCrossA2B.positive + relationCrossB2A.positive;
-        const relationCrossNegative = relationCrossA2B.negative + relationCrossB2A.negative;
-        const crossDirectionalGap = Math.abs(relationCrossA2B.total - relationCrossB2A.total);
+        // 跨盘四化贡献加上限 ±18
+        const relationCrossPositive = Math.min(relationCrossA2B.positive + relationCrossB2A.positive, 18);
+        const relationCrossNegative = Math.min(relationCrossA2B.negative + relationCrossB2A.negative, 18);
+        const crossDirectionalGap = Math.min(Math.abs(relationCrossA2B.total - relationCrossB2A.total), 12);
 
         const relationTaiSuiPositive = Math.max(taiSuiA2B, 0) + Math.max(taiSuiB2A, 0);
         const relationTaiSuiNegative = Math.max(-taiSuiA2B, 0) + Math.max(-taiSuiB2A, 0);
@@ -4930,9 +4938,10 @@
         const supportGood = supportA.good + supportB.good;
         const supportBad = supportA.bad + supportB.bad;
         const supportBalance = supportGood - supportBad;
-        const supportCrossPositive = supportCrossA2B.positive + supportCrossB2A.positive;
-        const supportCrossNegative = supportCrossA2B.negative + supportCrossB2A.negative;
-        const supportCrossDirectionalGap = Math.abs(supportCrossA2B.total - supportCrossB2A.total);
+        // 跨盘四化贡献加上限 ±18
+        const supportCrossPositive = Math.min(supportCrossA2B.positive + supportCrossB2A.positive, 18);
+        const supportCrossNegative = Math.min(supportCrossA2B.negative + supportCrossB2A.negative, 18);
+        const supportCrossDirectionalGap = Math.min(Math.abs(supportCrossA2B.total - supportCrossB2A.total), 12);
         const mingGap = Math.abs(getPalaceStrength(chartA, mingIdxA) - getPalaceStrength(chartB, mingIdxB));
         const supportStrengthGap = Math.abs(getPalaceStrength(chartA, idxSetA.effRelIdx) - getPalaceStrength(chartB, idxSetB.effRelIdx));
         const supportAxisCount = Math.max(1, idxSetA.supportIndices.length + idxSetB.supportIndices.length);
@@ -4970,10 +4979,17 @@
         const jiNexusScore = Math.max(0, totalCrossNeg - fudeResilience * 0.4);
         const mutualJi = detectMutualJi(chartA, chartB);
 
+        // 综合总分：关系契合度权重最高，命格共振与相处顺畅度次之
+        const totalScore = clampScore(
+            Math.round(coreScore * 0.30 + relationScore * 0.42 + supportScore * 0.28),
+            15, 100
+        );
+
         return {
             coreScore,
             relationScore,
             supportScore,
+            totalScore,
             jiNexusScore,
             mutualJi,
             relPalaceName,
@@ -4989,15 +5005,39 @@
     function renderSynastryResult(scores) {
         const resultEl = document.getElementById('synastryResult');
         if (!resultEl) return;
-        const cards = [
-            { title: '命格共振度', score: scores.coreScore, desc: '综合命宫/身宫/福德的主星互补、星系匹配与跨盘四化影响，分数越高代表底层同频更强。' },
-            { title: '关系契合度', score: scores.relationScore, desc: `以${scores.relPalaceName}为主轴，叠加太岁入卦与四化互飞，评估双方在该关系中的互动质量与成长空间。` },
-            { title: '相处顺畅度', score: scores.supportScore, desc: '结合吉凶结构、化忌压力与强弱失衡，分数越高代表磨合成本更低、长期关系更稳。' }
+        const total = Math.round(scores.totalScore);
+        // 总分等级
+        const TOTAL_LEVELS = [
+            { min:90, label:'星河共鸣', color:'#c084fc' },
+            { min:78, label:'深度契合', color:'#fbbf24' },
+            { min:66, label:'和谐顺遂', color:'#6ab0d4' },
+            { min:54, label:'平稳相处', color:'#4ade80' },
+            { min:42, label:'需要磨合', color:'#94a3b8' },
+            { min:0,  label:'分歧明显', color:'#f87171' }
         ];
-        resultEl.innerHTML = cards.map(c => `
+        const lv = TOTAL_LEVELS.find(l => total >= l.min) || TOTAL_LEVELS[TOTAL_LEVELS.length-1];
+        const cards = [
+            { title: '命格共振', score: scores.coreScore, color: '#6ab0d4', desc: '命/身/福德主星互补、星系格局匹配与命格强弱平衡' },
+            { title: '关系契合', score: scores.relationScore, color: '#a78bfa', desc: `以${scores.relPalaceName}为核心，综合太岁入卦与四化互飞` },
+            { title: '相处顺畅', score: scores.supportScore, color: '#34d399', desc: '吉凶结构、化忌压力与强弱失衡综合评估' }
+        ];
+        resultEl.innerHTML = `
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:12px 14px;background:rgba(0,0,0,0.25);border:1px solid ${lv.color}44;border-radius:12px;">
+                <div style="width:64px;height:64px;border-radius:50%;background:conic-gradient(${lv.color} ${total}%,rgba(255,255,255,0.06) 0);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;position:relative;box-shadow:0 0 16px ${lv.color}44;">
+                    <div style="position:absolute;inset:5px;border-radius:50%;background:rgba(6,12,28,0.92);"></div>
+                    <span style="position:relative;z-index:1;font-size:1.4rem;font-weight:900;color:${lv.color};line-height:1;">${total}</span>
+                    <span style="position:relative;z-index:1;font-size:0.6rem;color:#6ab0d4;">综合分</span>
+                </div>
+                <div>
+                    <div style="font-size:1rem;font-weight:800;color:${lv.color};letter-spacing:2px;margin-bottom:4px;">${lv.label}</div>
+                    <div style="font-size:0.72rem;color:rgba(148,163,184,0.7);">命格共振 ${Math.round(scores.coreScore)} · 关系契合 ${Math.round(scores.relationScore)} · 相处顺畅 ${Math.round(scores.supportScore)}</div>
+                    ${scores.mutualJi?.hasMutual ? '<div style="font-size:0.7rem;color:#f87171;margin-top:3px;">⚠ 双向化忌交织 · 深度羁绊型</div>' : ''}
+                </div>
+            </div>
+        ` + cards.map(c => `
             <div class="syn-result-card">
-                <div class="score-row"><span>${c.title}</span><span>${Math.round(c.score)}%</span></div>
-                <div class="score-bar"><span style="width:${Math.round(c.score)}%"></span></div>
+                <div class="score-row"><span>${c.title}</span><span style="color:${c.color}">${Math.round(c.score)}</span></div>
+                <div class="score-bar"><span style="width:${Math.round(c.score)}%;background:linear-gradient(90deg,${c.color}99,${c.color})"></span></div>
                 <div class="score-desc">${c.desc}</div>
             </div>
         `).join('');
@@ -6822,6 +6862,7 @@ ${outputStructure}`;
         });
         if (currentChart) { document.querySelector('.yiji-box.yi').style.border = "1px solid rgba(50, 205, 50, 0.6)"; document.querySelector('.yiji-box.ji').style.border = "1px solid rgba(255, 69, 0, 0.6)"; }
         document.getElementById('calYi').innerText = modernData.yi.join(' · '); document.getElementById('calJi').innerText = modernData.ji.join(' · ');
+        renderFortuneScore();
     }
     
     function toggleDailyPanel() {
@@ -6831,127 +6872,173 @@ ${outputStructure}`;
     }
 
     const DAILY_REPORT_CACHE_STORAGE_KEY = 'wx_daily_report_cache_v1';
-    const DAILY_REPORT_CACHE_VERSION = 'daily_report_prompt_v1';
-    const DAILY_REPORT_CACHE_MAX_ENTRIES = 120;
-    const dailyReportInFlight = {};
-    const dailyReportCache = loadDailyReportCache();
 
-    function loadDailyReportCache() {
-        try {
-            const raw = localStorage.getItem(DAILY_REPORT_CACHE_STORAGE_KEY);
-            if (!raw) return {};
-            const parsed = JSON.parse(raw);
-            if (!parsed || typeof parsed !== 'object') return {};
-            return parsed;
-        } catch (e) {
-            return {};
+    // ===== 今日运势评分系统 =====
+    function calcDailyFortuneScore() {
+        if (!currentChart) return null;
+        const now = new Date();
+        const lunar = Lunar.fromDate(now);
+        const dayGanZhi = lunar.getDayInGanZhi();
+        const dayGan = dayGanZhi[0];
+        const dayBranch = dayGanZhi[dayGanZhi.length - 1];
+
+        // 五行映射
+        const WX_STEM = { '甲':0,'乙':0,'丙':1,'丁':1,'戊':2,'己':2,'庚':3,'辛':3,'壬':4,'癸':4 };
+        const clamp = (v, lo=10, hi=100) => Math.round(Math.min(hi, Math.max(lo, v)));
+
+        // 日干与命盘年干五行关系
+        const dayGanWx = WX_STEM[dayGan] ?? 0;
+        const yearGan = HEAVENLY_STEMS[currentChart.yearStemIdx] || '甲';
+        const yearGanWx = WX_STEM[yearGan] ?? 0;
+        // 日干生年干：+10；日干克年干：-5；年干克日干：-10；年干生日干：+8；同气：+4
+        let stemBonus = 0;
+        if ((dayGanWx + 1) % 5 === yearGanWx) stemBonus = 10;
+        else if ((yearGanWx + 1) % 5 === dayGanWx) stemBonus = 8;
+        else if ((dayGanWx + 2) % 5 === yearGanWx) stemBonus = -5;
+        else if ((yearGanWx + 2) % 5 === dayGanWx) stemBonus = -10;
+        else stemBonus = 4;
+
+        // 流日宫
+        const liuriPalace = currentChart.chartData.find(p => p.branch === dayBranch);
+
+        // 基础分 60 + 干支加减
+        let careerScore = 60 + stemBonus * 0.6;
+        let loveScore   = 60 + stemBonus * 0.4;
+        let healthScore = 60 + stemBonus * 0.3;
+        let peopleScore = 60 + stemBonus * 0.3;
+
+        const BRIGHT_DELTA = { '庙':14,'旺':10,'得':5,'利':3,'平':0,'陷':-12,'闲':-6 };
+
+        if (liuriPalace) {
+            const mainStars  = liuriPalace.stars.filter(s => s.category === 'main');
+            const luckyStars = liuriPalace.stars.filter(s => s.category === 'lucky');
+            const badStars   = liuriPalace.stars.filter(s => s.category === 'bad');
+
+            // 主星亮度
+            mainStars.forEach(s => {
+                const d = BRIGHT_DELTA[s.brightness] ?? 0;
+                careerScore += d * 0.55; healthScore += d * 0.35;
+            });
+            // 吉星 / 煞星数量
+            const luckyBonus = Math.min(luckyStars.length * 7, 18);
+            const badPenalty = Math.min(badStars.length * 8, 18);
+            peopleScore += luckyBonus; loveScore += luckyBonus * 0.5;
+            healthScore -= badPenalty * 0.7; careerScore -= badPenalty * 0.3;
+
+            // 四化
+            liuriPalace.stars.forEach(s => {
+                if (s.sihua === '禄') { careerScore += 15; loveScore += 5; }
+                if (s.sihua === '权') { careerScore += 12; }
+                if (s.sihua === '科') { peopleScore += 10; loveScore += 8; }
+                if (s.sihua === '忌') { careerScore -= 13; healthScore -= 8; loveScore -= 8; }
+            });
+            // 宫位类型加成
+            const pBonus = { '官禄':{ c:10 },'财帛':{ c:8 },'夫妻':{ l:10 },'疾厄':{ h:-8 },'迁移':{ c:5,l:5 },'交友':{ p:8 },'兄弟':{ p:6 },'命宫':{ c:5,l:5,h:5,p:5 } }[liuriPalace.name] || {};
+            careerScore += pBonus.c || 0; loveScore += pBonus.l || 0; healthScore += pBonus.h || 0; peopleScore += pBonus.p || 0;
         }
-    }
 
-    function saveDailyReportCache() {
-        try {
-            localStorage.setItem(DAILY_REPORT_CACHE_STORAGE_KEY, JSON.stringify(dailyReportCache));
-        } catch (e) {}
-    }
-
-    function pruneDailyReportCache() {
-        const entries = Object.entries(dailyReportCache);
-        if (entries.length <= DAILY_REPORT_CACHE_MAX_ENTRIES) return;
-        entries.sort((a, b) => (b[1]?.ts || 0) - (a[1]?.ts || 0));
-        const keep = new Set(entries.slice(0, DAILY_REPORT_CACHE_MAX_ENTRIES).map(([k]) => k));
-        Object.keys(dailyReportCache).forEach(k => { if (!keep.has(k)) delete dailyReportCache[k]; });
-    }
-
-    function stableHash(str) {
-        let h = 2166136261;
-        for (let i = 0; i < str.length; i++) {
-            h ^= str.charCodeAt(i);
-            h = Math.imul(h, 16777619);
+        // 命宫主星先天倾向
+        const mingPalace = currentChart.chartData.find(p => p.isMing);
+        if (mingPalace) {
+            const STAR_C = { '紫微':12,'天机':8,'太阳':10,'武曲':14,'天同':3,'廉贞':6,'天府':8,'太阴':5,'贪狼':10,'巨门':4,'天相':6,'天梁':7,'七杀':12,'破军':10 };
+            const STAR_L = { '紫微':5,'天机':7,'太阳':8,'武曲':3,'天同':12,'廉贞':10,'天府':5,'太阴':12,'贪狼':14,'巨门':4,'天相':9,'天梁':5,'七杀':5,'破军':7 };
+            const STAR_P = { '紫微':12,'天机':10,'太阳':12,'武曲':5,'天同':10,'廉贞':7,'天府':8,'太阴':8,'贪狼':10,'巨门':6,'天相':10,'天梁':9,'七杀':5,'破军':8 };
+            const bm = { '庙':1.2,'旺':1.1,'得':1,'利':0.95,'平':0.85,'陷':0.7 };
+            mingPalace.stars.filter(s => s.category === 'main').forEach(s => {
+                const mult = bm[s.brightness] ?? 1;
+                careerScore += (STAR_C[s.name] ?? 5) * mult * 0.35;
+                loveScore   += (STAR_L[s.name] ?? 5) * mult * 0.3;
+                peopleScore += (STAR_P[s.name] ?? 5) * mult * 0.3;
+            });
         }
-        return (h >>> 0).toString(36);
+
+        careerScore = clamp(careerScore);
+        loveScore   = clamp(loveScore);
+        healthScore = clamp(healthScore);
+        peopleScore = clamp(peopleScore);
+        const total = clamp(Math.round(careerScore*0.35 + loveScore*0.25 + healthScore*0.25 + peopleScore*0.15), 10, 100);
+
+        // 等级
+        const LEVELS = [
+            { min:93, label:'紫气东来', color:'#c084fc' },
+            { min:83, label:'大吉顺遂', color:'#fbbf24' },
+            { min:73, label:'稳步向前', color:'#6ab0d4' },
+            { min:63, label:'平和中正', color:'#4ade80' },
+            { min:52, label:'小有波折', color:'#94a3b8' },
+            { min:42, label:'需留心力', color:'#f97316' },
+            { min:0,  label:'宜静观变', color:'#f87171' }
+        ];
+        const level = LEVELS.find(l => total >= l.min) || LEVELS[LEVELS.length - 1];
+
+        // 今日提示
+        const tips = [];
+        if (careerScore >= 80) tips.push('事业推进正当时，可主动出击落实计划');
+        else if (careerScore >= 65) tips.push('工作保持稳节奏，守好现有成果');
+        else tips.push('财务决策宜保守，暂缓大额签约承诺');
+
+        if (loveScore >= 80) tips.push('人际互动顺畅，适合深化重要关系');
+        else if (loveScore < 52) tips.push('情绪易起伏，与亲近者沟通多留耐心');
+
+        if (healthScore < 55) tips.push('今日注意休息，避免透支体力');
+
+        if (peopleScore >= 75) tips.push('贵人运佳，善用他人建议可事半功倍');
+
+        if (liuriPalace) {
+            const jiStar = liuriPalace.stars.find(s => s.sihua === '忌');
+            const luStar = liuriPalace.stars.find(s => s.sihua === '禄');
+            if (jiStar) tips.push(`${jiStar.name}化忌落${liuriPalace.name}，该领域事务留意细节`);
+            else if (luStar) tips.push(`${luStar.name}化禄照${liuriPalace.name}，${liuriPalace.name}领域有好机会`);
+        }
+
+        return { total, career: careerScore, love: loveScore, health: healthScore, people: peopleScore, level, tips: tips.slice(0, 2), liuriPalace };
     }
 
-    function getCurrentChartIdentity() {
-        if (!currentChart) return '';
-        const birthDate = resolveCompositeDateValue('birthDate');
-        const birthHour = String(document.getElementById('birthHour')?.value ?? currentChart.lunarHourIdx ?? '');
-        const gender = String(document.getElementById('gender')?.value ?? currentChart.gender ?? '');
-        return [
-            birthDate,
-            birthHour,
-            gender,
-            currentChart.yearStemIdx,
-            currentChart.yearBranchIdx,
-            currentChart.bureau,
-            currentChart.ziWeiIdx
-        ].join('|');
-    }
+    function renderFortuneScore() {
+        const scoreData = calcDailyFortuneScore();
+        const numEl   = document.getElementById('fortuneScoreNum');
+        const circleEl = document.getElementById('fortuneCircle');
+        const badgeEl = document.getElementById('fortuneLevelBadge');
+        const hintEl  = document.getElementById('fortuneLiuriHint');
+        const tip1El  = document.getElementById('fortuneTip1');
+        if (!numEl) return;
 
-    function buildDailyReportCacheKey(todayDate) {
-        const chartIdentity = getCurrentChartIdentity() || (currentChart ? currentChart.getSummary().substring(0, 800) : '');
-        return `${DAILY_REPORT_CACHE_VERSION}|${todayDate}|${stableHash(chartIdentity)}`;
-    }
-
-    function isDailyReportCacheable(text) {
-        if (!text || typeof text !== 'string') return false;
-        const t = text.trim();
-        if (!t) return false;
-        if (t.startsWith('⚠️')) return false;
-        if (t.startsWith('连接失败')) return false;
-        return true;
-    }
-
-    async function generateDailyReport() {
-        const aiTextDiv = document.getElementById('calAiText');
-        if (!currentChart) { aiTextDiv.innerText = "请先在左侧输入生日并生成命盘，以便大师为您推算今日运势。"; return; }
-        const now = new Date(); const lunar = Lunar.fromDate(now);
-        const todayInfo = { date: `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`, lunar: `${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}`, ganzhi: `${lunar.getDayInGanZhi()}日`, yi: lunar.getDayYi().join(','), ji: lunar.getDayJi().join(',') };
-        const cacheKey = buildDailyReportCacheKey(todayInfo.date);
-        const cached = dailyReportCache[cacheKey];
-        if (cached && typeof cached.text === 'string' && cached.text.trim()) {
-            aiTextDiv.innerText = cached.text;
+        if (!scoreData) {
+            numEl.textContent = '--';
+            badgeEl.textContent = '命盘未载入';
+            badgeEl.style.setProperty('--fc', 'rgba(106,176,212,0.5)');
+            circleEl.style.setProperty('--fc', 'rgba(106,176,212,0.35)');
+            circleEl.style.setProperty('--fp', '60%');
+            if (hintEl) hintEl.textContent = '生成命盘后自动计算';
+            ['fdimCareer','fdimLove','fdimHealth','fdimPeople'].forEach(id => { const el = document.getElementById(id); if (el) el.style.width = '0%'; });
+            ['fdimCareerVal','fdimLoveVal','fdimHealthVal','fdimPeopleVal'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '--'; });
+            if (tip1El) tip1El.textContent = '生成命盘后自动计算';
             return;
         }
 
-        aiTextDiv.innerHTML = '<span class="animate-pulse">大师正在掐指一算...</span>';
-        if (dailyReportInFlight[cacheKey]) {
-            const reused = await dailyReportInFlight[cacheKey];
-            aiTextDiv.innerText = reused;
-            return;
-        }
+        const { total, career, love, health, people, level, tips, liuriPalace } = scoreData;
 
-        // 精简命盘数据：只取命宫主星 + 流日宫，不传大限序列
-        const _mingPalace = currentChart.chartData.find(p => p.isMing);
-        const _mingMainStars = _mingPalace
-            ? (_mingPalace.stars.filter(s => s.category === 'main').map(s => s.sihua ? `${s.name}[化${s.sihua}]` : s.name).join('、') || '无主星')
-            : '无';
-        const _mingDesc = _mingPalace ? `${_mingPalace.name}（${_mingPalace.stem}${_mingPalace.branch}），主星：${_mingMainStars}` : '未知';
-        // 流日宫：今日地支对应命盘中的宫位
-        const _dayGanzhi = todayInfo.ganzhi.replace('日', '');
-        const _dayBranch = _dayGanzhi.length >= 2 ? _dayGanzhi[1] : '';
-        const _liuriPalace = _dayBranch ? currentChart.chartData.find(p => p.branch === _dayBranch) : null;
-        const _liuriStars = _liuriPalace
-            ? (_liuriPalace.stars.map(s => s.name).join('、') || '无星曜')
-            : '未知';
-        const _liuriDesc = _liuriPalace
-            ? `${_liuriPalace.name}（${_liuriPalace.stem}${_liuriPalace.branch}），含：${_liuriStars}`
-            : '今日地支宫位未知';
-        const prompt = `今日干支：${_dayGanzhi}（农历${todayInfo.lunar}）。宜：${todayInfo.yi}。忌：${todayInfo.ji}。\n命宫：${_mingDesc}。五行局：${currentChart.bureau}局。\n流日宫：${_liuriDesc}。\n请结合今日干支五行与宜忌，分析命宫主星与今日流日宫星曜的能量互动，给出100字以内的今日提醒。要求：口语化，先给可执行小建议，再提需留意点，聚焦流日本身，不提大限。`;
-        dailyReportInFlight[cacheKey] = (async () => {
-            const result = await callAI(prompt);
-            if (isDailyReportCacheable(result)) {
-                dailyReportCache[cacheKey] = { text: result, ts: Date.now() };
-                pruneDailyReportCache();
-                saveDailyReportCache();
-            }
-            return result;
-        })();
+        numEl.textContent = total;
+        badgeEl.textContent = level.label;
+        badgeEl.style.setProperty('--fc', level.color);
+        badgeEl.style.color = level.color;
+        badgeEl.style.borderColor = level.color + '66';
+        circleEl.style.setProperty('--fc', level.color);
+        circleEl.style.setProperty('--fp', total + '%');
+        circleEl.style.boxShadow = `0 0 18px ${level.color}44`;
+        numEl.style.color = level.color;
 
-        try {
-            const result = await dailyReportInFlight[cacheKey];
-            aiTextDiv.innerText = result;
-        } finally {
-            delete dailyReportInFlight[cacheKey];
+        if (hintEl) hintEl.textContent = liuriPalace ? `流日宫：${liuriPalace.name}（${liuriPalace.branch}）` : '今日流日宫';
+
+        const dims = [['fdimCareer',career],['fdimLove',love],['fdimHealth',health],['fdimPeople',people]];
+        dims.forEach(([id, val]) => {
+            const bar = document.getElementById(id); if (bar) requestAnimationFrame(() => { bar.style.width = val + '%'; });
+            const valEl = document.getElementById(id + 'Val'); if (valEl) valEl.textContent = val;
+        });
+
+        const tipsBox = document.getElementById('fortuneTips');
+        if (tipsBox) {
+            tipsBox.innerHTML = '<div class="fortune-tips-title">▸ 今日提示</div>' +
+                (tips.length ? tips.map(t => `<div class="fortune-tip-item">${t}</div>`).join('') : '<div class="fortune-tip-item">今日运势平稳，保持常规节奏即可</div>');
         }
     }
 
