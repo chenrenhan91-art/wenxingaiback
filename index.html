@@ -3462,7 +3462,14 @@
                 </div>
             `;
         } else {
-            containerEl.innerHTML = marked.parse(text);
+            // 懒加载配置 marked：breaks:true 使单个 \n 渲染为 <br>，gfm 保留表格/列表
+            if (typeof marked !== 'undefined' && !marked._wenxingConfigured) {
+                marked.use({ breaks: true, gfm: true });
+                marked._wenxingConfigured = true;
+            }
+            containerEl.innerHTML = typeof marked !== 'undefined'
+                ? marked.parse(text)
+                : text.replace(/\n/g, '<br>');
         }
     }
 
@@ -6916,6 +6923,7 @@ ${outputStructure}`;
         const prompt = `今日干支：${_dayGanzhi}（农历${todayInfo.lunar}）。宜：${todayInfo.yi}。忌：${todayInfo.ji}。\n命宫：${_mingDesc}。五行局：${currentChart.bureau}局。\n流日宫：${_liuriDesc}。\n请结合今日干支五行与宜忌，分析命宫主星与今日流日宫星曜的能量互动，给出100字以内的今日提醒。要求：口语化，先给可执行小建议，再提需留意点，聚焦流日本身，不提大限。`;
         dailyReportInFlight[cacheKey] = (async () => {
             const result = await callAI(prompt);
+            if (isDailyReportCacheable(result)) {
                 dailyReportCache[cacheKey] = { text: result, ts: Date.now() };
                 pruneDailyReportCache();
                 saveDailyReportCache();
