@@ -3537,12 +3537,14 @@
     const PALACE_NAMES = ['命宫', '兄弟', '夫妻', '子女', '财帛', '疾厄', '迁移', '交友', '官禄', '田宅', '福德', '父母'];
     
     function getBureau(stemIdx, branchIdx) {
+        // 60甲子纳音五行局对照表（水二局=2,木三局=3,金四局=4,土五局=5,火六局=6）
+        // 顺序与60甲子循环一一对应：甲子(0)~癸亥(59)
         const NAYIN_BUREAU = [
-             4, 4, 6, 6, 3, 3, 5, 5, 4, 4, 6, 6, 
-             2, 2, 6, 6, 5, 5, 3, 3, 2, 2, 5, 5, 
-             6, 6, 5, 5, 3, 3, 2, 2, 4, 4, 6, 6, 
-             4, 4, 3, 3, 2, 2, 6, 6, 5, 5, 3, 3, 
-             3, 3, 4, 4, 6, 6, 2, 2, 3, 3, 2, 2 
+             4, 4, 6, 6, 3, 3, 5, 5, 4, 4, 6, 6,  // 甲子乙丑(金)丙寅丁卯(火)戊辰己巳(木)庚午辛未(土)壬申癸酉(金)甲戌乙亥(火)
+             2, 2, 5, 5, 4, 4, 3, 3, 2, 2, 5, 5,  // 丙子丁丑(水)戊寅己卯(土)庚辰辛巳(金)壬午癸未(木)甲申乙酉(水)丙戌丁亥(土)
+             6, 6, 3, 3, 2, 2, 4, 4, 6, 6, 3, 3,  // 戊子己丑(火)庚寅辛卯(木)壬辰癸巳(水)甲午乙未(金)丙申丁酉(火)戊戌己亥(木)
+             5, 5, 4, 4, 6, 6, 2, 2, 5, 5, 4, 4,  // 庚子辛丑(土)壬寅癸卯(金)甲辰乙巳(火)丙午丁未(水)戊申己酉(土)庚戌辛亥(金)
+             3, 3, 2, 2, 5, 5, 6, 6, 3, 3, 2, 2   // 壬子癸丑(木)甲寅乙卯(水)丙辰丁巳(土)戊午己未(火)庚申辛酉(木)壬戌癸亥(水)
         ];
         
         for(let i=0; i<60; i++) {
@@ -3702,10 +3704,11 @@
             placeTF('七杀', 6);
             placeTF('破军', 10);
             
-            let zuoFu = (4 + (this.lunarMonth - 1)) % 12;
-            if (zuoFu < 0) zuoFu += 12; 
+            // 左辅右弼须取月份绝对值，闰月（负数）与本月相同
+            const absMonth = Math.abs(this.lunarMonth);
+            let zuoFu = (4 + (absMonth - 1)) % 12;
             this.addStar(zuoFu, '左辅', 'lucky');
-            let youBi = (10 - (this.lunarMonth - 1) + 12) % 12;
+            let youBi = (10 - (absMonth - 1) + 12) % 12;
             this.addStar(youBi, '右弼', 'lucky');
             let wenChang = (10 - (this.lunarHourIdx) + 12) % 12;
             this.addStar(wenChang, '文昌', 'lucky');
@@ -3731,14 +3734,20 @@
             this.addStar((lingStart + this.lunarHourIdx) % 12, '铃星', 'bad');
 
             // 天魁、天钺（年干安·固定宫支对照表）
-            const KUI_BRANCH = [1,0,11,11,1,0,1,2,3,3]; // 甲乙丙丁戊己庚辛壬癸
-            const YUE_BRANCH = [7,8,9,9,7,8,7,5,5,5];
+            // 诀：甲戊庚牛羊，乙己鼠猴乡，丙丁猪鸡位，六辛逢马虎，壬癸兔蛇藏
+            const KUI_BRANCH = [1,0,11,11,1,0,1,6,3,3]; // 甲乙丙丁戊己庚辛壬癸  辛→午(6)
+            const YUE_BRANCH = [7,8,9,9,7,8,7,2,5,5];  // 甲乙丙丁戊己庚辛壬癸  辛→寅(2)
             this.addStar(KUI_BRANCH[this.yearStemIdx], '天魁', 'lucky');
             this.addStar(YUE_BRANCH[this.yearStemIdx], '天钺', 'lucky');
 
             // 地劫（时支顺数·从亥起）、地空（时支逆数·从亥起）
             this.addStar((11 + this.lunarHourIdx) % 12, '地劫', 'bad');
             this.addStar((11 - this.lunarHourIdx + 12) % 12, '地空', 'bad');
+
+            // 天马（年支四组·固定宫位）：申子辰→寅，寅午戌→申，亥卯未→巳，巳酉丑→亥
+            const TM_POS = { 0:2, 4:2, 8:2,   2:8, 6:8, 10:8,   11:5, 3:5, 7:5,   5:11, 9:11, 1:11 };
+            const tmIdx = TM_POS[this.yearBranchIdx];
+            if (tmIdx !== undefined) this.addStar(tmIdx, '天马', 'lucky');
         }
         
         addStar(idx, name, category) {
